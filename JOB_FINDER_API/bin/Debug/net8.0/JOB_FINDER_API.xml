@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JOB_FINDER_API</name>
+    </assembly>
+    <members>
+        <member name="T:JOB_FINDER_API.Migrations.first">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.first.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.first.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.first.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:JOB_FINDER_API.Migrations.init123">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.init123.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.init123.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.init123.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:JOB_FINDER_API.Migrations.updateroledataa">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateroledataa.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateroledataa.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateroledataa.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

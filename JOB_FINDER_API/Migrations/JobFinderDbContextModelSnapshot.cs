@@ -117,6 +117,23 @@ namespace JOB_FINDER_API.Migrations
                     b.HasKey("RoleId");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = 1,
+                            RoleName = "Admin"
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            RoleName = "Employer"
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            RoleName = "User"
+                        });
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.Skill", b =>

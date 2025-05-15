@@ -22,7 +22,14 @@ namespace JOB_FINDER_API.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Cấu hình quan hệ N-N giữa Job và Skill
+            // Seed roles
+            modelBuilder.Entity<Role>().HasData(
+                new Role { RoleId = 1, RoleName = "Admin" },
+                new Role { RoleId = 2, RoleName = "Employer" },
+                new Role { RoleId = 3, RoleName = "User" }
+            );
+
+            // Configure many-to-many relationships
             modelBuilder.Entity<JobSkill>()
                 .HasKey(js => new { js.JobId, js.SkillId });
 

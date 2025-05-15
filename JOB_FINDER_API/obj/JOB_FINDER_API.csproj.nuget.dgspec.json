@@ -1,26 +1,33 @@
 {
   "format": 1,
   "restore": {
-    "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
+    "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
   },
   "projects": {
-    "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
+    "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "projectUniqueName": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
         "projectName": "JOB_FINDER_API",
-        "projectPath": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
-        "packagesPath": "C:\\Users\\tinht\\.nuget\\packages\\",
-        "outputPath": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
+        "projectPath": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "packagesPath": "C:\\Users\\thanh\\.nuget\\packages\\",
+        "outputPath": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\tinht\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\thanh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "F:\\SPRING2025\\PRN231_PE_Testing_SP25_123456\\PaperNo_1\\All": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -38,12 +45,17 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
@@ -82,7 +94,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,4 +1,6 @@
-﻿namespace JOB_FINDER_API.Models
+﻿using System.Text.Json.Serialization;
+
+namespace JOB_FINDER_API.Models
 {
     public class Job
     {
@@ -17,6 +19,7 @@
         public DateTime CreatedAt { get; set; }
         public DateTime ExpiryDate { get; set; }
 
+        [JsonIgnore]
         public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
     }
 

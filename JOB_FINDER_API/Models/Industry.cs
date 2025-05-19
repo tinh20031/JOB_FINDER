@@ -1,4 +1,6 @@
-﻿namespace JOB_FINDER_API.Models
+﻿using System.Text.Json.Serialization;
+
+namespace JOB_FINDER_API.Models
 {
     public class Industry
     {
@@ -6,6 +8,7 @@
         public string IndustryName { get; set; } = string.Empty;
         public string? Description { get; set; }
 
+        [JsonIgnore]
         public ICollection<Job> Jobs { get; set; } = new List<Job>();
     }
 

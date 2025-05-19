@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.Extensions.Configuration;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -16,10 +17,12 @@ namespace JOB_FINDER_API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly JobFinderDbContext _dbContext;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(JobFinderDbContext dbContext)
+        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -72,7 +75,7 @@ namespace JOB_FINDER_API.Controllers
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("YourSecretKeyHere");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -81,7 +84,7 @@ namespace JOB_FINDER_API.Controllers
                     new Claim(ClaimTypes.Role, user.Role.RoleName)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);

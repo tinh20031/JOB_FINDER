@@ -1,0 +1,67 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Visual Studio
+.vs/
+*.dbmdl
+*.bak
+*.cache
+*.log
+
+# ASP.NET / dotnet files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Rider IDE
+.idea/
+
+# Logs
+*.log
+
+# Auto-generated files
+*.generated.cs
+*.sourcelink.json
+*.BuildWithSkipAnalyzers
+ApiEndpoints.json
+
+# Environment files
+.env
+*.env
+
+# Temporary files
+~$*
+*.tmp
+*.temp
+*.DS_Store
+Thumbs.db
+
+# NUGET
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+*.nuspec
+
+# OS-specific files
+.DS_Store
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Publish
+publish/
+wwwroot/dist/
+
+

@@ -1177,12 +1177,9 @@
             "type": "integer",
             "format": "int32"
           },
-          "employerId": {
+          "userId": {
             "type": "integer",
             "format": "int32"
-          },
-          "employer": {
-            "$ref": "#/components/schemas/User"
           },
           "title": {
             "type": "string",
@@ -1203,9 +1200,6 @@
           "industryId": {
             "type": "integer",
             "format": "int32"
-          },
-          "industry": {
-            "$ref": "#/components/schemas/Industry"
           },
           "createdAt": {
             "type": "string",
@@ -1228,12 +1222,6 @@
           "skillId": {
             "type": "integer",
             "format": "int32"
-          },
-          "job": {
-            "$ref": "#/components/schemas/Job"
-          },
-          "skill": {
-            "$ref": "#/components/schemas/Skill"
           }
         },
         "additionalProperties": false
@@ -1315,54 +1303,6 @@
           },
           "phone": {
             "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "User": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "passwordHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "roleId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "role": {
-            "$ref": "#/components/schemas/Role"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "postedJobs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Job"
-            },
             "nullable": true
           }
         },

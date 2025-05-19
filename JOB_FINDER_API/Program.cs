@@ -1,3 +1,4 @@
+﻿
 using JOB_FINDER_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -27,6 +28,19 @@ builder.Services.AddSwaggerGen(c =>
     {
         Console.WriteLine($"Warning: XML documentation file not found at {xmlPath}");
     }
+});
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        });
 });
 
 builder.Services.AddDbContext<JobFinderDbContext>(options =>
@@ -67,10 +81,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Add CORS middleware - Đặt trước UseAuthentication và UseAuthorization
+app.UseCors("AllowReactApp");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
-

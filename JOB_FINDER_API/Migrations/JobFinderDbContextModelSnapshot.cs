@@ -507,41 +507,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-<<<<<<< HEAD
-                            CreatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4730),
+                            CreatedAt = new DateTime(2025, 5, 21, 4, 13, 35, 539, DateTimeKind.Utc).AddTicks(6068),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4731)
-=======
-                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(322),
-                            RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(325)
->>>>>>> 5689f202679c09f282f62269fb07604564991d00
+                            UpdatedAt = new DateTime(2025, 5, 21, 4, 13, 35, 539, DateTimeKind.Utc).AddTicks(6071)
                         },
                         new
                         {
                             RoleId = 2,
-<<<<<<< HEAD
-                            CreatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4736),
-                            RoleName = "Employer",
-                            UpdatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4736)
-=======
-                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(331),
+                            CreatedAt = new DateTime(2025, 5, 21, 4, 13, 35, 539, DateTimeKind.Utc).AddTicks(6076),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(331)
->>>>>>> 5689f202679c09f282f62269fb07604564991d00
+                            UpdatedAt = new DateTime(2025, 5, 21, 4, 13, 35, 539, DateTimeKind.Utc).AddTicks(6076)
                         },
                         new
                         {
                             RoleId = 3,
-<<<<<<< HEAD
-                            CreatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4737),
-                            RoleName = "HR",
-                            UpdatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4738)
-=======
-                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(332),
+                            CreatedAt = new DateTime(2025, 5, 21, 4, 13, 35, 539, DateTimeKind.Utc).AddTicks(6077),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(332)
->>>>>>> 5689f202679c09f282f62269fb07604564991d00
+                            UpdatedAt = new DateTime(2025, 5, 21, 4, 13, 35, 539, DateTimeKind.Utc).AddTicks(6077)
                         });
                 });
 

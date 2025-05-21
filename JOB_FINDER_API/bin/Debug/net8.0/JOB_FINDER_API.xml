@@ -4,6 +4,7 @@
         <name>JOB_FINDER_API</name>
     </assembly>
     <members>
+<<<<<<< HEAD
         <member name="T:JOB_FINDER_API.Migrations.inite">
             <inheritdoc />
         </member>
@@ -14,6 +15,30 @@
             <inheritdoc />
         </member>
         <member name="M:JOB_FINDER_API.Migrations.inite.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+=======
+        <member name="T:JOB_FINDER_API.Migrations.init123">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.init123.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.init123.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.init123.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:JOB_FINDER_API.Migrations.updateentity2">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateentity2.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateentity2.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateentity2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+>>>>>>> 5689f202679c09f282f62269fb07604564991d00
             <inheritdoc />
         </member>
     </members>

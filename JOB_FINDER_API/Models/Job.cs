@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace JOB_FINDER_API.Models
 {
@@ -7,7 +7,7 @@ namespace JOB_FINDER_API.Models
         public int JobId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int EmployerId { get; set; } // Khóa ngoại tham chiếu đến Users.Id (Employer)
+        public int CompanyId { get; set; }
         public int Salary { get; set; }
         public int IndustryId { get; set; }
         public DateTime ExpiryDate { get; set; }
@@ -22,7 +22,7 @@ namespace JOB_FINDER_API.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User Employer { get; set; } = null!;
+        public User Company { get; set; } = null!;
         [JsonIgnore]
         public Industry Industry { get; set; } = null!;
         [JsonIgnore]
@@ -32,7 +32,7 @@ namespace JOB_FINDER_API.Models
         [JsonIgnore]
         public Experience Experience { get; set; } = null!;
         [JsonIgnore]
-        public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
+        public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>(); // Sửa từ Groot thành JobSkills
         [JsonIgnore]
         public ICollection<Application> Applications { get; set; } = new List<Application>();
         [JsonIgnore]

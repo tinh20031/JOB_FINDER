@@ -130,6 +130,44 @@ namespace JOB_FINDER_API.Migrations
                     b.ToTable("CandidateProfiles");
                 });
 
+            modelBuilder.Entity("JOB_FINDER_API.Models.CompanyProfile", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyProfileDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Contact")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageLogoLgr")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TeamSize")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UrlCompanyLogo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Website")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("CompanyProfiles");
+                });
+
             modelBuilder.Entity("JOB_FINDER_API.Models.Contact", b =>
                 {
                     b.Property<string>("Id")
@@ -215,44 +253,6 @@ namespace JOB_FINDER_API.Migrations
                     b.ToTable("Educations");
                 });
 
-            modelBuilder.Entity("JOB_FINDER_API.Models.EmployerProfile", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyProfile")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Contact")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageLogoLgr")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsVerified")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TeamSize")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UrlCompanyLogo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Website")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("EmployerProfiles");
-                });
-
             modelBuilder.Entity("JOB_FINDER_API.Models.Experience", b =>
                 {
                     b.Property<int>("Id")
@@ -279,27 +279,6 @@ namespace JOB_FINDER_API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Experiences");
-                });
-
-            modelBuilder.Entity("JOB_FINDER_API.Models.HRProfile", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EmployerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Position")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfileImage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("EmployerId");
-
-                    b.ToTable("HRProfiles");
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.Industry", b =>
@@ -333,15 +312,15 @@ namespace JOB_FINDER_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobId"));
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("EmployerId")
-                        .HasColumnType("int");
 
                     b.Property<int>("ExperienceId")
                         .HasColumnType("int");
@@ -383,9 +362,9 @@ namespace JOB_FINDER_API.Migrations
 
                     b.HasKey("JobId");
 
-                    b.HasIndex("CreatedAt");
+                    b.HasIndex("CompanyId");
 
-                    b.HasIndex("EmployerId");
+                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("ExperienceId");
 
@@ -528,23 +507,41 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
+<<<<<<< HEAD
                             CreatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4730),
                             RoleName = "Candidate",
                             UpdatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4731)
+=======
+                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(322),
+                            RoleName = "Candidate",
+                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(325)
+>>>>>>> 5689f202679c09f282f62269fb07604564991d00
                         },
                         new
                         {
                             RoleId = 2,
+<<<<<<< HEAD
                             CreatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4736),
                             RoleName = "Employer",
                             UpdatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4736)
+=======
+                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(331),
+                            RoleName = "Company",
+                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(331)
+>>>>>>> 5689f202679c09f282f62269fb07604564991d00
                         },
                         new
                         {
                             RoleId = 3,
+<<<<<<< HEAD
                             CreatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4737),
                             RoleName = "HR",
                             UpdatedAt = new DateTime(2025, 5, 21, 2, 44, 5, 165, DateTimeKind.Utc).AddTicks(4738)
+=======
+                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(332),
+                            RoleName = "Admin",
+                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(332)
+>>>>>>> 5689f202679c09f282f62269fb07604564991d00
                         });
                 });
 
@@ -688,6 +685,17 @@ namespace JOB_FINDER_API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("JOB_FINDER_API.Models.CompanyProfile", b =>
+                {
+                    b.HasOne("JOB_FINDER_API.Models.User", "User")
+                        .WithOne("CompanyProfile")
+                        .HasForeignKey("JOB_FINDER_API.Models.CompanyProfile", "UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("JOB_FINDER_API.Models.Contact", b =>
                 {
                     b.HasOne("JOB_FINDER_API.Models.User", "User")
@@ -710,17 +718,6 @@ namespace JOB_FINDER_API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("JOB_FINDER_API.Models.EmployerProfile", b =>
-                {
-                    b.HasOne("JOB_FINDER_API.Models.User", "User")
-                        .WithOne("EmployerProfile")
-                        .HasForeignKey("JOB_FINDER_API.Models.EmployerProfile", "UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("JOB_FINDER_API.Models.Experience", b =>
                 {
                     b.HasOne("JOB_FINDER_API.Models.User", "User")
@@ -732,30 +729,11 @@ namespace JOB_FINDER_API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("JOB_FINDER_API.Models.HRProfile", b =>
-                {
-                    b.HasOne("JOB_FINDER_API.Models.User", "Employer")
-                        .WithMany("HRs")
-                        .HasForeignKey("EmployerId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("JOB_FINDER_API.Models.User", "User")
-                        .WithOne("HRProfile")
-                        .HasForeignKey("JOB_FINDER_API.Models.HRProfile", "UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Employer");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("JOB_FINDER_API.Models.Job", b =>
                 {
-                    b.HasOne("JOB_FINDER_API.Models.User", "Employer")
+                    b.HasOne("JOB_FINDER_API.Models.User", "Company")
                         .WithMany("PostedJobs")
-                        .HasForeignKey("EmployerId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -783,7 +761,7 @@ namespace JOB_FINDER_API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Employer");
+                    b.Navigation("Company");
 
                     b.Navigation("Experience");
 
@@ -921,19 +899,15 @@ namespace JOB_FINDER_API.Migrations
 
                     b.Navigation("CandidateProfile");
 
+                    b.Navigation("CompanyProfile");
+
                     b.Navigation("Contacts");
 
                     b.Navigation("Educations");
 
-                    b.Navigation("EmployerProfile");
-
                     b.Navigation("Experiences");
 
                     b.Navigation("FavoriteJobs");
-
-                    b.Navigation("HRProfile");
-
-                    b.Navigation("HRs");
 
                     b.Navigation("PostedJobs");
 

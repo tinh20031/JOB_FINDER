@@ -73,6 +73,10 @@ namespace JOB_FINDER_API.Controllers
             user.FullName = request.FullName ?? user.FullName;
             user.Email = request.Email ?? user.Email;
             user.Phone = request.Phone ?? user.Phone;
+            if (request.RoleId.HasValue)
+            {
+                user.RoleId = request.RoleId.Value;
+            }
             user.UpdatedAt = DateTime.UtcNow;
 
             _dbContext.Users.Update(user);

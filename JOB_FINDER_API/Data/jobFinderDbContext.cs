@@ -10,11 +10,9 @@ namespace JOB_FINDER_API.Data
         {
         }
 
-        // DbSet cho các bảng
         public DbSet<User> Users { get; set; }
         public DbSet<CandidateProfile> CandidateProfiles { get; set; }
-        public DbSet<EmployerProfile> EmployerProfiles { get; set; }
-        public DbSet<HRProfile> HRProfiles { get; set; }
+        public DbSet<CompanyProfile> CompanyProfiles { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Industry> Industries { get; set; }
@@ -37,8 +35,8 @@ namespace JOB_FINDER_API.Data
             // Seed roles
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleId = 1, RoleName = "Candidate" },
-                new Role { RoleId = 2, RoleName = "Employer" },
-                new Role { RoleId = 3, RoleName = "HR" }
+                new Role { RoleId = 2, RoleName = "Company" },
+                new Role { RoleId = 3, RoleName = "Admin" }
             );
 
             // CandidateProfile
@@ -50,34 +48,20 @@ namespace JOB_FINDER_API.Data
                 .HasForeignKey<CandidateProfile>(cp => cp.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // EmployerProfile
-            modelBuilder.Entity<EmployerProfile>()
-                .HasKey(ep => ep.UserId);
-            modelBuilder.Entity<EmployerProfile>()
-                .HasOne(ep => ep.User)
-                .WithOne(u => u.EmployerProfile)
-                .HasForeignKey<EmployerProfile>(ep => ep.UserId)
+            // CompanyProfile
+            modelBuilder.Entity<CompanyProfile>()
+                .HasKey(cp => cp.UserId);
+            modelBuilder.Entity<CompanyProfile>()
+                .HasOne(cp => cp.User)
+                .WithOne(u => u.CompanyProfile)
+                .HasForeignKey<CompanyProfile>(cp => cp.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // HRProfile
-            modelBuilder.Entity<HRProfile>()
-                .HasKey(hp => hp.UserId);
-            modelBuilder.Entity<HRProfile>()
-                .HasOne(hp => hp.User)
-                .WithOne(u => u.HRProfile)
-                .HasForeignKey<HRProfile>(hp => hp.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<HRProfile>()
-                .HasOne(hp => hp.Employer)
-                .WithMany(u => u.HRs)
-                .HasForeignKey(hp => hp.EmployerId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            // Job - Employer relationship (fix cascade issue)
+            // Job - Company relationship
             modelBuilder.Entity<Job>()
-                .HasOne(j => j.Employer)
+                .HasOne(j => j.Company)
                 .WithMany(u => u.PostedJobs)
-                .HasForeignKey(j => j.EmployerId)
+                .HasForeignKey(j => j.CompanyId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // JobSkill
@@ -131,7 +115,6 @@ namespace JOB_FINDER_API.Data
                 .WithMany(u => u.Applications)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
-
             modelBuilder.Entity<Application>()
                 .HasOne(a => a.Job)
                 .WithMany(j => j.Applications)

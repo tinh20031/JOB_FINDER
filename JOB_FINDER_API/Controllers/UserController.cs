@@ -35,6 +35,7 @@ namespace JOB_FINDER_API.Controllers
                 user.Email,
                 user.Phone,
                 Role = user.Role.RoleName,
+                user.IsActive,
                 user.CreatedAt,
                 user.UpdatedAt
             });
@@ -51,6 +52,7 @@ namespace JOB_FINDER_API.Controllers
                     u.FullName,
                     u.Email,
                     u.Phone,
+                    u.IsActive,
                     Role = u.Role.RoleName,
                     u.CreatedAt,
                     u.UpdatedAt

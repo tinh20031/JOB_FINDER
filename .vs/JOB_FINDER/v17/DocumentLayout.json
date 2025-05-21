@@ -7,13 +7,34 @@
   "WorkspaceRootPath": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\data\\jobfinderdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\data\\jobfinderdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\models\\job.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\job.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\controllers\\jobtypecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\jobtypecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+=======
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\models\\industry.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\industry.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\models\\experiencelevel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\experiencelevel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+>>>>>>> 73a323c (update table jobs)
     },
     {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\controllers\\messagecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -99,16 +120,20 @@
     },
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\models\\job.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\job.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
 >>>>>>> 891eb13 (update function put user)
+=======
+>>>>>>> 73a323c (update table jobs)
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\models\\experience.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\experience.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\models\\industry.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -116,6 +141,8 @@
     },
     {
 >>>>>>> 891eb13 (update function put user)
+=======
+>>>>>>> 73a323c (update table jobs)
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\models\\level.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\level.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -144,12 +171,15 @@
     },
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
 >>>>>>> 891eb13 (update function put user)
+=======
+>>>>>>> 73a323c (update table jobs)
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\controllers\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\rolecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -178,12 +208,15 @@
     },
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\data\\jobfinderdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\data\\jobfinderdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
 >>>>>>> 891eb13 (update function put user)
+=======
+>>>>>>> 73a323c (update table jobs)
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\job_finder_api\\models\\candidateprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\candidateprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -199,6 +232,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 188,
+<<<<<<< HEAD
 <<<<<<< HEAD
           "SelectedChildIndex": 7,
           "Children": [
@@ -240,6 +274,16 @@
             {
               "$type": "Bookmark",
 >>>>>>> 891eb13 (update function put user)
+=======
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:162:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Bookmark",
+>>>>>>> 73a323c (update table jobs)
               "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             },
             {
@@ -252,6 +296,7 @@
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
 <<<<<<< HEAD
               "DocumentIndex": 5,
               "Title": "ApplicationController.cs",
@@ -273,12 +318,22 @@
               "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserController.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\UserController.cs",
               "ViewState": "AQIAAHwAAAAAAAAAAAAqwK8AAAAAAAAA",
+=======
+              "DocumentIndex": 0,
+              "Title": "jobFinderDbContext.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "ViewState": "AQIAAGYAAAAAAAAAAAAqwJIAAAABAAAA",
+>>>>>>> 73a323c (update table jobs)
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-21T04:33:52.176Z",
+              "WhenOpened": "2025-05-21T03:19:29.684Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 6,
               "Title": "CandidateProfileController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CandidateProfileController.cs",
@@ -573,18 +628,22 @@
               "DocumentIndex": 18,
 =======
               "DocumentIndex": 10,
+=======
+              "DocumentIndex": 1,
+>>>>>>> 73a323c (update table jobs)
               "Title": "Job.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Job.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Job.cs",
               "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Job.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Models\\Job.cs",
-              "ViewState": "AQIAAAcAAAAAAAAAAAAQwAwAAAAeAAAA",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAowBMAAAAtAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-21T03:19:16.55Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 11,
 >>>>>>> 891eb13 (update function put user)
               "Title": "Experience.cs",
@@ -662,6 +721,9 @@
               "DocumentIndex": 20,
 =======
               "DocumentIndex": 12,
+=======
+              "DocumentIndex": 4,
+>>>>>>> 73a323c (update table jobs)
               "Title": "Industry.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Industry.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Industry.cs",
@@ -674,8 +736,219 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\appsettings.json",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
+              "RelativeToolTip": "JOB_FINDER_API\\appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAKAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-05-21T03:24:31.002Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\UserController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\UserController.cs",
+              "ViewState": "AQIAAJEAAAAAAAAAAAAwwKoAAAAdAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T04:33:52.176Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "IndustryController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\IndustryController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\IndustryController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\IndustryController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\IndustryController.cs",
+              "ViewState": "AQIAACEAAAAAAAAAAADwvzQAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T07:56:34.027Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "JobSkillController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobSkillController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\JobSkillController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobSkillController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\JobSkillController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T05:19:25.83Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ExperienceController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\ExperienceController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\ExperienceController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\ExperienceController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\ExperienceController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T05:19:24.006Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "UserFavoriteJobController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T09:08:13.185Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "JobController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\JobController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\JobController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T05:19:25.251Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ExperienceLevel.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\ExperienceLevel.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\ExperienceLevel.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\ExperienceLevel.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\ExperienceLevel.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAwAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T14:48:55.096Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "CVController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CVController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\CVController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CVController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\CVController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T05:19:22.016Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "CandidateProfileController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CandidateProfileController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\CandidateProfileController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CandidateProfileController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\CandidateProfileController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T05:19:19.361Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Role.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Role.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Role.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Role.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\Role.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAABCAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T03:17:51.151Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Level.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Level.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Level.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Level.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\Level.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAABCAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T07:43:49.995Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 14,
+<<<<<<< HEAD
 >>>>>>> 891eb13 (update function put user)
+=======
+              "Title": "Experience.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Experience.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Experience.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Experience.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\Experience.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAdAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T08:50:45.179Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "ViewState": "AQIAACgAAAAAAAAAAAAwwGgAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T03:29:44.039Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\User.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\User.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\User.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\User.cs",
+              "ViewState": "AQIAABIAAAAAAAAAAAAAACMAAAA2AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T03:19:01.182Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "UpdateUserFullRequest.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Requests\\UpdateUserFullRequest.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Requests\\UpdateUserFullRequest.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Requests\\UpdateUserFullRequest.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\Requests\\UpdateUserFullRequest.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAApAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-21T05:04:15.461Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+>>>>>>> 73a323c (update table jobs)
               "Title": "LevelController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\LevelController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\LevelController.cs",
@@ -689,10 +962,14 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 25,
 =======
               "DocumentIndex": 21,
 >>>>>>> 891eb13 (update function put user)
+=======
+              "DocumentIndex": 22,
+>>>>>>> 73a323c (update table jobs)
               "Title": "HRProfileController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\HRProfileController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\HRProfileController.cs",
@@ -706,10 +983,14 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 23,
 =======
               "DocumentIndex": 18,
 >>>>>>> 891eb13 (update function put user)
+=======
+              "DocumentIndex": 20,
+>>>>>>> 73a323c (update table jobs)
               "Title": "UpdateUserRequest.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\UpdateUserRequest.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\UpdateUserRequest.cs",
@@ -723,10 +1004,14 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 24,
 =======
               "DocumentIndex": 20,
 >>>>>>> 891eb13 (update function put user)
+=======
+              "DocumentIndex": 21,
+>>>>>>> 73a323c (update table jobs)
               "Title": "RoleController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\RoleController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\RoleController.cs",
@@ -740,10 +1025,14 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 26,
 =======
               "DocumentIndex": 22,
 >>>>>>> 891eb13 (update function put user)
+=======
+              "DocumentIndex": 23,
+>>>>>>> 73a323c (update table jobs)
               "Title": "EducationController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\EducationController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\EducationController.cs",
@@ -757,9 +1046,13 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 27,
 =======
               "DocumentIndex": 23,
+=======
+              "DocumentIndex": 24,
+>>>>>>> 73a323c (update table jobs)
               "Title": "ContactController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\ContactController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\ContactController.cs",
@@ -772,8 +1065,12 @@
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 25,
 >>>>>>> 891eb13 (update function put user)
+=======
+              "DocumentIndex": 26,
+>>>>>>> 73a323c (update table jobs)
               "Title": "Application.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Application.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Application.cs",
@@ -787,9 +1084,13 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 28,
 =======
               "DocumentIndex": 24,
+=======
+              "DocumentIndex": 25,
+>>>>>>> 73a323c (update table jobs)
               "Title": "ApplicationController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\ApplicationController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\ApplicationController.cs",
@@ -798,19 +1099,6 @@
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAA1AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-21T04:52:33.403Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 26,
-              "Title": "jobFinderDbContext.cs",
-              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
-              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAACMAAAArAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-21T03:19:29.684Z",
               "EditorCaption": ""
             },
             {

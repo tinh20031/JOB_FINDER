@@ -507,23 +507,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 5, 21, 3, 28, 7, 931, DateTimeKind.Utc).AddTicks(339),
+                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(322),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 21, 3, 28, 7, 931, DateTimeKind.Utc).AddTicks(342)
+                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(325)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 5, 21, 3, 28, 7, 931, DateTimeKind.Utc).AddTicks(345),
+                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(331),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 21, 3, 28, 7, 931, DateTimeKind.Utc).AddTicks(345)
+                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(331)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 5, 21, 3, 28, 7, 931, DateTimeKind.Utc).AddTicks(346),
+                            CreatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(332),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 21, 3, 28, 7, 931, DateTimeKind.Utc).AddTicks(347)
+                            UpdatedAt = new DateTime(2025, 5, 21, 3, 49, 49, 414, DateTimeKind.Utc).AddTicks(332)
                         });
                 });
 

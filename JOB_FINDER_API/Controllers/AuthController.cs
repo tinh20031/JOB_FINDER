@@ -7,7 +7,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Extensions.Configuration;
 
 namespace JOB_FINDER_API.Controllers
@@ -33,7 +32,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Email is already in use.");
             }
 
-            var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "User");
+            var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate"); 
             if (userRole == null)
             {
                 return StatusCode(500, "Default role not found.");
@@ -44,7 +43,7 @@ namespace JOB_FINDER_API.Controllers
                 FullName = request.FullName,
                 Email = request.Email,
                 Phone = request.Phone,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 RoleId = userRole.RoleId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -63,9 +62,14 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password)) 
             {
                 return Unauthorized("Invalid credentials.");
+            }
+
+            if (user.Role == null)
+            {
+                return StatusCode(500, "User role not found.");
             }
 
             var token = GenerateJwtToken(user);
@@ -80,7 +84,7 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, user.UserId.ToString()),
+                    new Claim(ClaimTypes.Name, user.Id.ToString()), 
                     new Claim(ClaimTypes.Role, user.Role.RoleName)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),

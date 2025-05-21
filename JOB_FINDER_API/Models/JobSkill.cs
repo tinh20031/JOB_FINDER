@@ -7,10 +7,9 @@ namespace JOB_FINDER_API.Models
         public int JobId { get; set; }
         public int SkillId { get; set; }
 
-        // Navigation properties (optional for API payloads)
         [JsonIgnore]
-        public Job? Job { get; set; }
+        public Job Job { get; set; } = null!;
         [JsonIgnore]
-        public Skill? Skill { get; set; }
+        public Skill Skill { get; set; } = null!;
     }
 }

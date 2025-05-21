@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
@@ -21,7 +21,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.UserId == id);
+                .FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
 
             if (user == null)
             {
@@ -30,7 +30,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                user.UserId,
+                Id = user.Id, // Sửa UserId thành Id
                 user.FullName,
                 user.Email,
                 user.Phone,
@@ -47,7 +47,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .Select(u => new
                 {
-                    u.UserId,
+                    Id = u.Id, // Sửa UserId thành Id
                     u.FullName,
                     u.Email,
                     u.Phone,
@@ -63,7 +63,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
 
             if (user == null)
             {
@@ -84,7 +84,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
 
             if (user == null)
             {

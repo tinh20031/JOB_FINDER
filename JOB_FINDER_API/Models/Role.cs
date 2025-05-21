@@ -5,7 +5,7 @@ namespace JOB_FINDER_API.Models
     public class Role
     {
         public int RoleId { get; set; }
-        public string RoleName { get; set; } = string.Empty; // Ví dụ: "Candidate", "Employer", "HR"
+        public string RoleName { get; set; } = string.Empty; // Admin, Candidate, Company
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

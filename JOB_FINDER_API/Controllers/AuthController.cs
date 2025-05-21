@@ -72,6 +72,14 @@ namespace JOB_FINDER_API.Controllers
             return Ok(new { Token = token, Role = user.Role.RoleName });
         }
 
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // For JWT, logout is handled on the client by deleting the token.
+            // Optionally, you can implement token blacklisting here if needed.
+            return Ok(new { message = "Logged out successfully. Please remove the token on the client." });
+        }
+
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();

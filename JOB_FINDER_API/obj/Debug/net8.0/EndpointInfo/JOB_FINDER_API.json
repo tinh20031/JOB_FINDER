@@ -67,6 +67,18 @@
         }
       }
     },
+    "/api/Auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/Industry": {
       "get": {
         "tags": [
@@ -1303,6 +1315,11 @@
           },
           "phone": {
             "type": "string",
+            "nullable": true
+          },
+          "roleId": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },

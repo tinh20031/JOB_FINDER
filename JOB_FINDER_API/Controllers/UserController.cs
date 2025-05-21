@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 891eb13 (update function put user)
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
@@ -179,6 +182,7 @@ namespace JOB_FINDER_API.Controllers
     }
 
 
+<<<<<<< HEAD
 
 
 
@@ -314,3 +318,6 @@ namespace JOB_FINDER_API.Controllers
     }
 >>>>>>> f2ee5b6 (update new api)
 }
+=======
+}
+>>>>>>> 891eb13 (update function put user)

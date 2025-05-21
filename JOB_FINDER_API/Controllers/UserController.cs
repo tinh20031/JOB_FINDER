@@ -35,6 +35,7 @@ namespace JOB_FINDER_API.Controllers
                 user.Email,
                 user.Phone,
                 Role = user.Role.RoleName,
+                user.IsActive,
                 user.CreatedAt,
                 user.UpdatedAt
             });
@@ -52,6 +53,7 @@ namespace JOB_FINDER_API.Controllers
                     u.Email,
                     u.Phone,
                     Role = u.Role.RoleName,
+                    u.IsActive,
                     u.CreatedAt,
                     u.UpdatedAt
                 })
@@ -123,20 +125,6 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-       /* [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            var user = await _dbContext.Users
-                .FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == request.Password);
-
-            if (user == null)
-                return Unauthorized("Invalid email or password.");
-
-            if (!user.IsActive)
-                return Forbid("Your account is locked. Please contact support.");
-
-            // ... (generate JWT or session, return user info, etc.)
-            return Ok(new { message = "Login successful", userId = user.Id });
-        }*/
+     
     }
 }

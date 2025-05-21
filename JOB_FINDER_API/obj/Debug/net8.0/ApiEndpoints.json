@@ -200,6 +200,85 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
+    "Method": "GetAll",
+    "RelativePath": "api/CompanyProfile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
+    "Method": "Create",
+    "RelativePath": "api/CompanyProfile",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "JOB_FINDER_API.Models.CompanyProfile",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
+    "Method": "Get",
+    "RelativePath": "api/CompanyProfile/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
+    "Method": "Update",
+    "RelativePath": "api/CompanyProfile/{userId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "model",
+        "Type": "JOB_FINDER_API.Models.CompanyProfile",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
+    "Method": "Delete",
+    "RelativePath": "api/CompanyProfile/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "JOB_FINDER_API.Controllers.ContactController",
     "Method": "GetAll",
     "RelativePath": "api/Contact",
@@ -437,9 +516,9 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.EmployerProfileController",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
     "Method": "GetAll",
-    "RelativePath": "api/EmployerProfile",
+    "RelativePath": "api/Experience",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -447,31 +526,31 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.EmployerProfileController",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
     "Method": "Create",
-    "RelativePath": "api/EmployerProfile",
+    "RelativePath": "api/Experience",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "model",
-        "Type": "JOB_FINDER_API.Models.CompanyProfile",
+        "Type": "JOB_FINDER_API.Models.Experience",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.EmployerProfileController",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
     "Method": "Get",
-    "RelativePath": "api/EmployerProfile/{userId}",
+    "RelativePath": "api/Experience/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userId",
+        "Name": "id",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -479,36 +558,36 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.EmployerProfileController",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
     "Method": "Update",
-    "RelativePath": "api/EmployerProfile/{userId}",
+    "RelativePath": "api/Experience/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userId",
+        "Name": "id",
         "Type": "System.Int32",
         "IsRequired": true
       },
       {
         "Name": "model",
-        "Type": "JOB_FINDER_API.Models.CompanyProfile",
+        "Type": "JOB_FINDER_API.Models.Experience",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.EmployerProfileController",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
     "Method": "Delete",
-    "RelativePath": "api/EmployerProfile/{userId}",
+    "RelativePath": "api/Experience/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userId",
+        "Name": "id",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -516,35 +595,55 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
-    "Method": "GetAll",
-    "RelativePath": "api/Experience",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceLevelsController",
+    "Method": "GetExperienceLevels",
+    "RelativePath": "api/ExperienceLevels",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[JOB_FINDER_API.Models.ExperienceLevel, JOB_FINDER_API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
-    "Method": "Create",
-    "RelativePath": "api/Experience",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceLevelsController",
+    "Method": "PostExperienceLevel",
+    "RelativePath": "api/ExperienceLevels",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "model",
-        "Type": "JOB_FINDER_API.Models.Experience",
+        "Name": "experienceLevel",
+        "Type": "JOB_FINDER_API.Models.ExperienceLevel",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "JOB_FINDER_API.Models.ExperienceLevel",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
-    "Method": "Get",
-    "RelativePath": "api/Experience/{id}",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceLevelsController",
+    "Method": "GetExperienceLevel",
+    "RelativePath": "api/ExperienceLevels/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -555,12 +654,22 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "JOB_FINDER_API.Models.ExperienceLevel",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
-    "Method": "Update",
-    "RelativePath": "api/Experience/{id}",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceLevelsController",
+    "Method": "PutExperienceLevel",
+    "RelativePath": "api/ExperienceLevels/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -571,17 +680,17 @@
         "IsRequired": true
       },
       {
-        "Name": "model",
-        "Type": "JOB_FINDER_API.Models.Experience",
+        "Name": "experienceLevel",
+        "Type": "JOB_FINDER_API.Models.ExperienceLevel",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceController",
-    "Method": "Delete",
-    "RelativePath": "api/Experience/{id}",
+    "ContainingType": "JOB_FINDER_API.Controllers.ExperienceLevelsController",
+    "Method": "DeleteExperienceLevel",
+    "RelativePath": "api/ExperienceLevels/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,

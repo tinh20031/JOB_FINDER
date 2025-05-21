@@ -4,28 +4,40 @@
         <name>JOB_FINDER_API</name>
     </assembly>
     <members>
-        <member name="T:JOB_FINDER_API.Migrations.init123">
+        <member name="T:JOB_FINDER_API.Migrations.init222">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.init123.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.init222.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.init123.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.init222.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.init123.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.init222.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:JOB_FINDER_API.Migrations.updateentity2">
+        <member name="T:JOB_FINDER_API.Migrations.update222">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.updateentity2.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.update222.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.updateentity2.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.update222.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.updateentity2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.update222.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:JOB_FINDER_API.Migrations.updatejob">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updatejob.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updatejob.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updatejob.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

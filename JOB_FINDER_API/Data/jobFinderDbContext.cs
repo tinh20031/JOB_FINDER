@@ -12,7 +12,7 @@ namespace JOB_FINDER_API.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<CandidateProfile> CandidateProfiles { get; set; }
-        public DbSet<CompanyProfile> CompanyProfiles { get; set; }
+        public DbSet<CompanyProfile> CompanyProfile { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Industry> Industries { get; set; }
@@ -27,6 +27,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<CV> CVs { get; set; }
         public DbSet<Education> Educations { get; set; }
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -135,6 +136,12 @@ namespace JOB_FINDER_API.Data
                 .HasIndex(j => j.CreatedAt);
             modelBuilder.Entity<Message>()
                 .HasIndex(m => m.SentAt);
+
+            modelBuilder.Entity<Job>()
+       .HasOne(j => j.ExperienceLevel)
+       .WithMany(el => el.Jobs)
+       .HasForeignKey(j => j.ExperienceLevelId)
+       .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

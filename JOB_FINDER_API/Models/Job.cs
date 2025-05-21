@@ -13,7 +13,7 @@ namespace JOB_FINDER_API.Models
         public DateTime ExpiryDate { get; set; }
         public int LevelId { get; set; }
         public int JobTypeId { get; set; }
-        public int ExperienceId { get; set; }
+        public int ExperienceLevelId { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
         public string Status { get; set; } = string.Empty;
@@ -30,7 +30,7 @@ namespace JOB_FINDER_API.Models
         [JsonIgnore]
         public JobType JobType { get; set; } = null!;
         [JsonIgnore]
-        public Experience Experience { get; set; } = null!;
+        public ExperienceLevel ExperienceLevel { get; set; } = null!;
         [JsonIgnore]
         public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>(); // Sửa từ Groot thành JobSkills
         [JsonIgnore]

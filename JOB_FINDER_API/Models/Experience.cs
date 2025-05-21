@@ -11,8 +11,7 @@ namespace JOB_FINDER_API.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User User { get; set; } = null!;
-        [JsonIgnore]
-        public ICollection<Job> Jobs { get; set; } = new List<Job>();
+        public User? User { get; set; }
+        
     }
 }

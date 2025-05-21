@@ -16,17 +16,10 @@ namespace JOB_FINDER_API.Models
 
         [JsonIgnore]
         public Role Role { get; set; } = null!;
-
-        // Navigation properties
         [JsonIgnore]
         public CandidateProfile? CandidateProfile { get; set; }
         [JsonIgnore]
-        public EmployerProfile? EmployerProfile { get; set; }
-        [JsonIgnore]
-        public HRProfile? HRProfile { get; set; }
-        [JsonIgnore]
-        public ICollection<HRProfile> HRs { get; set; } = new List<HRProfile>(); // Thêm để biểu diễn 1-N với HR
-
+        public CompanyProfile? CompanyProfile { get; set; }
         [JsonIgnore]
         public ICollection<Job> PostedJobs { get; set; } = new List<Job>();
         [JsonIgnore]

@@ -39,4 +39,3 @@ namespace JOB_FINDER_API.Models
         public ICollection<UserFavoriteJob> FavoritedByUsers { get; set; } = new List<UserFavoriteJob>();
     }
 }
->>>>>>> 6ad28f2efa29a5890e3b04abf9707bcf7b91cfca

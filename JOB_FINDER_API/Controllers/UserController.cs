@@ -36,6 +36,7 @@ namespace JOB_FINDER_API.Controllers
                 user.Email,
                 user.Phone,
                 Role = user.Role.RoleName,
+                user.IsActive,
                 user.CreatedAt,
                 user.UpdatedAt
             });
@@ -53,6 +54,7 @@ namespace JOB_FINDER_API.Controllers
                     u.Email,
                     u.Phone,
                     Role = u.Role.RoleName,
+                    u.IsActive,
                     u.CreatedAt,
                     u.UpdatedAt
                 })
@@ -100,7 +102,21 @@ namespace JOB_FINDER_API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok("User deleted successfully.");
+
         }
+
+        [HttpPut("{id}/lock")]
+        public async Task<IActionResult> LockUser(int id)
+        {
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null) return NotFound();
+            user.IsActive = false;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
+        }
+
+
         [HttpPut("full/{id}")]
         public async Task<IActionResult> PutUserFull(int id, [FromBody] UpdateUserFullRequest request)
         {
@@ -158,5 +174,11 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
+
     }
+
+
+
+
+
 }

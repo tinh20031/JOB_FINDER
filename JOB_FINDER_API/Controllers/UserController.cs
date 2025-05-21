@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.Requests;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -100,5 +101,62 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("User deleted successfully.");
         }
+        [HttpPut("full/{id}")]
+        public async Task<IActionResult> PutUserFull(int id, [FromBody] UpdateUserFullRequest request)
+        {
+            if (id <= 0)
+                return BadRequest("Invalid user ID.");
+
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return NotFound("User not found.");
+
+            // Kiểm tra và cập nhật RoleId nếu hợp lệ
+            if (request.RoleId.HasValue)
+            {
+                var roleExists = await _dbContext.Roles.AnyAsync(r => r.RoleId == request.RoleId.Value);
+                if (!roleExists)
+                    return BadRequest("Invalid RoleId.");
+                user.RoleId = request.RoleId.Value;
+            }
+
+            // Cập nhật các trường nếu có giá trị khác rỗng và không trùng
+            if (!string.IsNullOrWhiteSpace(request.FullName) && request.FullName != "string")
+                user.FullName = request.FullName;
+
+            if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != "string")
+            {
+                // Kiểm tra trùng email với user khác
+                var emailInUse = await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
+                if (emailInUse)
+                    return BadRequest("Email is already in use by another user.");
+                user.Email = request.Email;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone != "string")
+                user.Phone = request.Phone;
+
+            if (!string.IsNullOrWhiteSpace(request.Password) && request.Password != "string")
+                user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("User fully updated successfully.");
+        }
+
+
+
+        private string? GetUpdatedValue(string? current, string? input)
+        {
+            if (!string.IsNullOrWhiteSpace(input) && input != "string")
+                return input;
+
+            return current;
+        }
+
+
     }
 }

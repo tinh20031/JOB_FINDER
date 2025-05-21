@@ -42,6 +42,79 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateProfileController",
+    "Method": "GetAllCandidateProfile",
+    "RelativePath": "api/CandidateProfile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateProfileController",
+    "Method": "GetCandidateProfile",
+    "RelativePath": "api/CandidateProfile/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateProfileController",
+    "Method": "UpdateCandidateProfile",
+    "RelativePath": "api/CandidateProfile/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "request",
+        "Type": "JOB_FINDER_API.Models.UpdateCandidateProfileRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "id",
+        "Type": "",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateProfileController",
+    "Method": "DeleteCandidateProfile",
+    "RelativePath": "api/CandidateProfile/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "id",
+        "Type": "",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "JOB_FINDER_API.Controllers.IndustryController",
     "Method": "GetIndustries",
     "RelativePath": "api/Industry",

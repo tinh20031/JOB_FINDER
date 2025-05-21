@@ -67,6 +67,11 @@ namespace JOB_FINDER_API.Controllers
                 return Unauthorized("Invalid credentials.");
             }
 
+            if (!user.IsActive)
+            {
+                return Forbid("Your account is locked. Please contact support.");
+            }
+
             if (user.Role == null)
             {
                 return StatusCode(500, "User role not found.");

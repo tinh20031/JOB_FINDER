@@ -100,5 +100,43 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("User deleted successfully.");
         }
+
+        [HttpPut("{id}/lock")]
+        public async Task<IActionResult> LockUser(int id)
+        {
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null) return NotFound();
+            user.IsActive = false;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPut("{id}/unlock")]
+        public async Task<IActionResult> UnlockUser(int id)
+        {
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null) return NotFound();
+            user.IsActive = true;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
+        }
+
+       /* [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == request.Password);
+
+            if (user == null)
+                return Unauthorized("Invalid email or password.");
+
+            if (!user.IsActive)
+                return Forbid("Your account is locked. Please contact support.");
+
+            // ... (generate JWT or session, return user info, etc.)
+            return Ok(new { message = "Login successful", userId = user.Id });
+        }*/
     }
 }

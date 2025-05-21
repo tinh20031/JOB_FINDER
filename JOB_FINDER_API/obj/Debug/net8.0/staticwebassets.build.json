@@ -1,1 +1,11 @@
-{"Version":1,"Hash":"AgE0Cb/oRM+t0FMRkg87Dvw8W2ZfjFMtpdFkJ518TYA=","Source":"JOB_FINDER_API","BasePath":"_content/JOB_FINDER_API","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}
+{
+  "Version": 1,
+  "Hash": "KpUzH2uGMQEdWPea14P1i6gdDol/3o64F4xq/Unc3xI=",
+  "Source": "JOB_FINDER_API",
+  "BasePath": "_content/JOB_FINDER_API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

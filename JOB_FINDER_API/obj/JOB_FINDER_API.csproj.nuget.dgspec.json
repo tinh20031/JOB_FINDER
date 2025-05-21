@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
+    "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
   },
   "projects": {
-    "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
+    "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "projectUniqueName": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
         "projectName": "JOB_FINDER_API",
-        "projectPath": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
-        "packagesPath": "C:\\Users\\thanh\\.nuget\\packages\\",
-        "outputPath": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
+        "projectPath": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "packagesPath": "C:\\Users\\quocd\\.nuget\\packages\\",
+        "outputPath": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\thanh\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\quocd\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,8 +22,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
-          "F:\\SPRING2025\\PRN231_PE_Testing_SP25_123456\\PaperNo_1\\All": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -40,13 +34,7 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -98,7 +86,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

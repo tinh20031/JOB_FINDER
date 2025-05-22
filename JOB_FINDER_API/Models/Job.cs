@@ -4,6 +4,14 @@ namespace JOB_FINDER_API.Models
 {
     public class Job
     {
+        public enum JobStatus
+        {
+            Submitted, // Đã gửi
+            Posted,    // Đã đăng
+            Rejected,  // Từ chối
+            Closed     // Đã đóng
+        }
+
         public int JobId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
@@ -16,7 +24,7 @@ namespace JOB_FINDER_API.Models
         public int ExperienceLevelId { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
-        public string Status { get; set; } = string.Empty;
+        public JobStatus Status { get; set; } = JobStatus.Submitted;
         public string? ImageJob { get; set; }
         public string ProvinceName { get; set; } = string.Empty; 
         public string AddressDetail { get; set; } = string.Empty; 
@@ -35,7 +43,7 @@ namespace JOB_FINDER_API.Models
         [JsonIgnore]
         public ExperienceLevel? ExperienceLevel { get; set; }
         [JsonIgnore]
-        public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>(); // Sửa từ Groot thành JobSkills
+        public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
         [JsonIgnore]
         public ICollection<Application> Applications { get; set; } = new List<Application>();
         [JsonIgnore]

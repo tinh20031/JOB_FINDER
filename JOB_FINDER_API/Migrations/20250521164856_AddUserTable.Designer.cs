@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JOB_FINDER_API.Migrations
 {
     [DbContext(typeof(JobFinderDbContext))]
-    [Migration("20250521041205_init222")]
-    partial class init222
+    [Migration("20250521164856_AddUserTable")]
+    partial class AddUserTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,7 +168,7 @@ namespace JOB_FINDER_API.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("CompanyProfiles");
+                    b.ToTable("CompanyProfile");
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.Contact", b =>
@@ -284,6 +284,23 @@ namespace JOB_FINDER_API.Migrations
                     b.ToTable("Experiences");
                 });
 
+            modelBuilder.Entity("JOB_FINDER_API.Models.ExperienceLevel", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("id");
+
+                    b.ToTable("ExperienceLevel");
+                });
+
             modelBuilder.Entity("JOB_FINDER_API.Models.Industry", b =>
                 {
                     b.Property<int>("IndustryId")
@@ -325,7 +342,7 @@ namespace JOB_FINDER_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ExperienceId")
+                    b.Property<int>("ExperienceLevelId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ExpiryDate")
@@ -369,7 +386,7 @@ namespace JOB_FINDER_API.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("ExperienceId");
+                    b.HasIndex("ExperienceLevelId");
 
                     b.HasIndex("IndustryId");
 
@@ -510,23 +527,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9760),
+                            CreatedAt = new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3912),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9762)
+                            UpdatedAt = new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3915)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9766),
+                            CreatedAt = new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3919),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9766)
+                            UpdatedAt = new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3920)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9767),
+                            CreatedAt = new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3921),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9767)
+                            UpdatedAt = new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3921)
                         });
                 });
 
@@ -722,10 +739,10 @@ namespace JOB_FINDER_API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("JOB_FINDER_API.Models.Experience", "Experience")
+                    b.HasOne("JOB_FINDER_API.Models.ExperienceLevel", "ExperienceLevel")
                         .WithMany("Jobs")
-                        .HasForeignKey("ExperienceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ExperienceLevelId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JOB_FINDER_API.Models.Industry", "Industry")
@@ -748,7 +765,7 @@ namespace JOB_FINDER_API.Migrations
 
                     b.Navigation("Company");
 
-                    b.Navigation("Experience");
+                    b.Navigation("ExperienceLevel");
 
                     b.Navigation("Industry");
 
@@ -837,7 +854,7 @@ namespace JOB_FINDER_API.Migrations
                     b.Navigation("Applications");
                 });
 
-            modelBuilder.Entity("JOB_FINDER_API.Models.Experience", b =>
+            modelBuilder.Entity("JOB_FINDER_API.Models.ExperienceLevel", b =>
                 {
                     b.Navigation("Jobs");
                 });

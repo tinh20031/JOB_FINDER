@@ -8,11 +8,24 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JOB_FINDER_API.Migrations
 {
     /// <inheritdoc />
-    public partial class init222 : Migration
+    public partial class AddUserTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ExperienceLevel",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExperienceLevel", x => x.id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Industries",
                 columns: table => new
@@ -136,7 +149,7 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CompanyProfiles",
+                name: "CompanyProfile",
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
@@ -152,9 +165,9 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CompanyProfiles", x => x.UserId);
+                    table.PrimaryKey("PK_CompanyProfile", x => x.UserId);
                     table.ForeignKey(
-                        name: "FK_CompanyProfiles_Users_UserId",
+                        name: "FK_CompanyProfile_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id");
@@ -271,7 +284,7 @@ namespace JOB_FINDER_API.Migrations
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LevelId = table.Column<int>(type: "int", nullable: false),
                     JobTypeId = table.Column<int>(type: "int", nullable: false),
-                    ExperienceId = table.Column<int>(type: "int", nullable: false),
+                    ExperienceLevelId = table.Column<int>(type: "int", nullable: false),
                     TimeStart = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TimeEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -283,11 +296,10 @@ namespace JOB_FINDER_API.Migrations
                 {
                     table.PrimaryKey("PK_Jobs", x => x.JobId);
                     table.ForeignKey(
-                        name: "FK_Jobs_Experiences_ExperienceId",
-                        column: x => x.ExperienceId,
-                        principalTable: "Experiences",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Jobs_ExperienceLevel_ExperienceLevelId",
+                        column: x => x.ExperienceLevelId,
+                        principalTable: "ExperienceLevel",
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_Jobs_Industries_IndustryId",
                         column: x => x.IndustryId,
@@ -436,9 +448,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "RoleId", "CreatedAt", "RoleName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9760), "Candidate", new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9762) },
-                    { 2, new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9766), "Company", new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9766) },
-                    { 3, new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9767), "Admin", new DateTime(2025, 5, 21, 4, 12, 5, 567, DateTimeKind.Utc).AddTicks(9767) }
+                    { 1, new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3912), "Candidate", new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3915) },
+                    { 2, new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3919), "Company", new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3920) },
+                    { 3, new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3921), "Admin", new DateTime(2025, 5, 21, 16, 48, 54, 744, DateTimeKind.Utc).AddTicks(3921) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -487,9 +499,9 @@ namespace JOB_FINDER_API.Migrations
                 column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Jobs_ExperienceId",
+                name: "IX_Jobs_ExperienceLevelId",
                 table: "Jobs",
-                column: "ExperienceId");
+                column: "ExperienceLevelId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Jobs_IndustryId",
@@ -558,13 +570,16 @@ namespace JOB_FINDER_API.Migrations
                 name: "CandidateProfiles");
 
             migrationBuilder.DropTable(
-                name: "CompanyProfiles");
+                name: "CompanyProfile");
 
             migrationBuilder.DropTable(
                 name: "Contacts");
 
             migrationBuilder.DropTable(
                 name: "Educations");
+
+            migrationBuilder.DropTable(
+                name: "Experiences");
 
             migrationBuilder.DropTable(
                 name: "JobSkills");
@@ -585,7 +600,7 @@ namespace JOB_FINDER_API.Migrations
                 name: "Jobs");
 
             migrationBuilder.DropTable(
-                name: "Experiences");
+                name: "ExperienceLevel");
 
             migrationBuilder.DropTable(
                 name: "Industries");

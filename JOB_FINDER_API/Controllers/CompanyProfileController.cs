@@ -7,25 +7,25 @@ namespace JOB_FINDER_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EmployerProfileController : ControllerBase
+    public class CompanyProfileController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public EmployerProfileController(JobFinderDbContext context) => _context = context;
+        public CompanyProfileController(JobFinderDbContext context) => _context = context;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _context.CompanyProfiles.ToListAsync());
+        public async Task<IActionResult> GetAll() => Ok(await _context.CompanyProfile.ToListAsync());
 
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get(int userId)
         {
-            var item = await _context.CompanyProfiles.FindAsync(userId);
+            var item = await _context.CompanyProfile.FindAsync(userId);
             return item == null ? NotFound() : Ok(item);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CompanyProfile model)
         {
-            _context.CompanyProfiles.Add(model);
+            _context.CompanyProfile.Add(model);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(Get), new { userId = model.UserId }, model);
         }
@@ -42,9 +42,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete(int userId)
         {
-            var item = await _context.CompanyProfiles.FindAsync(userId);
+            var item = await _context.CompanyProfile.FindAsync(userId);
             if (item == null) return NotFound();
-            _context.CompanyProfiles.Remove(item);
+            _context.CompanyProfile.Remove(item);
             await _context.SaveChangesAsync();
             return NoContent();
         }

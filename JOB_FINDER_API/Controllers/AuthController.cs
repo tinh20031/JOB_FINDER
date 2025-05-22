@@ -78,7 +78,21 @@ namespace JOB_FINDER_API.Controllers
             }
 
             var token = GenerateJwtToken(user);
-            return Ok(new { Token = token, Role = user.Role.RoleName });
+            return Ok(new
+            {
+                Token = token,
+                Role = user.Role.RoleName, 
+                User = new
+                {
+                    user.Id,
+                    user.FullName,
+                    user.Email,
+                    user.Phone,
+                    user.RoleId,
+                    RoleName = user.Role.RoleName
+                }
+            });
+
         }
 
         [HttpPost("logout")]

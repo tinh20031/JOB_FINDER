@@ -12,7 +12,7 @@ namespace JOB_FINDER_API.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
         [JsonIgnore]
         public ICollection<Application> Applications { get; set; } = new List<Application>();
     }

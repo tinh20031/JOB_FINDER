@@ -18,19 +18,22 @@ namespace JOB_FINDER_API.Models
         public DateTime TimeEnd { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? ImageJob { get; set; }
+        public string ProvinceName { get; set; } = string.Empty; 
+        public string AddressDetail { get; set; } = string.Empty; 
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User Company { get; set; } = null!;
+        public User? Company { get; set; }
         [JsonIgnore]
-        public Industry Industry { get; set; } = null!;
+        public Industry? Industry { get; set; }
         [JsonIgnore]
-        public Level Level { get; set; } = null!;
+        public Level? Level { get; set; }
         [JsonIgnore]
-        public JobType JobType { get; set; } = null!;
+        public JobType? JobType { get; set; }
         [JsonIgnore]
-        public ExperienceLevel ExperienceLevel { get; set; } = null!;
+        public ExperienceLevel? ExperienceLevel { get; set; }
         [JsonIgnore]
         public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>(); // Sửa từ Groot thành JobSkills
         [JsonIgnore]

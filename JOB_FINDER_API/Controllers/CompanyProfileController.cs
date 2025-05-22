@@ -84,5 +84,29 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("{userId}/lock")]
+        public async Task<IActionResult> LockCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
+
+            company.IsActive = false;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been locked.");
+        }
+
+        [HttpPut("{userId}/unlock")]
+        public async Task<IActionResult> UnlockCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
+
+            company.IsActive = true;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been unlocked.");
+        }
     }
 }

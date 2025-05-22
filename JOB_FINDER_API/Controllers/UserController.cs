@@ -147,7 +147,6 @@ namespace JOB_FINDER_API.Controllers
             return Ok("User has been unlocked.");
         }
 
-
         [HttpPut("full/{id}")]
         public async Task<IActionResult> PutUserFull(int id, [FromBody] UpdateUserFullRequest request)
         {
@@ -189,6 +188,43 @@ namespace JOB_FINDER_API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok("User fully updated successfully.");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddUser([FromBody] CreateUserRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Email and Password are required.");
+
+            var emailExists = await _dbContext.Users.AnyAsync(u => u.Email == request.Email);
+            if (emailExists)
+                return BadRequest("Email is already in use.");
+
+            var user = new User
+            {
+                FullName = request.FullName,
+                Email = request.Email,
+                Phone = request.Phone,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                RoleId = request.RoleId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Phone,
+                user.IsActive,
+                user.CreatedAt,
+                user.UpdatedAt
+            });
         }
     }
 }

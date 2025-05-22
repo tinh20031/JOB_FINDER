@@ -31,7 +31,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                id = user.Id,
+                Id = user.Id,
                 user.FullName,
                 user.Email,
                 user.Phone,
@@ -50,7 +50,8 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .Select(u => new
                 {
-                    id = u.Id,
+                    Id = u.Id,
+
                     u.FullName,
                     u.Email,
                     u.Phone,

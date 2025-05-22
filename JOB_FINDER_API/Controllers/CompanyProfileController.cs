@@ -1,5 +1,6 @@
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.filter;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,5 +49,31 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+
+
+        
+[HttpGet("filter")]
+        public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
+        {
+            var query = _context.CompanyProfile.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filter.CompanyName))
+                query = query.Where(c => c.CompanyName.Contains(filter.CompanyName));
+            if (!string.IsNullOrEmpty(filter.Location))
+                query = query.Where(c => c.Location.Contains(filter.Location));
+ 
+            if (!string.IsNullOrEmpty(filter.TeamSize))
+                query = query.Where(c => c.TeamSize == filter.TeamSize);
+
+            var result = await query.ToListAsync();
+            return Ok(result);
+        }
+
+
+
+
+
+
     }
 }

@@ -48,5 +48,15 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+
+        //filter job 
+
+
+
+
+
+
+
     }
 }

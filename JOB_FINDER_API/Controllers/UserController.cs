@@ -31,10 +31,11 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                Id = user.Id,
+                id = user.Id,
                 user.FullName,
                 user.Email,
                 user.Phone,
+                user.Image,
                 Role = user.Role.RoleName,
                 user.IsActive,
                 user.CreatedAt,
@@ -49,10 +50,11 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .Select(u => new
                 {
-                    Id = u.Id,
+                    id = u.Id,
                     u.FullName,
                     u.Email,
                     u.Phone,
+                    u.Image,
                     Role = u.Role.RoleName,
                     u.IsActive,
                     u.CreatedAt,

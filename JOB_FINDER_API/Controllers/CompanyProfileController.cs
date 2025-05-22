@@ -1,5 +1,6 @@
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -50,30 +51,38 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-
-
-        
-[HttpGet("filter")]
+        [HttpGet("filter")]
         public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
         {
-            var query = _context.CompanyProfile.AsQueryable();
+            var query = _context.CompanyProfile.Include(c => c.Industry).AsQueryable();
 
             if (!string.IsNullOrEmpty(filter.CompanyName))
                 query = query.Where(c => c.CompanyName.Contains(filter.CompanyName));
             if (!string.IsNullOrEmpty(filter.Location))
                 query = query.Where(c => c.Location.Contains(filter.Location));
- 
             if (!string.IsNullOrEmpty(filter.TeamSize))
                 query = query.Where(c => c.TeamSize == filter.TeamSize);
+            if (filter.IndustryId.HasValue)
+                query = query.Where(c => c.IndustryId == filter.IndustryId);
 
-            var result = await query.ToListAsync();
+            var result = await query
+                .Select(c => new CompanyProfileDto
+                {
+                    UserId = c.UserId,
+                    CompanyName = c.CompanyName,
+                    CompanyProfileDescription = c.CompanyProfileDescription,
+                    Location = c.Location,
+                    UrlCompanyLogo = c.UrlCompanyLogo,
+                    ImageLogoLgr = c.ImageLogoLgr,
+                    TeamSize = c.TeamSize,
+                    Website = c.Website,
+                    Contact = c.Contact,
+                    IndustryId = c.IndustryId,
+                    IndustryName = c.Industry.IndustryName
+                })
+                .ToListAsync();
+
             return Ok(result);
         }
-
-
-
-
-
-
     }
 }

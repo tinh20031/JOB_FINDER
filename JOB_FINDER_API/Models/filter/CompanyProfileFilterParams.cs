@@ -4,7 +4,7 @@
     {
         public string? CompanyName { get; set; }
         public string? Location { get; set; }
-    
         public string? TeamSize { get; set; }
+        public int? IndustryId { get; set; }
     }
 }

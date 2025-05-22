@@ -32,7 +32,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Email is already in use.");
             }
 
-            var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate"); 
+            var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
             if (userRole == null)
             {
                 return StatusCode(500, "Default role not found.");
@@ -62,7 +62,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password)) 
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
                 return Unauthorized("Invalid credentials.");
             }
@@ -111,7 +111,7 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Id.ToString()), 
+                    new Claim(ClaimTypes.Name, user.Id.ToString()),
                     new Claim(ClaimTypes.Role, user.Role.RoleName)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),

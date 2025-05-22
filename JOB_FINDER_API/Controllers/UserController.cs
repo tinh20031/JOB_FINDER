@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 891eb13 (update function put user)
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
@@ -26,7 +22,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
+                .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {
@@ -35,7 +31,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                Id = user.Id, // Sửa UserId thành Id
+                Id = user.Id,
                 user.FullName,
                 user.Email,
                 user.Phone,
@@ -53,7 +49,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .Select(u => new
                 {
-                    Id = u.Id, // Sửa UserId thành Id
+                    Id = u.Id,
                     u.FullName,
                     u.Email,
                     u.Phone,
@@ -70,7 +66,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {
@@ -95,7 +91,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {
@@ -106,18 +102,46 @@ namespace JOB_FINDER_API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok("User deleted successfully.");
-
         }
 
         [HttpPut("{id}/lock")]
         public async Task<IActionResult> LockUser(int id)
         {
-            var user = await _dbContext.Users.FindAsync(id);
-            if (user == null) return NotFound();
+            var user = await _dbContext.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+                return NotFound("User not found.");
+
+            if (user.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Cannot lock an admin account.");
+
             user.IsActive = false;
             user.UpdatedAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
-            return NoContent();
+
+            return Ok("User has been locked.");
+        }
+
+        [HttpPut("{id}/unlock")]
+        public async Task<IActionResult> UnlockUser(int id)
+        {
+            var user = await _dbContext.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+                return NotFound("User not found.");
+
+            if (user.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Cannot unlock an admin account.");
+
+            user.IsActive = true;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("User has been unlocked.");
         }
 
 
@@ -131,7 +155,6 @@ namespace JOB_FINDER_API.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            // Kiểm tra và cập nhật RoleId nếu hợp lệ
             if (request.RoleId.HasValue)
             {
                 var roleExists = await _dbContext.Roles.AnyAsync(r => r.RoleId == request.RoleId.Value);
@@ -140,13 +163,11 @@ namespace JOB_FINDER_API.Controllers
                 user.RoleId = request.RoleId.Value;
             }
 
-            // Cập nhật các trường nếu có giá trị khác rỗng và không trùng
             if (!string.IsNullOrWhiteSpace(request.FullName) && request.FullName != "string")
                 user.FullName = request.FullName;
 
             if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != "string")
             {
-                // Kiểm tra trùng email với user khác
                 var emailInUse = await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
                 if (emailInUse)
                     return BadRequest("Email is already in use by another user.");
@@ -166,158 +187,5 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("User fully updated successfully.");
         }
-
-
-
-        private string? GetUpdatedValue(string? current, string? input)
-        {
-            if (!string.IsNullOrWhiteSpace(input) && input != "string")
-                return input;
-
-            return current;
-        }
-
-
-
     }
-
-
-<<<<<<< HEAD
-
-
-
-=======
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using JOB_FINDER_API.Data;
-using JOB_FINDER_API.Models;
-
-namespace JOB_FINDER_API.Controllers
-{
-    [ApiController]
-    [Route("api/[controller]")]
-    public class UserController : ControllerBase
-    {
-        private readonly JobFinderDbContext _dbContext;
-
-        public UserController(JobFinderDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(int id)
-        {
-            var user = await _dbContext.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
-
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            return Ok(new
-            {
-                Id = user.Id, // Sửa UserId thành Id
-                user.FullName,
-                user.Email,
-                user.Phone,
-                Role = user.Role.RoleName,
-                user.IsActive,
-                user.CreatedAt,
-                user.UpdatedAt
-            });
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var users = await _dbContext.Users
-                .Include(u => u.Role)
-                .Select(u => new
-                {
-                    Id = u.Id, // Sửa UserId thành Id
-                    u.FullName,
-                    u.Email,
-                    u.Phone,
-                    Role = u.Role.RoleName,
-                    u.IsActive,
-                    u.CreatedAt,
-                    u.UpdatedAt
-                })
-                .ToListAsync();
-
-            return Ok(users);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
-        {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
-
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            user.FullName = request.FullName ?? user.FullName;
-            user.Email = request.Email ?? user.Email;
-            user.Phone = request.Phone ?? user.Phone;
-            if (request.RoleId.HasValue)
-            {
-                user.RoleId = request.RoleId.Value;
-            }
-            user.UpdatedAt = DateTime.UtcNow;
-
-            _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok("User updated successfully.");
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id); // Sửa UserId thành Id
-
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            _dbContext.Users.Remove(user);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok("User deleted successfully.");
-        }
-
-        [HttpPut("{id}/lock")]
-        public async Task<IActionResult> LockUser(int id)
-        {
-            var user = await _dbContext.Users.FindAsync(id);
-            if (user == null) return NotFound();
-            user.IsActive = false;
-            user.UpdatedAt = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
-            return NoContent();
-        }
-
-        [HttpPut("{id}/unlock")]
-        public async Task<IActionResult> UnlockUser(int id)
-        {
-            var user = await _dbContext.Users.FindAsync(id);
-            if (user == null) return NotFound();
-            user.IsActive = true;
-            user.UpdatedAt = DateTime.UtcNow;
-            await _dbContext.SaveChangesAsync();
-            return NoContent();
-        }
-
-     
-    }
->>>>>>> f2ee5b6 (update new api)
 }
-=======
-}
->>>>>>> 891eb13 (update function put user)

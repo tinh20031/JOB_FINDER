@@ -47,7 +47,8 @@ namespace JOB_FINDER_API.Controllers
                 RoleId = userRole.RoleId,
                 Image = request.Image,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                Image = request.Image
             };
 
             _dbContext.Users.Add(user);

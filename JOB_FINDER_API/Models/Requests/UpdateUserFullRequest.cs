@@ -8,6 +8,7 @@
         public string? Password { get; set; }
         public string Image { get; set; } = string.Empty;
 
+
         public int? RoleId { get; set; } 
     }
 

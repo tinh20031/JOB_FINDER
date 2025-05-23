@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2db4f0c (cache)
 <?xml version="1.0"?>
 <doc>
     <assembly>
@@ -7,6 +10,7 @@
     <members>
     </members>
 </doc>
+<<<<<<< HEAD
 =======
 <?xml version="1.0"?>
 <doc>
@@ -65,3 +69,5 @@
     </members>
 </doc>
 >>>>>>> 838d7cf (update data/code candidate skill)
+=======
+>>>>>>> 2db4f0c (cache)

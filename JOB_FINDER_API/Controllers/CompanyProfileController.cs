@@ -1,11 +1,22 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+using JOB_FINDER_API.Constants;
+>>>>>>> 2db4f0c (cache)
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
+<<<<<<< HEAD
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Constants;
+=======
+using JOB_FINDER_API.Models.Requests;
+using JOB_FINDER_API.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+>>>>>>> 2db4f0c (cache)
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -93,6 +104,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Company has been unlocked.");
         }
 
+<<<<<<< HEAD
 =======
 ﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
@@ -196,12 +208,14 @@ namespace JOB_FINDER_API.Controllers
 
         
 >>>>>>> d1a0253 (update api comnayprofile)
+=======
+>>>>>>> 2db4f0c (cache)
         [HttpPost]
         public async Task<IActionResult> AddCompanyProfile(
-    [FromForm] CompanyProfileRequest request,
-    IFormFile? logoFile,
-    IFormFile? logoLgrFile,
-    [FromServices] CloudinaryService cloudinaryService)
+            [FromForm] CompanyProfileRequest request,
+            IFormFile? logoFile,
+            IFormFile? logoLgrFile,
+            [FromServices] CloudinaryService cloudinaryService)
         {
             if (request.UserId == 0)
                 return BadRequest("UserId is required.");
@@ -217,6 +231,13 @@ namespace JOB_FINDER_API.Controllers
             var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId);
             if (!userExists)
                 return BadRequest("User does not exist.");
+
+            if (!TeamSizeOptions.ValidSizes.Contains(request.TeamSize))
+                return BadRequest("Invalid TeamSize. Allowed values are: " + string.Join(", ", TeamSizeOptions.ValidSizes));
+
+            var industry = await _context.Industries.FindAsync(request.IndustryId);
+            if (industry == null)
+                return BadRequest("Invalid IndustryId.");
 
             string? logoUrl = null;
             string? logoLgrUrl = null;
@@ -245,12 +266,16 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
         }
     }
 }
 =======
             return Ok(companyProfile);
+=======
+            return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
+>>>>>>> 2db4f0c (cache)
         }
 
         [HttpPut("{userId}")]
@@ -283,6 +308,10 @@ namespace JOB_FINDER_API.Controllers
             return Ok(companyProfile);
         }
     }
+<<<<<<< HEAD
 
 }
 >>>>>>> d1a0253 (update api comnayprofile)
+=======
+}
+>>>>>>> 2db4f0c (cache)

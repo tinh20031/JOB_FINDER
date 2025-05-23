@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JOB_FINDER_API.Migrations
 {
     [DbContext(typeof(JobFinderDbContext))]
-    [Migration("20250523061543_update_isactive")]
-    partial class update_isactive
+    [Migration("20250523142700_update")]
+    partial class update
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -357,9 +357,6 @@ namespace JOB_FINDER_API.Migrations
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageJob")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("IndustryId")
                         .HasColumnType("int");
 
@@ -539,23 +536,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 5, 23, 6, 15, 40, 501, DateTimeKind.Utc).AddTicks(2299),
+                            CreatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6939),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 23, 6, 15, 40, 501, DateTimeKind.Utc).AddTicks(2303)
+                            UpdatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6961)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 5, 23, 6, 15, 40, 501, DateTimeKind.Utc).AddTicks(2308),
+                            CreatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6986),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 23, 6, 15, 40, 501, DateTimeKind.Utc).AddTicks(2308)
+                            UpdatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6986)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 5, 23, 6, 15, 40, 501, DateTimeKind.Utc).AddTicks(2309),
+                            CreatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6987),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 23, 6, 15, 40, 501, DateTimeKind.Utc).AddTicks(2310)
+                            UpdatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6988)
                         });
                 });
 

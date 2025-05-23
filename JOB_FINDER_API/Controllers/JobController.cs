@@ -58,7 +58,7 @@ namespace JOB_FINDER_API.Controllers
                 TimeStart = dto.TimeStart,
                 TimeEnd = dto.TimeEnd,
                 Status = dto.Status,
-                ImageJob = dto.ImageJob,
+              
                 ProvinceName = dto.ProvinceName,
                 AddressDetail = dto.AddressDetail,
                 CreatedAt = DateTime.UtcNow,

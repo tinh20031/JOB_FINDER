@@ -25,7 +25,7 @@ namespace JOB_FINDER_API.Models
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
         public JobStatus Status { get; set; } = JobStatus.Submitted;
-        public string? ImageJob { get; set; }
+     
         public string ProvinceName { get; set; } = string.Empty; 
         public string AddressDetail { get; set; } = string.Empty; 
 

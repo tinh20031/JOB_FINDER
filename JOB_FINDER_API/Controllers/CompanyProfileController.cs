@@ -4,6 +4,7 @@ using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using JOB_FINDER_API.Constants;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -23,8 +24,6 @@ namespace JOB_FINDER_API.Controllers
             var item = await _context.CompanyProfile.FindAsync(userId);
             return item == null ? NotFound() : Ok(item);
         }
-
-
 
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete(int userId)
@@ -46,7 +45,7 @@ namespace JOB_FINDER_API.Controllers
             if (!string.IsNullOrEmpty(filter.Location))
                 query = query.Where(c => c.Location.Contains(filter.Location));
             if (!string.IsNullOrEmpty(filter.TeamSize))
-                query = query.Where(c => c.TeamSize == filter.TeamSize);
+                query = query.Where(c => c.TeamSize.Trim().ToLower() == filter.TeamSize.Trim().ToLower());
             if (filter.IndustryId.HasValue)
                 query = query.Where(c => c.IndustryId == filter.IndustryId);
 
@@ -63,8 +62,6 @@ namespace JOB_FINDER_API.Controllers
                     Website = c.Website,
                     Contact = c.Contact,
                     IndustryId = c.IndustryId,
-                    
-                 
                 })
                 .ToListAsync();
 
@@ -95,14 +92,15 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Company has been unlocked.");
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CompanyProfileCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-         
+            if (!TeamSizeOptions.ValidSizes.Contains(dto.TeamSize))
+                return BadRequest("Invalid TeamSize. Allowed values are: " + string.Join(", ", TeamSizeOptions.ValidSizes));
+
             var industry = await _context.Industries.FindAsync(dto.IndustryId);
             if (industry == null)
                 return BadRequest("Invalid IndustryId.");
@@ -128,6 +126,5 @@ namespace JOB_FINDER_API.Controllers
 
             return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
         }
-
     }
 }

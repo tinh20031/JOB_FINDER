@@ -148,6 +148,9 @@ namespace JOB_FINDER_API.Migrations
                     b.Property<int>("IndustryId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
@@ -533,23 +536,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 5, 22, 17, 22, 44, 89, DateTimeKind.Utc).AddTicks(9523),
+                            CreatedAt = new DateTime(2025, 5, 23, 5, 26, 15, 617, DateTimeKind.Utc).AddTicks(2053),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 22, 17, 22, 44, 89, DateTimeKind.Utc).AddTicks(9527)
+                            UpdatedAt = new DateTime(2025, 5, 23, 5, 26, 15, 617, DateTimeKind.Utc).AddTicks(2056)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 5, 22, 17, 22, 44, 89, DateTimeKind.Utc).AddTicks(9531),
+                            CreatedAt = new DateTime(2025, 5, 23, 5, 26, 15, 617, DateTimeKind.Utc).AddTicks(2059),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 22, 17, 22, 44, 89, DateTimeKind.Utc).AddTicks(9531)
+                            UpdatedAt = new DateTime(2025, 5, 23, 5, 26, 15, 617, DateTimeKind.Utc).AddTicks(2059)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 5, 22, 17, 22, 44, 89, DateTimeKind.Utc).AddTicks(9532),
+                            CreatedAt = new DateTime(2025, 5, 23, 5, 26, 15, 617, DateTimeKind.Utc).AddTicks(2060),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 22, 17, 22, 44, 89, DateTimeKind.Utc).AddTicks(9532)
+                            UpdatedAt = new DateTime(2025, 5, 23, 5, 26, 15, 617, DateTimeKind.Utc).AddTicks(2060)
                         });
                 });
 

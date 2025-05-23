@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
@@ -31,7 +32,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                id = user.Id,
+                Id = user.Id,
                 user.FullName,
                 user.Email,
                 user.Phone,
@@ -50,7 +51,8 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .Select(u => new
                 {
-                    id = u.Id,
+                    Id = u.Id,
+
                     u.FullName,
                     u.Email,
                     u.Phone,
@@ -78,6 +80,7 @@ namespace JOB_FINDER_API.Controllers
             user.FullName = request.FullName ?? user.FullName;
             user.Email = request.Email ?? user.Email;
             user.Phone = request.Phone ?? user.Phone;
+            user.Image = request.Image ?? user.Image;
             if (request.RoleId.HasValue)
             {
                 user.RoleId = request.RoleId.Value;
@@ -146,7 +149,6 @@ namespace JOB_FINDER_API.Controllers
             return Ok("User has been unlocked.");
         }
 
-
         [HttpPut("full/{id}")]
         public async Task<IActionResult> PutUserFull(int id, [FromBody] UpdateUserFullRequest request)
         {
@@ -179,6 +181,9 @@ namespace JOB_FINDER_API.Controllers
             if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone != "string")
                 user.Phone = request.Phone;
 
+            if (!string.IsNullOrWhiteSpace(request.Image) && request.Image != "string")
+                user.Image = request.Image;
+
             if (!string.IsNullOrWhiteSpace(request.Password) && request.Password != "string")
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
@@ -189,6 +194,44 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("User fully updated successfully.");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddUser([FromBody] CreateUserRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Email and Password are required.");
+
+            var emailExists = await _dbContext.Users.AnyAsync(u => u.Email == request.Email);
+            if (emailExists)
+                return BadRequest("Email is already in use.");
+
+            var user = new User
+            {
+                FullName = request.FullName,
+                Email = request.Email,
+                Phone = request.Phone,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Image = request.Image,
+                RoleId = request.RoleId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Image,
+                user.Phone,
+                user.IsActive,
+                user.CreatedAt,
+                user.UpdatedAt
+            });
+        }
     }
 }
-

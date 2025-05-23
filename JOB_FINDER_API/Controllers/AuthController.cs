@@ -45,6 +45,7 @@ namespace JOB_FINDER_API.Controllers
                 Phone = request.Phone,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 RoleId = userRole.RoleId,
+                Image = request.Image,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -89,7 +90,8 @@ namespace JOB_FINDER_API.Controllers
                     user.Email,
                     user.Phone,
                     user.RoleId,
-                    RoleName = user.Role.RoleName
+                    RoleName = user.Role.RoleName,
+                    user.Image
                 }
             });
 

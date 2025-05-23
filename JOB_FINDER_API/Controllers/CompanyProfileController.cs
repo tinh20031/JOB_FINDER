@@ -52,38 +52,30 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        [HttpGet("filter")]
-        public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
+        
+
+        [HttpPut("{userId}/lock")]
+        public async Task<IActionResult> LockCompany(int userId)
         {
-            var query = _context.CompanyProfile.Include(c => c.Industry).AsQueryable();
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
 
-            if (!string.IsNullOrEmpty(filter.CompanyName))
-                query = query.Where(c => c.CompanyName.Contains(filter.CompanyName));
-            if (!string.IsNullOrEmpty(filter.Location))
-                query = query.Where(c => c.Location.Contains(filter.Location));
-            if (!string.IsNullOrEmpty(filter.TeamSize))
-                query = query.Where(c => c.TeamSize == filter.TeamSize);
-            if (filter.IndustryId.HasValue)
-                query = query.Where(c => c.IndustryId == filter.IndustryId);
+            company.IsActive = false;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been locked.");
+        }
 
-            var result = await query
-                .Select(c => new CompanyProfileDto
-                {
-                    UserId = c.UserId,
-                    CompanyName = c.CompanyName,
-                    CompanyProfileDescription = c.CompanyProfileDescription,
-                    Location = c.Location,
-                    UrlCompanyLogo = c.UrlCompanyLogo,
-                    ImageLogoLgr = c.ImageLogoLgr,
-                    TeamSize = c.TeamSize,
-                    Website = c.Website,
-                    Contact = c.Contact,
-                    IndustryId = c.IndustryId,
-                    IndustryName = c.Industry.IndustryName
-                })
-                .ToListAsync();
+        [HttpPut("{userId}/unlock")]
+        public async Task<IActionResult> UnlockCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
 
-            return Ok(result);
+            company.IsActive = true;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been unlocked.");
         }
     }
 }

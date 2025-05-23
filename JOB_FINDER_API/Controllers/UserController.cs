@@ -1,9 +1,10 @@
 
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
+using JOB_FINDER_API.Services;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -32,7 +33,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                id = user.Id,
+                Id = user.Id,
                 user.FullName,
                 user.Email,
                 user.Phone,
@@ -51,7 +52,8 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .Select(u => new
                 {
-                    id = u.Id,
+                    Id = u.Id,
+
                     u.FullName,
                     u.Email,
                     u.Phone,
@@ -147,17 +149,15 @@ namespace JOB_FINDER_API.Controllers
             return Ok("User has been unlocked.");
         }
 
-
+       
         [HttpPut("full/{id}")]
-        public async Task<IActionResult> PutUserFull(int id, [FromBody] UpdateUserFullRequest request)
+        public async Task<IActionResult> PutUserFull(int id, [FromForm] UpdateUserFullRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {
-            if (id <= 0)
-                return BadRequest("Invalid user ID.");
-
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
                 return NotFound("User not found.");
 
+            // Xử lý roleId
             if (request.RoleId.HasValue)
             {
                 var roleExists = await _dbContext.Roles.AnyAsync(r => r.RoleId == request.RoleId.Value);
@@ -183,6 +183,12 @@ namespace JOB_FINDER_API.Controllers
             if (!string.IsNullOrWhiteSpace(request.Password) && request.Password != "string")
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
+            if (imageFile != null)
+            {
+                var imageUrl = await cloudinaryService.UploadImageAsync(imageFile);
+                user.Image = imageUrl;
+            }
+
             user.UpdatedAt = DateTime.UtcNow;
 
             _dbContext.Users.Update(user);
@@ -190,6 +196,51 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("User fully updated successfully.");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddUser([FromForm] CreateUserRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Email and Password are required.");
+
+            var emailExists = await _dbContext.Users.AnyAsync(u => u.Email == request.Email);
+            if (emailExists)
+                return BadRequest("Email is already in use.");
+
+            string? imageUrl = null;
+            if (imageFile != null)
+            {
+                imageUrl = await cloudinaryService.UploadImageAsync(imageFile);
+            }
+
+            var user = new User
+            {
+                FullName = request.FullName,
+                Email = request.Email,
+                Phone = request.Phone,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                RoleId = request.RoleId,
+                IsActive = true,
+                Image = imageUrl,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Phone,
+                user.Image,
+                user.IsActive,
+                user.CreatedAt,
+                user.UpdatedAt
+            });
+        }
+
     }
 }
-

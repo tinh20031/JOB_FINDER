@@ -16,8 +16,11 @@ namespace JOB_FINDER_API.Models
         public string? Website { get; set; }
         public string? Contact { get; set; }
         public int IndustryId { get; set; }
+
         [JsonIgnore]
         public Industry? Industry { get; set; }
+
+        public bool IsActive { get; set; } = true;
 
         [JsonIgnore]
         public User? User { get; set; }

@@ -234,8 +234,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "model",
-        "Type": "JOB_FINDER_API.Models.CompanyProfile",
+        "Name": "dto",
+        "Type": "JOB_FINDER_API.Models.DTO.CompanyProfileCreateDto",
         "IsRequired": true
       }
     ],
@@ -259,8 +259,24 @@
   },
   {
     "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
-    "Method": "Update",
+    "Method": "Delete",
     "RelativePath": "api/CompanyProfile/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
+    "Method": "LockCompany",
+    "RelativePath": "api/CompanyProfile/{userId}/lock",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -269,20 +285,15 @@
         "Name": "userId",
         "Type": "System.Int32",
         "IsRequired": true
-      },
-      {
-        "Name": "model",
-        "Type": "JOB_FINDER_API.Models.CompanyProfile",
-        "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
-    "Method": "Delete",
-    "RelativePath": "api/CompanyProfile/{userId}",
-    "HttpMethod": "DELETE",
+    "Method": "UnlockCompany",
+    "RelativePath": "api/CompanyProfile/{userId}/unlock",
+    "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -1729,6 +1740,47 @@
   },
   {
     "ContainingType": "JOB_FINDER_API.Controllers.UserController",
+    "Method": "AddUser",
+    "RelativePath": "api/User",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "FullName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Email",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Phone",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Password",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "RoleId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "imageFile",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.UserController",
     "Method": "GetUser",
     "RelativePath": "api/User/{id}",
     "HttpMethod": "GET",
@@ -1826,9 +1878,39 @@
         "IsRequired": true
       },
       {
-        "Name": "request",
-        "Type": "JOB_FINDER_API.Models.Requests.UpdateUserFullRequest",
-        "IsRequired": true
+        "Name": "FullName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Email",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Phone",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Password",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "RoleId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "imageFile",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

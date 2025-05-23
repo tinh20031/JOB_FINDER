@@ -295,3 +295,4 @@ F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\osx-x64\n
 F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm64\native\Magick.Native-Q8-arm64.dll
 F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x64\native\Magick.Native-Q8-x64.dll
 F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x86\native\Magick.Native-Q8-x86.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\CloudinaryDotNet.dll

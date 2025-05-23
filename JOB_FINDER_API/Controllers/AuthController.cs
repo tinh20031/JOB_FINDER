@@ -46,7 +46,8 @@ namespace JOB_FINDER_API.Controllers
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 RoleId = userRole.RoleId,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                Image = request.Image
             };
 
             _dbContext.Users.Add(user);

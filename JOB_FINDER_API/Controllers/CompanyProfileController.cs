@@ -24,22 +24,7 @@ namespace JOB_FINDER_API.Controllers
             return item == null ? NotFound() : Ok(item);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(CompanyProfile model)
-        {
-            _context.CompanyProfile.Add(model);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { userId = model.UserId }, model);
-        }
 
-        [HttpPut("{userId}")]
-        public async Task<IActionResult> Update(int userId, CompanyProfile model)
-        {
-            if (userId != model.UserId) return BadRequest();
-            _context.Entry(model).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
 
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete(int userId)
@@ -78,11 +63,71 @@ namespace JOB_FINDER_API.Controllers
                     Website = c.Website,
                     Contact = c.Contact,
                     IndustryId = c.IndustryId,
-                    IndustryName = c.Industry.IndustryName
+                    
+                 
                 })
                 .ToListAsync();
 
             return Ok(result);
         }
+
+        [HttpPut("{userId}/lock")]
+        public async Task<IActionResult> LockCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
+
+            company.IsActive = false;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been locked.");
+        }
+
+        [HttpPut("{userId}/unlock")]
+        public async Task<IActionResult> UnlockCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
+
+            company.IsActive = true;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been unlocked.");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CompanyProfileCreateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+         
+            var industry = await _context.Industries.FindAsync(dto.IndustryId);
+            if (industry == null)
+                return BadRequest("Invalid IndustryId.");
+
+            var companyProfile = new CompanyProfile
+            {
+                UserId = dto.UserId,
+                CompanyName = dto.CompanyName,
+                CompanyProfileDescription = dto.CompanyProfileDescription,
+                Location = dto.Location,
+                UrlCompanyLogo = dto.UrlCompanyLogo,
+                ImageLogoLgr = dto.ImageLogoLgr,
+                TeamSize = dto.TeamSize,
+                IsVerified = dto.IsVerified,
+                Website = dto.Website,
+                Contact = dto.Contact,
+                IndustryId = dto.IndustryId,
+                IsActive = true
+            };
+
+            _context.CompanyProfile.Add(companyProfile);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
+        }
+
     }
 }

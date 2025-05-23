@@ -28,5 +28,29 @@
         <member name="M:JOB_FINDER_API.Migrations.update_isactive.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:JOB_FINDER_API.Migrations.updatecvid">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updatecvid.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updatecvid.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updatecvid.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:JOB_FINDER_API.Migrations.fixcvid">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.fixcvid.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.fixcvid.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.fixcvid.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

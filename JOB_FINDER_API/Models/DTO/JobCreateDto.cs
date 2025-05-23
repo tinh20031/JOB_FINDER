@@ -41,7 +41,11 @@ namespace JOB_FINDER_API.Models.DTO
         [Required]
         public JobStatus Status { get; set; } = JobStatus.pending;
 
+<<<<<<< HEAD
    
+=======
+      
+>>>>>>> df08e47 (cache)
 
         [Required]
         public string ProvinceName { get; set; } = string.Empty;

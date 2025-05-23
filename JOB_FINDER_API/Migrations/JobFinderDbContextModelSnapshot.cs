@@ -476,9 +476,6 @@ namespace JOB_FINDER_API.Migrations
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageJob")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("IndustryId")
                         .HasColumnType("int");
 
@@ -704,23 +701,41 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
+<<<<<<< HEAD
                             CreatedAt = new DateTime(2025, 5, 31, 5, 15, 41, 732, DateTimeKind.Utc).AddTicks(6978),
                             RoleName = "Candidate",
                             UpdatedAt = new DateTime(2025, 5, 31, 5, 15, 41, 732, DateTimeKind.Utc).AddTicks(6981)
+=======
+                            CreatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6939),
+                            RoleName = "Candidate",
+                            UpdatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6961)
+>>>>>>> 323abc6 (cache)
                         },
                         new
                         {
                             RoleId = 2,
+<<<<<<< HEAD
                             CreatedAt = new DateTime(2025, 5, 31, 5, 15, 41, 732, DateTimeKind.Utc).AddTicks(6985),
                             RoleName = "Company",
                             UpdatedAt = new DateTime(2025, 5, 31, 5, 15, 41, 732, DateTimeKind.Utc).AddTicks(6986)
+=======
+                            CreatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6986),
+                            RoleName = "Company",
+                            UpdatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6986)
+>>>>>>> 323abc6 (cache)
                         },
                         new
                         {
                             RoleId = 3,
+<<<<<<< HEAD
                             CreatedAt = new DateTime(2025, 5, 31, 5, 15, 41, 732, DateTimeKind.Utc).AddTicks(6987),
                             RoleName = "Admin",
                             UpdatedAt = new DateTime(2025, 5, 31, 5, 15, 41, 732, DateTimeKind.Utc).AddTicks(6987)
+=======
+                            CreatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6987),
+                            RoleName = "Admin",
+                            UpdatedAt = new DateTime(2025, 5, 23, 14, 26, 59, 687, DateTimeKind.Utc).AddTicks(6988)
+>>>>>>> 323abc6 (cache)
                         });
                 });
 

@@ -58,6 +58,14 @@ namespace JOB_FINDER_API.Controllers
                 TimeStart = dto.TimeStart,
                 TimeEnd = dto.TimeEnd,
                 Status = dto.Status,
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                ImageJob = imageUrl, // Save uploaded image URL
+=======
+              
+>>>>>>> 323abc6 (cache)
+>>>>>>> df08e47 (cache)
                 ProvinceName = dto.ProvinceName,
                 AddressDetail = dto.AddressDetail,
                 CreatedAt = DateTime.UtcNow,

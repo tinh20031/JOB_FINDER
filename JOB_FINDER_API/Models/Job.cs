@@ -24,7 +24,12 @@ namespace JOB_FINDER_API.Models
         public int ExperienceLevelId { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
+<<<<<<< HEAD
         public JobStatus Status { get; set; } = JobStatus.pending;
+=======
+        public JobStatus Status { get; set; } = JobStatus.Submitted;
+     
+>>>>>>> df08e47 (cache)
         public string ProvinceName { get; set; } = string.Empty; 
         public string AddressDetail { get; set; } = string.Empty; 
 

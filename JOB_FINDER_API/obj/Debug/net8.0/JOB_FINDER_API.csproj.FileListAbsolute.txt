@@ -1,0 +1,8 @@
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.AssemblyReference.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.GeneratedMSBuildEditorConfig.editorconfig
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfoInputs.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfo.cs
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.CoreCompileInputs.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cs
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.sourcelink.json

@@ -1,68 +1,22 @@
-﻿//snapshot 1 trang cv
+﻿// JOB_FINDER_API\Models\Services\CVSnapshotService.cs
 using ImageMagick;
+using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Services;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JOB_FINDER_API.Models.Services
 {
     public class CvSnapshotService : ICvSnapshotService
     {
-        public async Task<string> CaptureCvAsImageAsync(CV cv)
+        private readonly CloudinaryService _cloudinaryService;
+
+        public CvSnapshotService(CloudinaryService cloudinaryService)
         {
-            if (cv == null || string.IsNullOrEmpty(cv.FileUrl))
-                throw new ArgumentException("CV or FileUrl is invalid");
-
-            var sourcePath = cv.FileUrl;
-            var snapshotsDir = Path.Combine("wwwroot", "snapshots");
-            Directory.CreateDirectory(snapshotsDir);
-
-            string destFileName;
-            string destPath;
-
-            var ext = Path.GetExtension(sourcePath).ToLower();
-            if (ext == ".pdf")
-            {
-                // Convert first page of PDF to PNG
-                destFileName = $"cv_snapshot_{cv.Id}_{DateTime.UtcNow.Ticks}.png";
-                destPath = Path.Combine(snapshotsDir, destFileName);
-
-                using (var images = new MagickImageCollection())
-                {
-                    images.Read(sourcePath);
-                    using (var image = (MagickImage)images[0].Clone())
-                    {
-                        image.Format = MagickFormat.Png;
-                        await image.WriteAsync(destPath);
-                    }
-                }
-            }
-            else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
-            {
-                // Just copy the image file
-                destFileName = $"cv_snapshot_{cv.Id}_{DateTime.UtcNow.Ticks}{ext}";
-                destPath = Path.Combine(snapshotsDir, destFileName);
-                using (var sourceStream = File.OpenRead(sourcePath))
-                using (var destStream = File.Create(destPath))
-                {
-                    await sourceStream.CopyToAsync(destStream);
-                }
-            }
-            else
-            {
-                throw new NotSupportedException("Only PDF, PNG, or JPG files are supported for snapshot.");
-            }
-
-            return $"/snapshots/{destFileName}";
+            _cloudinaryService = cloudinaryService;
         }
-    }
-}
-
-
-//snaphot cv nhiều trang
-/*using ImageMagick;
-
-namespace JOB_FINDER_API.Models.Services
-{
-    public class CvSnapshotService : ICvSnapshotService
-    {
         public async Task<List<string>> CaptureCvAsImagesAsync(CV cv)
         {
             if (cv == null || string.IsNullOrEmpty(cv.FileUrl))
@@ -73,23 +27,49 @@ namespace JOB_FINDER_API.Models.Services
             Directory.CreateDirectory(snapshotsDir);
 
             var ext = Path.GetExtension(sourcePath).ToLower();
-            var imagePaths = new List<string>();
+            var urls = new List<string>();   
 
             if (ext == ".pdf")
             {
                 using (var images = new MagickImageCollection())
                 {
-                    images.Read(sourcePath);
+                    var settings = new MagickReadSettings
+                    {
+                        Density = new Density(300, 300)
+                    };
+                    images.Read(sourcePath, settings);
+                    uint a4Width = 2480;
+                    uint a4Height = 3508;
                     for (int i = 0; i < images.Count; i++)
                     {
                         var destFileName = $"cv_snapshot_{cv.Id}_{DateTime.UtcNow.Ticks}_p{i + 1}.png";
                         var destPath = Path.Combine(snapshotsDir, destFileName);
+
                         using (var image = (MagickImage)images[i].Clone())
                         {
                             image.Format = MagickFormat.Png;
+                            image.Extent(a4Width, a4Height, Gravity.Center, MagickColors.White);
                             await image.WriteAsync(destPath);
+                            // Debug: kiểm tra kích thước ảnh
+                            Console.WriteLine($"Snapshot size: {image.Width}x{image.Height}");
                         }
-                        imagePaths.Add($"/snapshots/{destFileName}");
+
+                        // Upload to Cloudinary
+                        await using (var stream = File.OpenRead(destPath))
+                        {
+                            var formFile = new FormFile(stream, 0, stream.Length, null, destFileName)
+                            {
+                                Headers = new HeaderDictionary(),
+                                ContentType = "image/png"
+                            };
+                            var url = await _cloudinaryService.UploadImageAsync(formFile);
+                            urls.Add(url);
+                        }
+
+                        if (File.Exists(destPath))
+                        {
+                            File.Delete(destPath);
+                        }
                     }
                 }
             }
@@ -102,14 +82,42 @@ namespace JOB_FINDER_API.Models.Services
                 {
                     await sourceStream.CopyToAsync(destStream);
                 }
-                imagePaths.Add($"/snapshots/{destFileName}");
+                // Resize/canvas về đúng khổ A4
+                using (var images = new MagickImageCollection())
+                {
+                    var settings = new MagickReadSettings
+                    {
+                        Density = new Density(200, 200) // hoặc 300, 300 nếu muốn nét hơn
+                    };
+                    images.Read(sourcePath, settings);
+                    using (var image = (MagickImage)images[0].Clone())
+                    {
+                        image.Format = MagickFormat.Png;
+                        // Đảm bảo không crop, resize hoặc trim gì ở đây
+                        await image.WriteAsync(destPath);
+                    }
+                }
+                await using (var stream = File.OpenRead(destPath))
+                {
+                    var formFile = new FormFile(stream, 0, stream.Length, null, destFileName)
+                    {
+                        Headers = new HeaderDictionary(),
+                        ContentType = "image/png"
+                    };
+                    var url = await _cloudinaryService.UploadImageAsync(formFile);
+                    urls.Add(url);
+                }
+                if (File.Exists(destPath))
+                {
+                    File.Delete(destPath);
+                }
             }
             else
             {
                 throw new NotSupportedException("Only PDF, PNG, or JPG files are supported for snapshot.");
             }
 
-            return imagePaths;
+            return urls;
         }
     }
-}*/
+}

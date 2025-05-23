@@ -48,7 +48,7 @@
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\CVController.cs",
               "ToolTip": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CVController.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\CVController.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAABkAAAAYAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-23T08:11:35.232Z",
               "EditorCaption": ""
@@ -63,8 +63,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\filter\\UploadFileOperationFilter.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-23T08:11:22.76Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-23T08:11:22.76Z"
             },
             {
               "$type": "Document",
@@ -76,8 +75,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\filter\\JobFilterParams.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-23T08:11:20.047Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-23T08:11:20.047Z"
             },
             {
               "$type": "Document",
@@ -89,8 +87,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\Requests\\CreateCVRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-23T08:11:17.089Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-23T08:11:17.089Z"
             }
           ]
         }

@@ -26,7 +26,7 @@ namespace JOB_FINDER_API.Controllers
                 Directory.CreateDirectory(_cvFolder);
             }
         }
-
+         
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _context.CVs.ToListAsync());
 

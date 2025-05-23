@@ -1,5 +1,4 @@
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
@@ -244,4 +243,3 @@ namespace JOB_FINDER_API.Controllers
 
     }
 }
-

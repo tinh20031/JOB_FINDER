@@ -48,7 +48,7 @@ namespace JOB_FINDER_API.Controllers
                 Image = request.Image,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Image = request.Image
+                
             };
 
             _dbContext.Users.Add(user);
@@ -118,7 +118,9 @@ namespace JOB_FINDER_API.Controllers
                     new Claim(ClaimTypes.Role, user.Role.RoleName)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
+                Audience = _configuration["Jwt:Audience"], 
+                Issuer = _configuration["Jwt:Issuer"]     
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);

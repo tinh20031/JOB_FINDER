@@ -1,6 +1,5 @@
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
-
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +35,6 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
 
         [HttpGet("filter")]
         public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)

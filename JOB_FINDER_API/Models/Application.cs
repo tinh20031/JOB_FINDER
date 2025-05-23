@@ -25,10 +25,10 @@ namespace JOB_FINDER_API.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
         [JsonIgnore]
-        public Job Job { get; set; } = null!;
+        public Job? Job { get; set; }
         [JsonIgnore]
-        public CV CV { get; set; } = null!;
+        public CV? CV { get; set; }
     }
 }

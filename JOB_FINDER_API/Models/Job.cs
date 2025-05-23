@@ -33,15 +33,15 @@ namespace JOB_FINDER_API.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User Company { get; set; } = null!;
+        public User? Company { get; set; }
         [JsonIgnore]
-        public Industry Industry { get; set; } = null!;
+        public Industry? Industry { get; set; }
         [JsonIgnore]
-        public Level Level { get; set; } = null!;
+        public Level? Level { get; set; }
         [JsonIgnore]
-        public JobType JobType { get; set; } = null!;
+        public JobType? JobType { get; set; }
         [JsonIgnore]
-        public ExperienceLevel ExperienceLevel { get; set; } = null!;
+        public ExperienceLevel? ExperienceLevel { get; set; }
         [JsonIgnore]
         public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
         [JsonIgnore]

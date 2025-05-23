@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JOB_FINDER_API</name>
+    </assembly>
+    <members>
+        <member name="T:JOB_FINDER_API.Migrations.new">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.new.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.new.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.new.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

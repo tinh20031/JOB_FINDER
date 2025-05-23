@@ -1,17 +1,32 @@
-using JOB_FINDER_API.Data;
+﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace JOB_FINDER_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CVController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public CVController(JobFinderDbContext context) => _context = context;
+        private readonly string _cvFolder = "UploadedCVs";
 
+        public CVController(JobFinderDbContext context)
+        {
+            _context = context;
+            if (!Directory.Exists(_cvFolder))
+            {
+                Directory.CreateDirectory(_cvFolder);
+            }
+        }
+         
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _context.CVs.ToListAsync());
 
@@ -23,11 +38,32 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CV model)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Create([FromForm] CreateCVRequest request)
         {
-            _context.CVs.Add(model);
+            if (request.File == null || request.File.Length == 0)
+                return BadRequest("No file selected.");
+
+            var fileName = Path.GetFileName(request.File.FileName);
+            var filePath = Path.Combine(_cvFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await request.File.CopyToAsync(stream);
+            }
+
+            var cv = new CV
+            {
+                UserId = request.UserId,
+                FileUrl = filePath,
+                FullCvJson = request.FullCvJson,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.CVs.Add(cv);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+            return CreatedAtAction(nameof(Get), new { id = cv.Id }, cv);
         }
 
         [HttpPut("{id}")]

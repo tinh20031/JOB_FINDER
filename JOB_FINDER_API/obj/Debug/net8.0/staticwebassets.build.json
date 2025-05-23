@@ -1,0 +1,39 @@
+{
+  "Version": 1,
+  "Hash": "5/7u4Ns0e6V8UISgM1EZ5gf28RF0yh3DpuIRkFIgCwY=",
+  "Source": "JOB_FINDER_API",
+  "BasePath": "_content/JOB_FINDER_API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "JOB_FINDER_API\\wwwroot",
+      "Source": "JOB_FINDER_API",
+      "ContentRoot": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\wwwroot\\",
+      "BasePath": "_content/JOB_FINDER_API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\wwwroot\\snapshots\\cv_snapshot_2_638835842958798389.png",
+      "SourceId": "JOB_FINDER_API",
+      "SourceType": "Discovered",
+      "ContentRoot": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\wwwroot\\",
+      "BasePath": "_content/JOB_FINDER_API",
+      "RelativePath": "snapshots/cv_snapshot_2_638835842958798389.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\snapshots\\cv_snapshot_2_638835842958798389.png"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.AssemblyReference.cache
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.GeneratedMSBuildEditorConfig.editorconfig
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfoInputs.cache
@@ -6,3 +7,452 @@ E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.Co
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cs
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cache
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.sourcelink.json
+=======
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.Development.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.exe
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.deps.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.runtimeconfig.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.pdb
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.xml
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Azure.Core.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Azure.Identity.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Humanizer.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.OpenApi.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Mono.TextTemplating.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Newtonsoft.Json.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.CodeDom.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.AttributedModel.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Convention.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Hosting.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Runtime.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.TypedParts.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Drawing.Common.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Memory.Data.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Runtime.Caching.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Security.Permissions.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Windows.Extensions.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.AssemblyReference.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.GeneratedMSBuildEditorConfig.editorconfig
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfoInputs.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfo.cs
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.CoreCompileInputs.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cs
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.sourcelink.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.development.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.JOB_FINDER_API.Microsoft.AspNetCore.StaticWebAssets.props
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.build.JOB_FINDER_API.props
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.JOB_FINDER_API.props
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.JOB_FINDER_API.props
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.pack.json
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\scopedcss\bundle\JOB_FINDER_API.styles.css
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FIND.9BEEF214.Up2Date
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\refint\JOB_FINDER_API.dll
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.xml
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.pdb
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.genruntimeconfig.cache
+D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\ref\JOB_FINDER_API.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.AssemblyReference.cache
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.GeneratedMSBuildEditorConfig.editorconfig
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfoInputs.cache
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfo.cs
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.CoreCompileInputs.cache
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cs
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cache
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.sourcelink.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\refint\JOB_FINDER_API.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.xml
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.pdb
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.Development.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.staticwebassets.endpoints.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.exe
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.deps.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.runtimeconfig.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.pdb
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.xml
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Azure.Core.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Azure.Identity.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\BCrypt.Net-Next.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Humanizer.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.OpenApi.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Mono.TextTemplating.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Newtonsoft.Json.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.CodeDom.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.AttributedModel.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Convention.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Hosting.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Runtime.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.TypedParts.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Drawing.Common.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Memory.Data.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Runtime.Caching.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Security.Permissions.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Windows.Extensions.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\scopedcss\bundle\JOB_FINDER_API.styles.css
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.json.cache
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.development.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FIND.9BEEF214.Up2Date
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.genruntimeconfig.cache
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\ref\JOB_FINDER_API.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.staticwebassets.runtime.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Scrutor.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Magick.NET-Q8-AnyCPU.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Magick.NET.Core.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\linux-arm64\native\Magick.Native-Q8-arm64.dll.so
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\linux-musl-x64\native\Magick.Native-Q8-x64.dll.so
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\linux-x64\native\Magick.Native-Q8-x64.dll.so
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\osx-arm64\native\Magick.Native-Q8-arm64.dll.dylib
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\osx-x64\native\Magick.Native-Q8-x64.dll.dylib
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm64\native\Magick.Native-Q8-arm64.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x64\native\Magick.Native-Q8-x64.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x86\native\Magick.Native-Q8-x86.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\CloudinaryDotNet.dll
+>>>>>>> bc0f924d7c283c4fc2baf7281d5b1f122d0504b7
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\refint\JOB_FINDER_API.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.xml
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.pdb
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.Development.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.staticwebassets.runtime.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.exe
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.deps.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.runtimeconfig.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.pdb
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.xml
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Azure.Core.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Azure.Identity.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\BCrypt.Net-Next.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\CloudinaryDotNet.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Humanizer.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Magick.NET-Q8-AnyCPU.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Magick.NET.Core.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.OpenApi.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Mono.TextTemplating.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Newtonsoft.Json.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Scrutor.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.CodeDom.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.AttributedModel.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Convention.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Hosting.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.Runtime.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Composition.TypedParts.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Drawing.Common.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Memory.Data.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Runtime.Caching.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Security.Permissions.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\System.Windows.Extensions.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\linux-arm64\native\Magick.Native-Q8-arm64.dll.so
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\linux-musl-x64\native\Magick.Native-Q8-x64.dll.so
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\linux-x64\native\Magick.Native-Q8-x64.dll.so
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\osx-arm64\native\Magick.Native-Q8-arm64.dll.dylib
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\osx-x64\native\Magick.Native-Q8-x64.dll.dylib
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm64\native\Magick.Native-Q8-arm64.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x64\native\Magick.Native-Q8-x64.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x86\native\Magick.Native-Q8-x86.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.development.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.JOB_FINDER_API.Microsoft.AspNetCore.StaticWebAssets.props
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.build.JOB_FINDER_API.props
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.JOB_FINDER_API.props
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.JOB_FINDER_API.props
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.pack.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\scopedcss\bundle\JOB_FINDER_API.styles.css
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.CopyComplete
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.genruntimeconfig.cache
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\ref\JOB_FINDER_API.dll

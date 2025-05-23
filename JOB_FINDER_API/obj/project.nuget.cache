@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "0Y34aZ5Ui+w=",
+  "dgSpecHash": "kbGwhqNppa0=",
   "success": true,
   "projectFilePath": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,8 @@
     "C:\\Users\\thanh\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
     "C:\\Users\\thanh\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\thanh\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\thanh\\.nuget\\packages\\magick.net-q8-anycpu\\14.6.0\\magick.net-q8-anycpu.14.6.0.nupkg.sha512",
+    "C:\\Users\\thanh\\.nuget\\packages\\magick.net.core\\14.6.0\\magick.net.core.14.6.0.nupkg.sha512",
     "C:\\Users\\thanh\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.0\\microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",
     "C:\\Users\\thanh\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
     "C:\\Users\\thanh\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.3.3\\microsoft.codeanalysis.analyzers.3.3.3.nupkg.sha512",

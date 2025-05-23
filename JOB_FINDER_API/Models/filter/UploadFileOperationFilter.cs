@@ -1,43 +1,4 @@
-﻿/*using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-
-public class UploadFileOperationFilter : IOperationFilter
-{
-    public void Apply(OpenApiOperation operation, OperationFilterContext context)
-    {
-        // Match by action name or route
-        if (context.ApiDescription.ActionDescriptor.RouteValues["action"] == "UploadCV")
-        {
-            operation.RequestBody = new OpenApiRequestBody
-            {
-                Content = new Dictionary<string, OpenApiMediaType>
-                {
-                    ["multipart/form-data"] = new OpenApiMediaType
-                    {
-                        Schema = new OpenApiSchema
-                        {
-                            Type = "object",
-                            Properties = new Dictionary<string, OpenApiSchema>
-                            {
-                                ["file"] = new OpenApiSchema
-                                {
-                                    Type = "string",
-                                    Format = "binary",
-                                    Description = "The CV file to upload"
-                                }
-                            },
-                            Required = new HashSet<string> { "file" }
-                        }
-                    }
-                },
-                Required = true
-            };
-
-            operation.Parameters = null;
-        }
-    }
-}*/
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 public class UploadFileOperationFilter : IOperationFilter

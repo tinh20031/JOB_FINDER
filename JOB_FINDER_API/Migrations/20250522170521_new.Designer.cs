@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JOB_FINDER_API.Migrations
 {
     [DbContext(typeof(JobFinderDbContext))]
-    [Migration("20250521090528_updatejob")]
-    partial class updatejob
+    [Migration("20250522170521_new")]
+    partial class @new
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -122,9 +122,6 @@ namespace JOB_FINDER_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Language")
                         .HasColumnType("nvarchar(max)");
 
@@ -151,6 +148,9 @@ namespace JOB_FINDER_API.Migrations
                     b.Property<string>("ImageLogoLgr")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("IndustryId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
@@ -167,6 +167,8 @@ namespace JOB_FINDER_API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("IndustryId");
 
                     b.ToTable("CompanyProfile");
                 });
@@ -332,6 +334,10 @@ namespace JOB_FINDER_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobId"));
 
+                    b.Property<string>("AddressDetail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
@@ -360,12 +366,15 @@ namespace JOB_FINDER_API.Migrations
                     b.Property<int>("LevelId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Salary")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("TimeEnd")
                         .HasColumnType("datetime2");
@@ -527,23 +536,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 5, 21, 9, 5, 28, 394, DateTimeKind.Utc).AddTicks(7611),
+                            CreatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1184),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 21, 9, 5, 28, 394, DateTimeKind.Utc).AddTicks(7612)
+                            UpdatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1186)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 5, 21, 9, 5, 28, 394, DateTimeKind.Utc).AddTicks(7616),
+                            CreatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1190),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 21, 9, 5, 28, 394, DateTimeKind.Utc).AddTicks(7617)
+                            UpdatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1191)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 5, 21, 9, 5, 28, 394, DateTimeKind.Utc).AddTicks(7641),
+                            CreatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 21, 9, 5, 28, 394, DateTimeKind.Utc).AddTicks(7642)
+                            UpdatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192)
                         });
                 });
 
@@ -572,35 +581,34 @@ namespace JOB_FINDER_API.Migrations
 
             modelBuilder.Entity("JOB_FINDER_API.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int?>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int?>("RoleId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -609,7 +617,8 @@ namespace JOB_FINDER_API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
                     b.HasIndex("RoleId");
 
@@ -689,11 +698,19 @@ namespace JOB_FINDER_API.Migrations
 
             modelBuilder.Entity("JOB_FINDER_API.Models.CompanyProfile", b =>
                 {
+                    b.HasOne("JOB_FINDER_API.Models.Industry", "Industry")
+                        .WithMany()
+                        .HasForeignKey("IndustryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("JOB_FINDER_API.Models.User", "User")
                         .WithOne("CompanyProfile")
                         .HasForeignKey("JOB_FINDER_API.Models.CompanyProfile", "UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Industry");
 
                     b.Navigation("User");
                 });
@@ -823,9 +840,7 @@ namespace JOB_FINDER_API.Migrations
                 {
                     b.HasOne("JOB_FINDER_API.Models.Role", "Role")
                         .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RoleId");
 
                     b.Navigation("Role");
                 });

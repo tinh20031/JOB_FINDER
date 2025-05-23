@@ -281,3 +281,7 @@ F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FIND.9BEEF214.
 F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.genruntimeconfig.cache
 F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\ref\JOB_FINDER_API.dll
 F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.staticwebassets.runtime.json
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Scrutor.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.dll
+F:\SUMMER2025\DATN\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll

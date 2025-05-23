@@ -119,9 +119,6 @@ namespace JOB_FINDER_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Language")
                         .HasColumnType("nvarchar(max)");
 
@@ -148,6 +145,9 @@ namespace JOB_FINDER_API.Migrations
                     b.Property<string>("ImageLogoLgr")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("IndustryId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
@@ -164,6 +164,8 @@ namespace JOB_FINDER_API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("IndustryId");
 
                     b.ToTable("CompanyProfile");
                 });
@@ -368,9 +370,8 @@ namespace JOB_FINDER_API.Migrations
                     b.Property<int>("Salary")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("TimeEnd")
                         .HasColumnType("datetime2");
@@ -532,29 +533,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-
-                            CreatedAt = new DateTime(2025, 5, 22, 12, 41, 55, 704, DateTimeKind.Utc).AddTicks(4219),
+                            CreatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1184),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 22, 12, 41, 55, 704, DateTimeKind.Utc).AddTicks(4222)
-
+                            UpdatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1186)
                         },
                         new
                         {
                             RoleId = 2,
-
-                            CreatedAt = new DateTime(2025, 5, 22, 12, 41, 55, 704, DateTimeKind.Utc).AddTicks(4226),
+                            CreatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1190),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 22, 12, 41, 55, 704, DateTimeKind.Utc).AddTicks(4226)
-
+                            UpdatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1191)
                         },
                         new
                         {
                             RoleId = 3,
-
-                            CreatedAt = new DateTime(2025, 5, 22, 12, 41, 55, 704, DateTimeKind.Utc).AddTicks(4227),
+                            CreatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 22, 12, 41, 55, 704, DateTimeKind.Utc).AddTicks(4228)
-
+                            UpdatedAt = new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192)
                         });
                 });
 
@@ -700,11 +695,19 @@ namespace JOB_FINDER_API.Migrations
 
             modelBuilder.Entity("JOB_FINDER_API.Models.CompanyProfile", b =>
                 {
+                    b.HasOne("JOB_FINDER_API.Models.Industry", "Industry")
+                        .WithMany()
+                        .HasForeignKey("IndustryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("JOB_FINDER_API.Models.User", "User")
                         .WithOne("CompanyProfile")
                         .HasForeignKey("JOB_FINDER_API.Models.CompanyProfile", "UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Industry");
 
                     b.Navigation("User");
                 });

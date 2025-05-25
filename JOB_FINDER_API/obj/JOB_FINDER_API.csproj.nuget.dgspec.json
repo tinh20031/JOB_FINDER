@@ -1,27 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
+    "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
   },
   "projects": {
-    "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
+    "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "projectUniqueName": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
         "projectName": "JOB_FINDER_API",
-        "projectPath": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
-        "packagesPath": "C:\\Users\\quocd\\.nuget\\packages\\",
-        "outputPath": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
+        "projectPath": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "packagesPath": "C:\\Users\\tinht\\.nuget\\packages\\",
+        "outputPath": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\quocd\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\tinht\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -34,7 +37,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -43,6 +52,14 @@
             "BCrypt.Net-Next": {
               "target": "Package",
               "version": "[4.0.3, )"
+            },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.5, )"
+            },
+            "Magick.NET-Q8-AnyCPU": {
+              "target": "Package",
+              "version": "[14.6.0, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -64,7 +81,11 @@
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[6.4.0, )"
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.Filters": {
+              "target": "Package",
+              "version": "[8.0.0, )"
             }
           },
           "imports": [
@@ -86,7 +107,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

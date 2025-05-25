@@ -5,6 +5,7 @@ using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 //using JOB_FINDER_API.Services;
 =======
@@ -14,6 +15,9 @@ using JOB_FINDER_API.Services;
 //using JOB_FINDER_API.Services;
 >>>>>>> 6cb2f49 (fix source csproj)
 >>>>>>> 1e5ca10 (fix source csproj)
+=======
+
+>>>>>>> e3dfff4 (fix source)
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

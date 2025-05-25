@@ -8,6 +8,13 @@
   "Documents": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+>>>>>>> e3dfff4 (fix source)
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\job_finder_api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\job_finder_api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
@@ -16,6 +23,7 @@
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\companyprofilecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+<<<<<<< HEAD
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -26,12 +34,15 @@
     {
 =======
 >>>>>>> 2db4f0c (cache)
+=======
+>>>>>>> e3dfff4 (fix source)
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\models\\job.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\job.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     },
@@ -43,6 +54,8 @@
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|d:\\summer2025\\capstone\\proiect\\job_finder\\job_finder_api\\job_finder_api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\job_finder_api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
 >>>>>>> 2db4f0c (cache)
+=======
+>>>>>>> e3dfff4 (fix source)
     }
   ],
   "DocumentGroupContainers": [
@@ -53,10 +66,14 @@
         {
           "DockedWidth": 200,
 <<<<<<< HEAD
+<<<<<<< HEAD
           "SelectedChildIndex": 8,
 =======
           "SelectedChildIndex": 4,
 >>>>>>> 2db4f0c (cache)
+=======
+          "SelectedChildIndex": 3,
+>>>>>>> e3dfff4 (fix source)
           "Children": [
             {
               "$type": "Bookmark",
@@ -72,6 +89,7 @@
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
 <<<<<<< HEAD
               "DocumentIndex": 2,
               "Title": "appsettings.json",
@@ -93,16 +111,29 @@
               "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Program.cs",
               "ViewState": "AgIAAGQAAAAAAAAAAAAAAGkAAAAgAAAAAAAAAA==",
+=======
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Program.cs",
+              "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Program.cs*",
+              "RelativeToolTip": "JOB_FINDER_API\\Program.cs*",
+              "ViewState": "AgIAAGMAAAAAAAAAAAAAAGgAAAAgAAAAAAAAAA==",
+>>>>>>> e3dfff4 (fix source)
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-25T13:57:45.323Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 5,
 =======
               "DocumentIndex": 1,
 >>>>>>> 2db4f0c (cache)
+=======
+              "DocumentIndex": 4,
+>>>>>>> e3dfff4 (fix source)
               "Title": "Job.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Models\\Job.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Job.cs",
@@ -116,20 +147,28 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 4,
 =======
               "DocumentIndex": 0,
 >>>>>>> 2db4f0c (cache)
+=======
+              "DocumentIndex": 3,
+>>>>>>> e3dfff4 (fix source)
               "Title": "JobController.cs",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\JobController.cs",
               "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\JobController.cs",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "ViewState": "AgIAAAAAAAAAAAAAAIAwwC4AAAAAAAAAAAAAAA==",
 =======
               "ViewState": "AgIAACgAAAAAAAAAAAAnwDYAAAAzAAAAAAAAAA==",
 >>>>>>> 2db4f0c (cache)
+=======
+              "ViewState": "AgIAAAAAAAAAAAAAAIAwwDYAAAAzAAAAAAAAAA==",
+>>>>>>> e3dfff4 (fix source)
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-25T13:52:03.205Z",
               "EditorCaption": ""
@@ -147,10 +186,14 @@
               "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CompanyProfileController.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\CompanyProfileController.cs",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAAUAAAAQAAAAAAAAAA==",
 =======
               "ViewState": "AgIAAG0AAAAAAAAAAAAnwHsAAAAAAAAAAAAAAA==",
 >>>>>>> 2db4f0c (cache)
+=======
+              "ViewState": "AgIAAFEAAAAAAAAAAAAtwFwAAAAbAAAAAAAAAA==",
+>>>>>>> e3dfff4 (fix source)
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-25T13:50:49.758Z",
               "EditorCaption": ""
@@ -158,20 +201,28 @@
             {
               "$type": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "DocumentIndex": 0,
 =======
               "DocumentIndex": 3,
 >>>>>>> 2db4f0c (cache)
+=======
+              "DocumentIndex": 1,
+>>>>>>> e3dfff4 (fix source)
               "Title": "JOB_FINDER_API",
               "DocumentMoniker": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\JOB_FINDER_API.csproj",
               "ToolTip": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
               "RelativeToolTip": "JOB_FINDER_API\\JOB_FINDER_API.csproj",
 <<<<<<< HEAD
+<<<<<<< HEAD
               "ViewState": "AgIAACMAAAAAAAAAAAAQwCsAAAANAAAAAAAAAA==",
 =======
               "ViewState": "AgIAACsAAAAAAAAAAAAAwC4AAAADAAAAAAAAAA==",
 >>>>>>> 2db4f0c (cache)
+=======
+              "ViewState": "AgIAABEAAAAAAAAAAAAcwB0AAABEAAAAAAAAAA==",
+>>>>>>> e3dfff4 (fix source)
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2025-05-25T13:48:40.77Z",
               "EditorCaption": ""

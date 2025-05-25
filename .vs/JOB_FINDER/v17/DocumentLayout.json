@@ -59,8 +59,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\Job.cs",
               "ViewState": "AgIAAA0AAAAAAAAAAAAQwA8AAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-25T08:46:03.902Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-25T08:46:03.902Z"
             },
             {
               "$type": "Document",
@@ -72,8 +71,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\JobController.cs",
               "ViewState": "AgIAACYAAAAAAAAAAAAswEYAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-25T08:37:17.373Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-25T08:37:17.373Z"
             },
             {
               "$type": "Document",
@@ -85,8 +83,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\Requests\\JobCreateRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-25T08:37:05.961Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-25T08:37:05.961Z"
             }
           ]
         }

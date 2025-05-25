@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JOB_FINDER_API.Migrations
 {
     [DbContext(typeof(JobFinderDbContext))]
-    [Migration("20250523173508_fixcvid")]
-    partial class fixcvid
+    [Migration("20250525075327_update")]
+    partial class update
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -115,6 +115,14 @@ namespace JOB_FINDER_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("Dob")
                         .HasColumnType("datetime2");
 
@@ -122,12 +130,43 @@ namespace JOB_FINDER_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Language")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Province")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
 
                     b.ToTable("CandidateProfiles");
+                });
+
+            modelBuilder.Entity("JOB_FINDER_API.Models.CandidateSkill", b =>
+                {
+                    b.Property<int>("CandidateSkillId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CandidateSkillId"));
+
+                    b.Property<int>("SkillId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CandidateSkillId");
+
+                    b.HasIndex("SkillId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CandidateSkill");
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.CompanyProfile", b =>
@@ -539,23 +578,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 5, 23, 17, 35, 7, 676, DateTimeKind.Utc).AddTicks(2035),
+                            CreatedAt = new DateTime(2025, 5, 25, 7, 53, 27, 88, DateTimeKind.Utc).AddTicks(1532),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 23, 17, 35, 7, 676, DateTimeKind.Utc).AddTicks(2038)
+                            UpdatedAt = new DateTime(2025, 5, 25, 7, 53, 27, 88, DateTimeKind.Utc).AddTicks(1533)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 5, 23, 17, 35, 7, 676, DateTimeKind.Utc).AddTicks(2042),
+                            CreatedAt = new DateTime(2025, 5, 25, 7, 53, 27, 88, DateTimeKind.Utc).AddTicks(1538),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 23, 17, 35, 7, 676, DateTimeKind.Utc).AddTicks(2043)
+                            UpdatedAt = new DateTime(2025, 5, 25, 7, 53, 27, 88, DateTimeKind.Utc).AddTicks(1538)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 5, 23, 17, 35, 7, 676, DateTimeKind.Utc).AddTicks(2044),
+                            CreatedAt = new DateTime(2025, 5, 25, 7, 53, 27, 88, DateTimeKind.Utc).AddTicks(1539),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 23, 17, 35, 7, 676, DateTimeKind.Utc).AddTicks(2044)
+                            UpdatedAt = new DateTime(2025, 5, 25, 7, 53, 27, 88, DateTimeKind.Utc).AddTicks(1540)
                         });
                 });
 
@@ -695,6 +734,31 @@ namespace JOB_FINDER_API.Migrations
                         .HasForeignKey("JOB_FINDER_API.Models.CandidateProfile", "UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JOB_FINDER_API.Models.CandidateSkill", b =>
+                {
+                    b.HasOne("JOB_FINDER_API.Models.Skill", "Skill")
+                        .WithMany("CandidateSkills")
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JOB_FINDER_API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JOB_FINDER_API.Models.CandidateProfile", null)
+                        .WithMany("CandidateSkills")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Skill");
 
                     b.Navigation("User");
                 });
@@ -872,6 +936,11 @@ namespace JOB_FINDER_API.Migrations
                     b.Navigation("Applications");
                 });
 
+            modelBuilder.Entity("JOB_FINDER_API.Models.CandidateProfile", b =>
+                {
+                    b.Navigation("CandidateSkills");
+                });
+
             modelBuilder.Entity("JOB_FINDER_API.Models.ExperienceLevel", b =>
                 {
                     b.Navigation("Jobs");
@@ -908,6 +977,8 @@ namespace JOB_FINDER_API.Migrations
 
             modelBuilder.Entity("JOB_FINDER_API.Models.Skill", b =>
                 {
+                    b.Navigation("CandidateSkills");
+
                     b.Navigation("JobSkills");
                 });
 

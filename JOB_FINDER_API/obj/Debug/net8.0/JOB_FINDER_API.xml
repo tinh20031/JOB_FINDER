@@ -4,52 +4,52 @@
         <name>JOB_FINDER_API</name>
     </assembly>
     <members>
-        <member name="T:JOB_FINDER_API.Migrations.new">
+        <member name="T:JOB_FINDER_API.Migrations.FixCandidateSkillMapping">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.new.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.FixCandidateSkillMapping.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.new.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.FixCandidateSkillMapping.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.new.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.FixCandidateSkillMapping.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:JOB_FINDER_API.Migrations.update_isactive">
+        <member name="T:JOB_FINDER_API.Migrations.update">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.update_isactive.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.update.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.update_isactive.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.update.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.update_isactive.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.update.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:JOB_FINDER_API.Migrations.updatecvid">
+        <member name="T:JOB_FINDER_API.Migrations.newupdate">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.updatecvid.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.newupdate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.updatecvid.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.newupdate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.updatecvid.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.newupdate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:JOB_FINDER_API.Migrations.fixcvid">
+        <member name="T:JOB_FINDER_API.Migrations.newnewnew">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.fixcvid.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.newnewnew.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.fixcvid.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.newnewnew.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:JOB_FINDER_API.Migrations.fixcvid.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:JOB_FINDER_API.Migrations.newnewnew.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

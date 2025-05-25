@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JOB_FINDER_API.Migrations
 {
     /// <inheritdoc />
-    public partial class @new : Migration
+    public partial class FixCandidateSkillMapping : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -134,7 +134,11 @@ namespace JOB_FINDER_API.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Dob = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    JobTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Province = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Language = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -161,7 +165,8 @@ namespace JOB_FINDER_API.Migrations
                     IsVerified = table.Column<bool>(type: "bit", nullable: false),
                     Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IndustryId = table.Column<int>(type: "int", nullable: false)
+                    IndustryId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -334,6 +339,38 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CandidateSkill",
+                columns: table => new
+                {
+                    CandidateSkillId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    SkillId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CandidateSkill", x => x.CandidateSkillId);
+                    table.ForeignKey(
+                        name: "FK_CandidateSkill_CandidateProfiles_UserId",
+                        column: x => x.UserId,
+                        principalTable: "CandidateProfiles",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CandidateSkill_Skills_SkillId",
+                        column: x => x.SkillId,
+                        principalTable: "Skills",
+                        principalColumn: "SkillId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CandidateSkill_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Applications",
                 columns: table => new
                 {
@@ -456,9 +493,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "RoleId", "CreatedAt", "RoleName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1184), "Candidate", new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1186) },
-                    { 2, new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1190), "Company", new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1191) },
-                    { 3, new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192), "Admin", new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192) }
+                    { 1, new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6777), "Candidate", new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6779) },
+                    { 2, new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6783), "Company", new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6783) },
+                    { 3, new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6784), "Admin", new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6784) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -474,6 +511,16 @@ namespace JOB_FINDER_API.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_UserId",
                 table: "Applications",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateSkill_SkillId",
+                table: "CandidateSkill",
+                column: "SkillId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateSkill_UserId",
+                table: "CandidateSkill",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -581,7 +628,7 @@ namespace JOB_FINDER_API.Migrations
                 name: "Applications");
 
             migrationBuilder.DropTable(
-                name: "CandidateProfiles");
+                name: "CandidateSkill");
 
             migrationBuilder.DropTable(
                 name: "CompanyProfile");
@@ -606,6 +653,9 @@ namespace JOB_FINDER_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "CVs");
+
+            migrationBuilder.DropTable(
+                name: "CandidateProfiles");
 
             migrationBuilder.DropTable(
                 name: "Skills");

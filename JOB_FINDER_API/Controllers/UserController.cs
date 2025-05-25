@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
@@ -148,7 +149,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok("User has been unlocked.");
         }
 
-       
+
         [HttpPut("full/{id}")]
         public async Task<IActionResult> PutUserFull(int id, [FromForm] UpdateUserFullRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {
@@ -197,6 +198,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpPost]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddUser([FromForm] CreateUserRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))

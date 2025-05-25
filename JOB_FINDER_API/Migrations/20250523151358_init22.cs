@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JOB_FINDER_API.Migrations
 {
     /// <inheritdoc />
-    public partial class @new : Migration
+    public partial class init22 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -161,7 +161,8 @@ namespace JOB_FINDER_API.Migrations
                     IsVerified = table.Column<bool>(type: "bit", nullable: false),
                     Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IndustryId = table.Column<int>(type: "int", nullable: false)
+                    IndustryId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -456,9 +457,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "RoleId", "CreatedAt", "RoleName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1184), "Candidate", new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1186) },
-                    { 2, new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1190), "Company", new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1191) },
-                    { 3, new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192), "Admin", new DateTime(2025, 5, 22, 17, 5, 21, 104, DateTimeKind.Utc).AddTicks(1192) }
+                    { 1, new DateTime(2025, 5, 23, 15, 13, 56, 997, DateTimeKind.Utc).AddTicks(1553), "Candidate", new DateTime(2025, 5, 23, 15, 13, 56, 997, DateTimeKind.Utc).AddTicks(1555) },
+                    { 2, new DateTime(2025, 5, 23, 15, 13, 56, 997, DateTimeKind.Utc).AddTicks(1559), "Company", new DateTime(2025, 5, 23, 15, 13, 56, 997, DateTimeKind.Utc).AddTicks(1559) },
+                    { 3, new DateTime(2025, 5, 23, 15, 13, 56, 997, DateTimeKind.Utc).AddTicks(1560), "Admin", new DateTime(2025, 5, 23, 15, 13, 56, 997, DateTimeKind.Utc).AddTicks(1560) }
                 });
 
             migrationBuilder.CreateIndex(

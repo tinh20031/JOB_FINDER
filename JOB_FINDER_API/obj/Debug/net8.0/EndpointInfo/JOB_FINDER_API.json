@@ -377,19 +377,77 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CompanyProfileCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompanyProfileCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompanyProfileCreateDto"
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "CompanyName": {
+                    "type": "string"
+                  },
+                  "CompanyProfileDescription": {
+                    "type": "string"
+                  },
+                  "Location": {
+                    "type": "string"
+                  },
+                  "TeamSize": {
+                    "type": "string"
+                  },
+                  "Website": {
+                    "type": "string"
+                  },
+                  "Contact": {
+                    "type": "string"
+                  },
+                  "IndustryId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "logoFile": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "logoLgrFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "CompanyName": {
+                  "style": "form"
+                },
+                "CompanyProfileDescription": {
+                  "style": "form"
+                },
+                "Location": {
+                  "style": "form"
+                },
+                "TeamSize": {
+                  "style": "form"
+                },
+                "Website": {
+                  "style": "form"
+                },
+                "Contact": {
+                  "style": "form"
+                },
+                "IndustryId": {
+                  "style": "form"
+                },
+                "logoFile": {
+                  "style": "form"
+                },
+                "logoLgrFile": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -438,6 +496,104 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "CompanyProfile"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "CompanyName": {
+                    "type": "string"
+                  },
+                  "CompanyProfileDescription": {
+                    "type": "string"
+                  },
+                  "Location": {
+                    "type": "string"
+                  },
+                  "TeamSize": {
+                    "type": "string"
+                  },
+                  "Website": {
+                    "type": "string"
+                  },
+                  "Contact": {
+                    "type": "string"
+                  },
+                  "IndustryId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "logoFile": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "logoLgrFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "CompanyName": {
+                  "style": "form"
+                },
+                "CompanyProfileDescription": {
+                  "style": "form"
+                },
+                "Location": {
+                  "style": "form"
+                },
+                "TeamSize": {
+                  "style": "form"
+                },
+                "Website": {
+                  "style": "form"
+                },
+                "Contact": {
+                  "style": "form"
+                },
+                "IndustryId": {
+                  "style": "form"
+                },
+                "logoFile": {
+                  "style": "form"
+                },
+                "logoLgrFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success"
@@ -3388,55 +3544,6 @@
           "language": {
             "type": "string",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "CompanyProfileCreateDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "companyName": {
-            "type": "string",
-            "nullable": true
-          },
-          "companyProfileDescription": {
-            "type": "string",
-            "nullable": true
-          },
-          "location": {
-            "type": "string",
-            "nullable": true
-          },
-          "urlCompanyLogo": {
-            "type": "string",
-            "nullable": true
-          },
-          "imageLogoLgr": {
-            "type": "string",
-            "nullable": true
-          },
-          "teamSize": {
-            "type": "string",
-            "nullable": true
-          },
-          "isVerified": {
-            "type": "boolean"
-          },
-          "website": {
-            "type": "string",
-            "nullable": true
-          },
-          "contact": {
-            "type": "string",
-            "nullable": true
-          },
-          "industryId": {
-            "type": "integer",
-            "format": "int32"
           }
         },
         "additionalProperties": false

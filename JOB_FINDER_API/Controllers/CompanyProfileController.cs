@@ -1,7 +1,9 @@
-using JOB_FINDER_API.Data;
+﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
+using JOB_FINDER_API.Models.Requests;
+using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -96,39 +98,78 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Company has been unlocked.");
         }
 
-
+        
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CompanyProfileCreateDto dto)
+        public async Task<IActionResult> AddCompanyProfile(
+    [FromForm] CompanyProfileRequest request,
+    IFormFile? logoFile,
+    IFormFile? logoLgrFile,
+    [FromServices] CloudinaryService cloudinaryService)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (request.UserId == 0)
+                return BadRequest("UserId is required.");
 
-         
-            var industry = await _context.Industries.FindAsync(dto.IndustryId);
-            if (industry == null)
-                return BadRequest("Invalid IndustryId.");
+            var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId);
+            if (!userExists)
+                return BadRequest("User does not exist.");
+
+            string? logoUrl = null;
+            string? logoLgrUrl = null;
+            if (logoFile != null)
+                logoUrl = await cloudinaryService.UploadImageAsync(logoFile);
+            if (logoLgrFile != null)
+                logoLgrUrl = await cloudinaryService.UploadImageAsync(logoLgrFile);
 
             var companyProfile = new CompanyProfile
             {
-                UserId = dto.UserId,
-                CompanyName = dto.CompanyName,
-                CompanyProfileDescription = dto.CompanyProfileDescription,
-                Location = dto.Location,
-                UrlCompanyLogo = dto.UrlCompanyLogo,
-                ImageLogoLgr = dto.ImageLogoLgr,
-                TeamSize = dto.TeamSize,
-                IsVerified = dto.IsVerified,
-                Website = dto.Website,
-                Contact = dto.Contact,
-                IndustryId = dto.IndustryId,
-                IsActive = true
+                UserId = request.UserId,
+                CompanyName = request.CompanyName,
+                CompanyProfileDescription = request.CompanyProfileDescription,
+                Location = request.Location,
+                TeamSize = request.TeamSize,
+                Website = request.Website,
+                Contact = request.Contact,
+                IndustryId = request.IndustryId,
+                UrlCompanyLogo = logoUrl,
+                ImageLogoLgr = logoLgrUrl,
+                IsActive = false
             };
 
             _context.CompanyProfile.Add(companyProfile);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
+            return Ok(companyProfile);
         }
 
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateCompanyProfile(
+            int userId,
+            [FromForm] CompanyProfileRequest request,
+            IFormFile? logoFile,
+            IFormFile? logoLgrFile,
+            [FromServices] CloudinaryService cloudinaryService)
+        {
+            var companyProfile = await _context.CompanyProfile.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (companyProfile == null)
+                return NotFound("Company profile not found.");
+
+            if (!string.IsNullOrWhiteSpace(request.CompanyName))
+                companyProfile.CompanyName = request.CompanyName;
+            companyProfile.CompanyProfileDescription = request.CompanyProfileDescription;
+            companyProfile.Location = request.Location;
+            companyProfile.TeamSize = request.TeamSize;
+            companyProfile.Website = request.Website;
+            companyProfile.Contact = request.Contact;
+            companyProfile.IndustryId = request.IndustryId;
+
+            if (logoFile != null)
+                companyProfile.UrlCompanyLogo = await cloudinaryService.UploadImageAsync(logoFile);
+            if (logoLgrFile != null)
+                companyProfile.ImageLogoLgr = await cloudinaryService.UploadImageAsync(logoLgrFile);
+
+            await _context.SaveChangesAsync();
+            return Ok(companyProfile);
+        }
     }
+
 }

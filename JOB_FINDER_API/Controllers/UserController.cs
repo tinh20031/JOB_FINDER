@@ -68,7 +68,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(users);
         }
 
-        [HttpPut("{id}")]
+        /*[HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -91,6 +91,62 @@ namespace JOB_FINDER_API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok("User updated successfully.");
+        }*/
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromForm] UpdateUserRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return NotFound("User not found.");
+
+            // Kiểm tra và cập nhật email nếu thay đổi
+            if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != user.Email)
+            {
+                var emailInUse = await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
+                if (emailInUse)
+                    return BadRequest("Email is already in use by another user.");
+                user.Email = request.Email;
+            }
+
+            // Cập nhật FullName
+            if (!string.IsNullOrWhiteSpace(request.FullName))
+                user.FullName = request.FullName;
+
+            // Cập nhật Phone
+            if (!string.IsNullOrWhiteSpace(request.Phone))
+                user.Phone = request.Phone;
+
+            // Cập nhật Role nếu có
+            if (request.RoleId.HasValue)
+            {
+                var roleExists = await _dbContext.Roles.AnyAsync(r => r.RoleId == request.RoleId.Value);
+                if (!roleExists)
+                    return BadRequest("Invalid RoleId.");
+                user.RoleId = request.RoleId.Value;
+            }
+
+            // Cập nhật Image nếu có file upload
+            if (imageFile != null)
+            {
+                var imageUrl = await cloudinaryService.UploadImageAsync(imageFile);
+                user.Image = imageUrl;
+            }
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Phone,
+                user.Image,
+                user.RoleId,
+                user.UpdatedAt
+            });
         }
 
         [HttpDelete("{id}")]

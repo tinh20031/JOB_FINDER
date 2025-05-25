@@ -116,11 +116,14 @@ namespace JOB_FINDER_API.Data
                 .WithMany(u => u.Applications)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
+
             modelBuilder.Entity<Application>()
                 .HasOne(a => a.Job)
                 .WithMany(j => j.Applications)
                 .HasForeignKey(a => a.JobId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // Giữ lại duy nhất cấu hình này cho CV
             modelBuilder.Entity<Application>()
                 .HasOne(a => a.CV)
                 .WithMany(cv => cv.Applications)

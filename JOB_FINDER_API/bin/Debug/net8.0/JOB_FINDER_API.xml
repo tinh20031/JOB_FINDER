@@ -4,17 +4,5 @@
         <name>JOB_FINDER_API</name>
     </assembly>
     <members>
-        <member name="T:JOB_FINDER_API.Migrations.init22">
-            <inheritdoc />
-        </member>
-        <member name="M:JOB_FINDER_API.Migrations.init22.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:JOB_FINDER_API.Migrations.init22.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:JOB_FINDER_API.Migrations.init22.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
     </members>
 </doc>

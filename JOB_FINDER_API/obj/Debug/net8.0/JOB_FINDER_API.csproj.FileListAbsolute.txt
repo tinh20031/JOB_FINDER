@@ -145,7 +145,6 @@ D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\static
 D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.development.json
 D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FIND.9BEEF214.Up2Date
 D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.dll
 D:\SUMMER2025\CAPSTONE\proiect\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\refint\JOB_FINDER_API.dll

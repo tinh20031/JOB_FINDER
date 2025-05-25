@@ -1928,19 +1928,113 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/Job"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Job"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Job"
+                "type": "object",
+                "properties": {
+                  "Title": {
+                    "type": "string"
+                  },
+                  "Description": {
+                    "type": "string"
+                  },
+                  "CompanyId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Salary": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "IndustryId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "ExpiryDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "LevelId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "JobTypeId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "ExperienceLevelId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "TimeStart": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "TimeEnd": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Status": {
+                    "$ref": "#/components/schemas/JobStatus"
+                  },
+                  "ProvinceName": {
+                    "type": "string"
+                  },
+                  "AddressDetail": {
+                    "type": "string"
+                  },
+                  "imageFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "Title": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "CompanyId": {
+                  "style": "form"
+                },
+                "Salary": {
+                  "style": "form"
+                },
+                "IndustryId": {
+                  "style": "form"
+                },
+                "ExpiryDate": {
+                  "style": "form"
+                },
+                "LevelId": {
+                  "style": "form"
+                },
+                "JobTypeId": {
+                  "style": "form"
+                },
+                "ExperienceLevelId": {
+                  "style": "form"
+                },
+                "TimeStart": {
+                  "style": "form"
+                },
+                "TimeEnd": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "ProvinceName": {
+                  "style": "form"
+                },
+                "AddressDetail": {
+                  "style": "form"
+                },
+                "imageFile": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -1980,19 +2074,113 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/JobCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JobCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/JobCreateDto"
+                "type": "object",
+                "properties": {
+                  "Title": {
+                    "type": "string"
+                  },
+                  "Description": {
+                    "type": "string"
+                  },
+                  "CompanyId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Salary": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "IndustryId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "ExpiryDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "LevelId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "JobTypeId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "ExperienceLevelId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "TimeStart": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "TimeEnd": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Status": {
+                    "$ref": "#/components/schemas/JobStatus"
+                  },
+                  "ProvinceName": {
+                    "type": "string"
+                  },
+                  "AddressDetail": {
+                    "type": "string"
+                  },
+                  "imageFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "Title": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "CompanyId": {
+                  "style": "form"
+                },
+                "Salary": {
+                  "style": "form"
+                },
+                "IndustryId": {
+                  "style": "form"
+                },
+                "ExpiryDate": {
+                  "style": "form"
+                },
+                "LevelId": {
+                  "style": "form"
+                },
+                "JobTypeId": {
+                  "style": "form"
+                },
+                "ExperienceLevelId": {
+                  "style": "form"
+                },
+                "TimeStart": {
+                  "style": "form"
+                },
+                "TimeEnd": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "ProvinceName": {
+                  "style": "form"
+                },
+                "AddressDetail": {
+                  "style": "form"
+                },
+                "imageFile": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -3976,93 +4164,6 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
-          }
-        },
-        "additionalProperties": false
-      },
-      "JobCreateDto": {
-        "required": [
-          "addressDetail",
-          "description",
-          "expiryDate",
-          "provinceName",
-          "status",
-          "timeEnd",
-          "timeStart",
-          "title"
-        ],
-        "type": "object",
-        "properties": {
-          "title": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "description": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "companyId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "salary": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "industryId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "expiryDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "levelId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "jobTypeId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "experienceLevelId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "timeStart": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "timeEnd": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "$ref": "#/components/schemas/JobStatus"
-          },
-          "imageJob": {
-            "type": "string",
-            "nullable": true
-          },
-          "provinceName": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "addressDetail": {
-            "minLength": 1,
-            "type": "string"
           }
         },
         "additionalProperties": false

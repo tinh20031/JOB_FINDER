@@ -148,15 +148,15 @@
   },
   {
     "ContainingType": "JOB_FINDER_API.Controllers.CandidateProfileController",
-    "Method": "Create",
+    "Method": "CreateCandidateProfile",
     "RelativePath": "api/CandidateProfile",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "model",
-        "Type": "JOB_FINDER_API.Models.CandidateProfile",
+        "Name": "dto",
+        "Type": "JOB_FINDER_API.Models.DTO.CreateCandidateProfileDto",
         "IsRequired": true
       }
     ],
@@ -204,6 +204,70 @@
     "Method": "Delete",
     "RelativePath": "api/CandidateProfile/{userId}",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateSkillController",
+    "Method": "AddSkill",
+    "RelativePath": "api/CandidateSkill",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "JOB_FINDER_API.Models.CandidateSkill",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateSkillController",
+    "Method": "Get",
+    "RelativePath": "api/CandidateSkill/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateSkillController",
+    "Method": "DeleteSkill",
+    "RelativePath": "api/CandidateSkill/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateSkillController",
+    "Method": "GetSkillsForUser",
+    "RelativePath": "api/CandidateSkill/user/{userId}",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [

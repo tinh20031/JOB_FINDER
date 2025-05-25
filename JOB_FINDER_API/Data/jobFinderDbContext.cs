@@ -28,6 +28,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<Education> Educations { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
+        public DbSet<CandidateSkill> CandidateSkill { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +49,11 @@ namespace JOB_FINDER_API.Data
                 .WithOne(u => u.CandidateProfile)
                 .HasForeignKey<CandidateProfile>(cp => cp.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<CandidateProfile>()
+                .HasMany(cp => cp.CandidateSkills)
+                .WithOne()
+                .HasForeignKey(cs => cs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // CompanyProfile
             modelBuilder.Entity<CompanyProfile>()
@@ -109,6 +115,27 @@ namespace JOB_FINDER_API.Data
                 .WithMany()
                 .HasForeignKey(m => m.RelatedJobId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // CandidateSkill - User
+            modelBuilder.Entity<CandidateSkill>()
+                .HasOne(cs => cs.User)
+                .WithMany() // hoặc .WithMany(u => u.CandidateSkills) nếu User có navigation
+                .HasForeignKey(cs => cs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CandidateSkill - Skill
+            modelBuilder.Entity<CandidateSkill>()
+                .HasOne(cs => cs.Skill)
+                .WithMany(s => s.CandidateSkills) // Đúng với property trong Skill
+                .HasForeignKey(cs => cs.SkillId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CandidateProfile - CandidateSkill
+            modelBuilder.Entity<CandidateProfile>()
+                .HasMany(cp => cp.CandidateSkills)
+                .WithOne()
+                .HasForeignKey(cs => cs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Application
             modelBuilder.Entity<Application>()

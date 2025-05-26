@@ -182,9 +182,32 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get(int userId)
         {
-            var item = await _context.CompanyProfile.FindAsync(userId);
-            return item == null ? NotFound() : Ok(item);
+            var company = await _context.CompanyProfile
+                .Include(c => c.Industry)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (company == null)
+                return NotFound();
+
+            var dto = new CompanyProfileDto
+            {
+                UserId = company.UserId,
+                CompanyName = company.CompanyName,
+                CompanyProfileDescription = company.CompanyProfileDescription,
+                Location = company.Location,
+                UrlCompanyLogo = company.UrlCompanyLogo,
+                ImageLogoLgr = company.ImageLogoLgr,
+                TeamSize = company.TeamSize,
+                Website = company.Website,
+                Contact = company.Contact,
+                IndustryId = company.IndustryId,
+                IndustryName = company.Industry?.IndustryName,
+               
+            };
+
+            return Ok(dto);
         }
+
 
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete(int userId)

@@ -2,6 +2,8 @@
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
+using JOB_FINDER_API.Models.Requests;
+using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,7 +36,10 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateDto dto)
+        public async Task<ActionResult<Job>> CreateJob(
+    [FromForm] JobCreateRequest dto,
+    IFormFile? imageFile,
+    [FromServices] CloudinaryService cloudinaryService)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -43,6 +48,12 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("TimeEnd must be after TimeStart.");
             if (dto.ExpiryDate <= DateTime.UtcNow)
                 return BadRequest("ExpiryDate must be in the future.");
+
+            string? imageUrl = null;
+            if (imageFile != null)
+            {
+                imageUrl = await cloudinaryService.UploadImageAsync(imageFile);
+            }
 
             var job = new Job
             {
@@ -58,7 +69,7 @@ namespace JOB_FINDER_API.Controllers
                 TimeStart = dto.TimeStart,
                 TimeEnd = dto.TimeEnd,
                 Status = dto.Status,
-                ImageJob = dto.ImageJob,
+                ImageJob = imageUrl, // Save uploaded image URL
                 ProvinceName = dto.ProvinceName,
                 AddressDetail = dto.AddressDetail,
                 CreatedAt = DateTime.UtcNow,
@@ -71,10 +82,37 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateJob(int id, Job job)
+        public async Task<IActionResult> UpdateJob(
+            int id,
+            [FromForm] JobCreateRequest dto,
+            IFormFile? imageFile,
+            [FromServices] CloudinaryService cloudinaryService)
         {
-            if (id != job.JobId) return BadRequest();
-            _context.Entry(job).State = EntityState.Modified;
+            var job = await _context.Jobs.FindAsync(id);
+            if (job == null) return NotFound();
+
+            job.Title = dto.Title;
+            job.Description = dto.Description;
+            job.CompanyId = dto.CompanyId;
+            job.Salary = dto.Salary;
+            job.IndustryId = dto.IndustryId;
+            job.ExpiryDate = dto.ExpiryDate;
+            job.LevelId = dto.LevelId;
+            job.JobTypeId = dto.JobTypeId;
+            job.ExperienceLevelId = dto.ExperienceLevelId;
+            job.TimeStart = dto.TimeStart;
+            job.TimeEnd = dto.TimeEnd;
+            job.Status = dto.Status;
+            job.ProvinceName = dto.ProvinceName;
+            job.AddressDetail = dto.AddressDetail;
+            job.UpdatedAt = DateTime.UtcNow;
+
+            if (imageFile != null)
+            {
+                var imageUrl = await cloudinaryService.UploadImageAsync(imageFile);
+                job.ImageJob = imageUrl;
+            }
+
             await _context.SaveChangesAsync();
             return NoContent();
         }

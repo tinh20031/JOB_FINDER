@@ -11,5 +11,7 @@ namespace JOB_FINDER_API.Models
 
         [JsonIgnore]
         public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
+        [JsonIgnore]
+        public List<CandidateSkill>? CandidateSkills { get; set; }
     }
 }

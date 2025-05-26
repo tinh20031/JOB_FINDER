@@ -482,6 +482,22 @@
   },
   {
     "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
+    "Method": "VerifyCompany",
+    "RelativePath": "api/CompanyProfile/{userId}/Verify",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
     "Method": "Filter",
     "RelativePath": "api/CompanyProfile/filter",
     "HttpMethod": "GET",

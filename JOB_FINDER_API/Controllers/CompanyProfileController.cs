@@ -97,6 +97,17 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Company has been unlocked.");
         }
 
+        [HttpPut("{userId}/Verify")]
+        public async Task<IActionResult> VerifyCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if(company == null)
+                return NotFound("Company not found.");
+            company.IsVerified = true;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been verified.");
+        }
+
 
         
         [HttpPost]

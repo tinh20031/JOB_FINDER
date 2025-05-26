@@ -788,6 +788,29 @@
         }
       }
     },
+    "/api/CompanyProfile/{userId}/Verify": {
+      "put": {
+        "tags": [
+          "CompanyProfile"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/Contact": {
       "get": {
         "tags": [

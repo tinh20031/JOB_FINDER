@@ -3,7 +3,6 @@ using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
 using JOB_FINDER_API.Models.Requests;
-using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +13,7 @@ namespace JOB_FINDER_API.Controllers
     public class JobController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
+
         public JobController(JobFinderDbContext context) => _context = context;
 
         [HttpGet]
@@ -36,10 +36,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult<Job>> CreateJob(
-    [FromForm] JobCreateRequest dto,
-    IFormFile? imageFile,
-    [FromServices] CloudinaryService cloudinaryService)
+        public async Task<ActionResult<Job>> CreateJob([FromForm] JobCreateRequest dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -48,12 +45,6 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("TimeEnd must be after TimeStart.");
             if (dto.ExpiryDate <= DateTime.UtcNow)
                 return BadRequest("ExpiryDate must be in the future.");
-
-            string? imageUrl = null;
-            if (imageFile != null)
-            {
-                imageUrl = await cloudinaryService.UploadImageAsync(imageFile);
-            }
 
             var job = new Job
             {
@@ -69,7 +60,6 @@ namespace JOB_FINDER_API.Controllers
                 TimeStart = dto.TimeStart,
                 TimeEnd = dto.TimeEnd,
                 Status = dto.Status,
-                ImageJob = imageUrl, // Save uploaded image URL
                 ProvinceName = dto.ProvinceName,
                 AddressDetail = dto.AddressDetail,
                 CreatedAt = DateTime.UtcNow,
@@ -82,11 +72,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateJob(
-            int id,
-            [FromForm] JobCreateRequest dto,
-            IFormFile? imageFile,
-            [FromServices] CloudinaryService cloudinaryService)
+        public async Task<IActionResult> UpdateJob(int id, [FromForm] JobCreateRequest dto)
         {
             var job = await _context.Jobs.FindAsync(id);
             if (job == null) return NotFound();
@@ -107,12 +93,6 @@ namespace JOB_FINDER_API.Controllers
             job.AddressDetail = dto.AddressDetail;
             job.UpdatedAt = DateTime.UtcNow;
 
-            if (imageFile != null)
-            {
-                var imageUrl = await cloudinaryService.UploadImageAsync(imageFile);
-                job.ImageJob = imageUrl;
-            }
-
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -122,15 +102,15 @@ namespace JOB_FINDER_API.Controllers
         {
             var job = await _context.Jobs.FindAsync(id);
             if (job == null) return NotFound();
-            if (job.Status == Job.JobStatus.Posted) // Đúng, so sánh enum với enum
+
+            if (job.Status == Job.JobStatus.Posted)
                 return BadRequest("Cannot delete a job that is already posted.");
+
             _context.Jobs.Remove(job);
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
-
-        //filter job 
         [HttpGet("filter")]
         public async Task<ActionResult<IEnumerable<Job>>> FilterJobs([FromQuery] JobFilterParams filter)
         {

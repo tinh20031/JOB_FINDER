@@ -384,72 +384,6 @@
   },
   {
     "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
-    "Method": "UpdateCompanyProfile",
-    "RelativePath": "api/CompanyProfile/{userId}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "UserId",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "CompanyName",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "CompanyProfileDescription",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Location",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "TeamSize",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Website",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Contact",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "IndustryId",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "logoFile",
-        "Type": "Microsoft.AspNetCore.Http.IFormFile",
-        "IsRequired": false
-      },
-      {
-        "Name": "logoLgrFile",
-        "Type": "Microsoft.AspNetCore.Http.IFormFile",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
     "Method": "LockCompany",
     "RelativePath": "api/CompanyProfile/{userId}/lock",
     "HttpMethod": "PUT",
@@ -468,22 +402,6 @@
     "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
     "Method": "UnlockCompany",
     "RelativePath": "api/CompanyProfile/{userId}/unlock",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
-    "Method": "VerifyCompany",
-    "RelativePath": "api/CompanyProfile/{userId}/Verify",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -2152,11 +2070,6 @@
       {
         "Name": "Phone",
         "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "RoleId",
-        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false
       },
       {

@@ -323,6 +323,32 @@ namespace JOB_FINDER_API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Experiences");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4545),
+                            ExperienceName = "Less than 1 year",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4546),
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4547),
+                            ExperienceName = "1-3 years",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4548),
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4549),
+                            ExperienceName = "More than 3 years",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4549),
+                            UserId = 1
+                        });
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.ExperienceLevel", b =>
@@ -363,6 +389,22 @@ namespace JOB_FINDER_API.Migrations
                     b.HasKey("IndustryId");
 
                     b.ToTable("Industries");
+
+                    b.HasData(
+                        new
+                        {
+                            IndustryId = 1,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4621),
+                            IndustryName = "Information Technology",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4622)
+                        },
+                        new
+                        {
+                            IndustryId = 2,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4624),
+                            IndustryName = "Finance",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4624)
+                        });
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.Job", b =>
@@ -481,6 +523,29 @@ namespace JOB_FINDER_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("JobTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4658),
+                            JobTypeName = "Full-time",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4659)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4661),
+                            JobTypeName = "Part-time",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4661)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4662),
+                            JobTypeName = "Remote",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4663)
+                        });
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.Level", b =>
@@ -504,6 +569,29 @@ namespace JOB_FINDER_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Levels");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4694),
+                            LevelName = "Intern",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4695)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4697),
+                            LevelName = "Junior",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4697)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4699),
+                            LevelName = "Senior",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4699)
+                        });
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.Message", b =>
@@ -575,23 +663,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 5, 25, 8, 1, 52, 218, DateTimeKind.Utc).AddTicks(1275),
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4365),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 5, 25, 8, 1, 52, 218, DateTimeKind.Utc).AddTicks(1278)
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4369)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 5, 25, 8, 1, 52, 218, DateTimeKind.Utc).AddTicks(1281),
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4373),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 5, 25, 8, 1, 52, 218, DateTimeKind.Utc).AddTicks(1282)
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4373)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 5, 25, 8, 1, 52, 218, DateTimeKind.Utc).AddTicks(1283),
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4374),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 5, 25, 8, 1, 52, 218, DateTimeKind.Utc).AddTicks(1283)
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4374)
                         });
                 });
 
@@ -616,6 +704,29 @@ namespace JOB_FINDER_API.Migrations
                     b.HasKey("SkillId");
 
                     b.ToTable("Skills");
+
+                    b.HasData(
+                        new
+                        {
+                            SkillId = 1,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4731),
+                            SkillName = "C#",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4732)
+                        },
+                        new
+                        {
+                            SkillId = 2,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4734),
+                            SkillName = "JavaScript",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4734)
+                        },
+                        new
+                        {
+                            SkillId = 3,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4736),
+                            SkillName = "SQL",
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4736)
+                        });
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.User", b =>
@@ -662,6 +773,20 @@ namespace JOB_FINDER_API.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4781),
+                            Email = "tinhadmin@gmail.com",
+                            FullName = "tinh",
+                            IsActive = true,
+                            Password = "123",
+                            Phone = "0123456789",
+                            RoleId = 1,
+                            UpdatedAt = new DateTime(2025, 5, 26, 14, 5, 5, 696, DateTimeKind.Utc).AddTicks(4782)
+                        });
                 });
 
             modelBuilder.Entity("JOB_FINDER_API.Models.UserFavoriteJob", b =>

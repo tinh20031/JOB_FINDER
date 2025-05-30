@@ -68,30 +68,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(users);
         }
 
-        /*[HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
-        {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            user.FullName = request.FullName ?? user.FullName;
-            user.Email = request.Email ?? user.Email;
-            user.Phone = request.Phone ?? user.Phone;
-            if (request.RoleId.HasValue)
-            {
-                user.RoleId = request.RoleId.Value;
-            }
-            user.UpdatedAt = DateTime.UtcNow;
-
-            _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok("User updated successfully.");
-        }*/
+       
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromForm] UpdateUserRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {
@@ -117,13 +94,13 @@ namespace JOB_FINDER_API.Controllers
                 user.Phone = request.Phone;
 
             // Cập nhật Role nếu có
-            if (request.RoleId.HasValue)
+            /*if (request.RoleId.HasValue)
             {
                 var roleExists = await _dbContext.Roles.AnyAsync(r => r.RoleId == request.RoleId.Value);
                 if (!roleExists)
                     return BadRequest("Invalid RoleId.");
                 user.RoleId = request.RoleId.Value;
-            }
+            }*/
 
             // Cập nhật Image nếu có file upload
             if (imageFile != null)
@@ -144,7 +121,7 @@ namespace JOB_FINDER_API.Controllers
                 user.Email,
                 user.Phone,
                 user.Image,
-                user.RoleId,
+                //user.RoleId,
                 user.UpdatedAt
             });
         }

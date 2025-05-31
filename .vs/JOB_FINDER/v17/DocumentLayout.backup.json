@@ -50,8 +50,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\CandidateToCompanyRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-31T05:11:13.788Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-31T05:11:13.788Z"
             },
             {
               "$type": "Document",
@@ -63,8 +62,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\Requests\\CandidateToCompanyRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-31T04:09:36.712Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-31T04:09:36.712Z"
             },
             {
               "$type": "Document",
@@ -74,7 +72,7 @@
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\CandidateToCompanyController.cs",
               "ToolTip": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CandidateToCompanyController.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\CandidateToCompanyController.cs",
-              "ViewState": "AgIAABEAAAAAAAAAAAAgwCIAAAAdAAAAAAAAAA==",
+              "ViewState": "AgIAAPkAAAAAAAAAAAAowAMBAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-31T04:10:11.241Z",
               "EditorCaption": ""
@@ -89,8 +87,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\appsettings.json",
               "ViewState": "AgIAAAwAAAAAAAAAAAAAABUAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-05-31T04:10:41.988Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-31T04:10:41.988Z"
             },
             {
               "$type": "Document",
@@ -102,8 +99,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
               "ViewState": "AgIAABcAAAAAAAAAAAA6wB8AAABYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-31T05:11:29.871Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-31T05:11:29.871Z"
             }
           ]
         }

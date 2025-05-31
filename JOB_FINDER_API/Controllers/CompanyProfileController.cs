@@ -17,9 +17,7 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public CompanyProfileController(JobFinderDbContext context) => _context = context;
 
-        /*        [HttpGet]
-                public async Task<IActionResult> GetAll() => Ok(await _context.CompanyProfile.ToListAsync());
-        */
+     
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -83,38 +81,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        /*[HttpGet("filter")]
-        public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
-        {
-            var query = _context.CompanyProfile.Include(c => c.Industry).AsQueryable();
-
-            if (!string.IsNullOrEmpty(filter.CompanyName))
-                query = query.Where(c => c.CompanyName.Contains(filter.CompanyName));
-            if (!string.IsNullOrEmpty(filter.Location))
-                query = query.Where(c => c.Location.Contains(filter.Location));
-            if (!string.IsNullOrEmpty(filter.TeamSize))
-                query = query.Where(c => c.TeamSize.Trim().ToLower() == filter.TeamSize.Trim().ToLower());
-            if (filter.IndustryId.HasValue)
-                query = query.Where(c => c.IndustryId == filter.IndustryId);
-
-            var result = await query
-                .Select(c => new CompanyProfileDto
-                {
-                    UserId = c.UserId,
-                    CompanyName = c.CompanyName,
-                    CompanyProfileDescription = c.CompanyProfileDescription,
-                    Location = c.Location,
-                    UrlCompanyLogo = c.UrlCompanyLogo,
-                    ImageLogoLgr = c.ImageLogoLgr,
-                    TeamSize = c.TeamSize,
-                    Website = c.Website,
-                    Contact = c.Contact,
-                    IndustryId = c.IndustryId,
-                })
-                .ToListAsync();
-
-            return Ok(result);
-        }*/
+       
         [HttpGet("filter")]
         public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
         {

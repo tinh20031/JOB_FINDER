@@ -280,6 +280,38 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateToCompanyController",
+    "Method": "RequestUpgrade",
+    "RelativePath": "api/CandidateToCompany/request",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "JOB_FINDER_API.Models.Requests.CandidateToCompanyRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JOB_FINDER_API.Controllers.CandidateToCompanyController",
+    "Method": "VerifyUpgrade",
+    "RelativePath": "api/CandidateToCompany/verify/{userId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "JOB_FINDER_API.Controllers.CompanyProfileController",
     "Method": "GetAll",
     "RelativePath": "api/CompanyProfile",

@@ -6,4 +6,5 @@ public class UpdateUserRequest
     public int? RoleId { get; set; } // Add this line
     public string Image { get; set; } = string.Empty;
 
+
 }

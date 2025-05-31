@@ -41,6 +41,48 @@ namespace JOB_FINDER_API.Data
                 new Role { RoleId = 3, RoleName = "Admin" }
             );
 
+
+
+            modelBuilder.Entity<Experience>().HasData(
+new Experience { Id = 1, ExperienceName = "Less than 1 year", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+new Experience { Id = 2, ExperienceName = "1-3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+);
+            modelBuilder.Entity<Industry>().HasData(
+    new Industry { IndustryId = 1, IndustryName = "Information Technology", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+    new Industry { IndustryId = 2, IndustryName = "Finance", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+);
+            modelBuilder.Entity<JobType>().HasData(
+    new JobType { Id = 1, JobTypeName = "Full-time", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+    new JobType { Id = 2, JobTypeName = "Part-time", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+    new JobType { Id = 3, JobTypeName = "Remote", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+);
+            modelBuilder.Entity<Level>().HasData(
+    new Level { Id = 1, LevelName = "Intern", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+    new Level { Id = 2, LevelName = "Junior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+    new Level { Id = 3, LevelName = "Senior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+);
+            modelBuilder.Entity<Skill>().HasData(
+    new Skill { SkillId = 1, SkillName = "C#", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+    new Skill { SkillId = 2, SkillName = "JavaScript", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+    new Skill { SkillId = 3, SkillName = "SQL", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+);
+            modelBuilder.Entity<User>().HasData(
+    new User
+    {
+        Id = 1,
+        FullName = "tinh",
+        Email = "tinhadmin@gmail.com",
+        Phone = "0123456789",
+        Password = "123",
+        IsActive = true,
+        RoleId = 1, // Candidate
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    }
+);
+
+
             // CandidateProfile
             modelBuilder.Entity<CandidateProfile>()
                 .HasKey(cp => cp.UserId);

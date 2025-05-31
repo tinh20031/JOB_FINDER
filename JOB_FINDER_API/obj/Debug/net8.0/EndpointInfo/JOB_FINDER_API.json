@@ -599,104 +599,6 @@
             "description": "Success"
           }
         }
-      },
-      "put": {
-        "tags": [
-          "CompanyProfile"
-        ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "UserId": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
-                  "CompanyName": {
-                    "type": "string"
-                  },
-                  "CompanyProfileDescription": {
-                    "type": "string"
-                  },
-                  "Location": {
-                    "type": "string"
-                  },
-                  "TeamSize": {
-                    "type": "string"
-                  },
-                  "Website": {
-                    "type": "string"
-                  },
-                  "Contact": {
-                    "type": "string"
-                  },
-                  "IndustryId": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
-                  "logoFile": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "logoLgrFile": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
-              },
-              "encoding": {
-                "UserId": {
-                  "style": "form"
-                },
-                "CompanyName": {
-                  "style": "form"
-                },
-                "CompanyProfileDescription": {
-                  "style": "form"
-                },
-                "Location": {
-                  "style": "form"
-                },
-                "TeamSize": {
-                  "style": "form"
-                },
-                "Website": {
-                  "style": "form"
-                },
-                "Contact": {
-                  "style": "form"
-                },
-                "IndustryId": {
-                  "style": "form"
-                },
-                "logoFile": {
-                  "style": "form"
-                },
-                "logoLgrFile": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
       }
     },
     "/api/CompanyProfile/filter": {
@@ -3302,10 +3204,6 @@
                   "Phone": {
                     "type": "string"
                   },
-                  "RoleId": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
                   "imageFile": {
                     "type": "string",
                     "format": "binary"
@@ -3320,9 +3218,6 @@
                   "style": "form"
                 },
                 "Phone": {
-                  "style": "form"
-                },
-                "RoleId": {
                   "style": "form"
                 },
                 "imageFile": {

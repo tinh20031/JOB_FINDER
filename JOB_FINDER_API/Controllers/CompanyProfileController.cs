@@ -1,4 +1,6 @@
-﻿using JOB_FINDER_API.Data;
+
+﻿using JOB_FINDER_API.Constants;
+using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
@@ -16,16 +18,60 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public CompanyProfileController(JobFinderDbContext context) => _context = context;
 
+        /*        [HttpGet]
+                public async Task<IActionResult> GetAll() => Ok(await _context.CompanyProfile.ToListAsync());
+        */
         [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _context.CompanyProfile.ToListAsync());
+        public async Task<IActionResult> GetAll()
+        {
+            var companies = await _context.CompanyProfile
+                .Include(c => c.Industry)
+                .Select(c => new CompanyProfileDto
+                {
+                    UserId = c.UserId,
+                    CompanyName = c.CompanyName,
+                    CompanyProfileDescription = c.CompanyProfileDescription,
+                    Location = c.Location,
+                    UrlCompanyLogo = c.UrlCompanyLogo,
+                    ImageLogoLgr = c.ImageLogoLgr,
+                    TeamSize = c.TeamSize,
+                    Website = c.Website,
+                    Contact = c.Contact,
+                    IndustryId = c.IndustryId,
+                    IndustryName = c.Industry != null ? c.Industry.IndustryName : null
+                })
+                .ToListAsync();
 
+            return Ok(companies);
+        }
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get(int userId)
         {
-            var item = await _context.CompanyProfile.FindAsync(userId);
-            return item == null ? NotFound() : Ok(item);
-        }
+            var company = await _context.CompanyProfile
+                .Include(c => c.Industry)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
 
+            if (company == null)
+                return NotFound();
+
+            var dto = new CompanyProfileDto
+            {
+                UserId = company.UserId,
+                CompanyName = company.CompanyName,
+                CompanyProfileDescription = company.CompanyProfileDescription,
+                Location = company.Location,
+                UrlCompanyLogo = company.UrlCompanyLogo,
+                ImageLogoLgr = company.ImageLogoLgr,
+                TeamSize = company.TeamSize,
+                Website = company.Website,
+                Contact = company.Contact,
+                IndustryId = company.IndustryId,
+                IndustryName = company.Industry?.IndustryName,
+
+            };
+
+            return Ok(dto);
+        }
 
 
         [HttpDelete("{userId}")]
@@ -38,7 +84,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        [HttpGet("filter")]
+        /*[HttpGet("filter")]
         public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
         {
             var query = _context.CompanyProfile.Include(c => c.Industry).AsQueryable();
@@ -48,7 +94,7 @@ namespace JOB_FINDER_API.Controllers
             if (!string.IsNullOrEmpty(filter.Location))
                 query = query.Where(c => c.Location.Contains(filter.Location));
             if (!string.IsNullOrEmpty(filter.TeamSize))
-                query = query.Where(c => c.TeamSize == filter.TeamSize);
+                query = query.Where(c => c.TeamSize.Trim().ToLower() == filter.TeamSize.Trim().ToLower());
             if (filter.IndustryId.HasValue)
                 query = query.Where(c => c.IndustryId == filter.IndustryId);
 
@@ -65,14 +111,44 @@ namespace JOB_FINDER_API.Controllers
                     Website = c.Website,
                     Contact = c.Contact,
                     IndustryId = c.IndustryId,
-                    
-                 
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }*/
+        [HttpGet("filter")]
+        public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
+        {
+            var query = _context.CompanyProfile.Include(c => c.Industry).AsQueryable();
+
+            if (!string.IsNullOrEmpty(filter.CompanyName))
+                query = query.Where(c => c.CompanyName.Contains(filter.CompanyName));
+            if (!string.IsNullOrEmpty(filter.Location))
+                query = query.Where(c => c.Location.Contains(filter.Location));
+            if (!string.IsNullOrEmpty(filter.TeamSize))
+                query = query.Where(c => c.TeamSize.Trim().ToLower() == filter.TeamSize.Trim().ToLower());
+            if (filter.IndustryId.HasValue)
+                query = query.Where(c => c.IndustryId == filter.IndustryId);
+
+            var result = await query
+                .Select(c => new CompanyProfileDto
+                {
+                    UserId = c.UserId,
+                    CompanyName = c.CompanyName,
+                    CompanyProfileDescription = c.CompanyProfileDescription,
+                    Location = c.Location,
+                    UrlCompanyLogo = c.UrlCompanyLogo,
+                    ImageLogoLgr = c.ImageLogoLgr,
+                    TeamSize = c.TeamSize,
+                    Website = c.Website,
+                    Contact = c.Contact,
+                    IndustryId = c.IndustryId,
+                    IndustryName = c.Industry != null ? c.Industry.IndustryName : null
                 })
                 .ToListAsync();
 
             return Ok(result);
         }
-
 
         [HttpPut("{userId}/lock")]
         public async Task<IActionResult> LockCompany(int userId)
@@ -98,13 +174,12 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Company has been unlocked.");
         }
 
-        
         [HttpPost]
         public async Task<IActionResult> AddCompanyProfile(
-    [FromForm] CompanyProfileRequest request,
-    IFormFile? logoFile,
-    IFormFile? logoLgrFile,
-    [FromServices] CloudinaryService cloudinaryService)
+            [FromForm] CompanyProfileRequest request,
+            IFormFile? logoFile,
+            IFormFile? logoLgrFile,
+            [FromServices] CloudinaryService cloudinaryService)
         {
             if (request.UserId == 0)
                 return BadRequest("UserId is required.");
@@ -112,6 +187,13 @@ namespace JOB_FINDER_API.Controllers
             var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId);
             if (!userExists)
                 return BadRequest("User does not exist.");
+
+            if (!TeamSizeOptions.ValidSizes.Contains(request.TeamSize))
+                return BadRequest("Invalid TeamSize. Allowed values are: " + string.Join(", ", TeamSizeOptions.ValidSizes));
+
+            var industry = await _context.Industries.FindAsync(request.IndustryId);
+            if (industry == null)
+                return BadRequest("Invalid IndustryId.");
 
             string? logoUrl = null;
             string? logoLgrUrl = null;
@@ -138,10 +220,10 @@ namespace JOB_FINDER_API.Controllers
             _context.CompanyProfile.Add(companyProfile);
             await _context.SaveChangesAsync();
 
-            return Ok(companyProfile);
+            return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
         }
 
-        [HttpPut("{userId}")]
+        /*[HttpPut("{userId}")]
         public async Task<IActionResult> UpdateCompanyProfile(
             int userId,
             [FromForm] CompanyProfileRequest request,
@@ -169,7 +251,6 @@ namespace JOB_FINDER_API.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(companyProfile);
-        }
+        }*/
     }
-
 }

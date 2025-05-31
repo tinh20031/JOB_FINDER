@@ -13,6 +13,7 @@ namespace JOB_FINDER_API.Models.DTO
         public string? Contact { get; set; }
    
         public int IndustryId { get; set; }
+        public string? IndustryName { get; set; }
 
     }
 }

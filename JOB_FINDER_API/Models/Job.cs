@@ -6,10 +6,10 @@ namespace JOB_FINDER_API.Models
     {
         public enum JobStatus
         {
-            Submitted, // Đã gửi
-            Posted,    // Đã đăng
-            Rejected,  // Từ chối
-            Closed     // Đã đóng
+            pending, 
+            active,    
+            inactive  
+            
         }
 
         public int JobId { get; set; }
@@ -24,8 +24,7 @@ namespace JOB_FINDER_API.Models
         public int ExperienceLevelId { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
-        public JobStatus Status { get; set; } = JobStatus.Submitted;
-        public string? ImageJob { get; set; }
+        public JobStatus Status { get; set; } = JobStatus.pending;
         public string ProvinceName { get; set; } = string.Empty; 
         public string AddressDetail { get; set; } = string.Empty; 
 

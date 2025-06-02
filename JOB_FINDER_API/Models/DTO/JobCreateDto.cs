@@ -39,9 +39,9 @@ namespace JOB_FINDER_API.Models.DTO
         public DateTime TimeEnd { get; set; }
 
         [Required]
-        public JobStatus Status { get; set; } = JobStatus.Submitted;
+        public JobStatus Status { get; set; } = JobStatus.pending;
 
-        public string? ImageJob { get; set; }
+   
 
         [Required]
         public string ProvinceName { get; set; } = string.Empty;

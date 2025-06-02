@@ -1,4 +1,4 @@
-﻿using JOB_FINDER_API.Constants;
+using JOB_FINDER_API.Constants;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
@@ -17,7 +17,7 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public CompanyProfileController(JobFinderDbContext context) => _context = context;
 
-     
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -81,7 +81,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-       
+
         [HttpGet("filter")]
         public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
         {

@@ -1,4 +1,4 @@
-﻿namespace JOB_FINDER_API.Constants
+namespace JOB_FINDER_API.Constants
 {
     public static class TeamSizeOptions
     {

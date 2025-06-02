@@ -44,11 +44,6 @@ namespace JOB_FINDER_API.Controllers
             if (dto.ExpiryDate <= DateTime.UtcNow)
                 return BadRequest("ExpiryDate must be in the future.");
 
-<<<<<<< HEAD
-=======
-           
-
->>>>>>> 898de8e (dd)
             var job = new Job
             {
                 Title = dto.Title,
@@ -63,18 +58,7 @@ namespace JOB_FINDER_API.Controllers
                 TimeStart = dto.TimeStart,
                 TimeEnd = dto.TimeEnd,
                 Status = dto.Status,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-                ImageJob = imageUrl, // Save uploaded image URL
-=======
-              
->>>>>>> 323abc6 (cache)
->>>>>>> df08e47 (cache)
-=======
-                //ImageJob = imageUrl, // Save uploaded image URL
->>>>>>> 898de8e (dd)
+
                 ProvinceName = dto.ProvinceName,
                 AddressDetail = dto.AddressDetail,
                 CreatedAt = DateTime.UtcNow,
@@ -108,11 +92,7 @@ namespace JOB_FINDER_API.Controllers
             job.AddressDetail = dto.AddressDetail;
             job.UpdatedAt = DateTime.UtcNow;
 
-<<<<<<< HEAD
-=======
-           
 
->>>>>>> 898de8e (dd)
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -122,8 +102,8 @@ namespace JOB_FINDER_API.Controllers
         {
             var job = await _context.Jobs.FindAsync(id);
             if (job == null) return NotFound();
-            if (job.Status == Job.JobStatus.Posted)
-                return BadRequest("Cannot delete a job that is already posted.");
+            if (job.Status == Job.JobStatus.active)
+                return BadRequest("Cannot delete a job that is already active.");
 
             _context.Jobs.Remove(job);
             await _context.SaveChangesAsync();

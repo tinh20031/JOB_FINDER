@@ -1,12 +1,8 @@
-<<<<<<< HEAD
-﻿using JOB_FINDER_API.Constants;
-=======
->>>>>>> 323abc6 (cache)
+using JOB_FINDER_API.Constants;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
-<<<<<<< HEAD
 using JOB_FINDER_API.Models.Requests;
 using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +17,7 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public CompanyProfileController(JobFinderDbContext context) => _context = context;
 
-     
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -85,7 +81,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-       
+
         [HttpGet("filter")]
         public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
         {
@@ -162,131 +158,6 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Invalid TeamSize. Allowed values are: " + string.Join(", ", TeamSizeOptions.ValidSizes));
 
             var industry = await _context.Industries.FindAsync(request.IndustryId);
-=======
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using JOB_FINDER_API.Constants;
-
-namespace JOB_FINDER_API.Controllers
-{
-    [ApiController]
-    [Route("api/[controller]")]
-    public class CompanyProfileController : ControllerBase
-    {
-        private readonly JobFinderDbContext _context;
-        public CompanyProfileController(JobFinderDbContext context) => _context = context;
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _context.CompanyProfile.ToListAsync());
-
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> Get(int userId)
-        {
-            var company = await _context.CompanyProfile
-                .Include(c => c.Industry)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
-
-            if (company == null)
-                return NotFound();
-
-            var dto = new CompanyProfileDto
-            {
-                UserId = company.UserId,
-                CompanyName = company.CompanyName,
-                CompanyProfileDescription = company.CompanyProfileDescription,
-                Location = company.Location,
-                UrlCompanyLogo = company.UrlCompanyLogo,
-                ImageLogoLgr = company.ImageLogoLgr,
-                TeamSize = company.TeamSize,
-                Website = company.Website,
-                Contact = company.Contact,
-                IndustryId = company.IndustryId,
-                IndustryName = company.Industry?.IndustryName,
-               
-            };
-
-            return Ok(dto);
-        }
-
-
-        [HttpDelete("{userId}")]
-        public async Task<IActionResult> Delete(int userId)
-        {
-            var item = await _context.CompanyProfile.FindAsync(userId);
-            if (item == null) return NotFound();
-            _context.CompanyProfile.Remove(item);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-
-        [HttpGet("filter")]
-        public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
-        {
-            var query = _context.CompanyProfile.Include(c => c.Industry).AsQueryable();
-
-            if (!string.IsNullOrEmpty(filter.CompanyName))
-                query = query.Where(c => c.CompanyName.Contains(filter.CompanyName));
-            if (!string.IsNullOrEmpty(filter.Location))
-                query = query.Where(c => c.Location.Contains(filter.Location));
-            if (!string.IsNullOrEmpty(filter.TeamSize))
-                query = query.Where(c => c.TeamSize.Trim().ToLower() == filter.TeamSize.Trim().ToLower());
-            if (filter.IndustryId.HasValue)
-                query = query.Where(c => c.IndustryId == filter.IndustryId);
-
-            var result = await query
-                .Select(c => new CompanyProfileDto
-                {
-                    UserId = c.UserId,
-                    CompanyName = c.CompanyName,
-                    CompanyProfileDescription = c.CompanyProfileDescription,
-                    Location = c.Location,
-                    UrlCompanyLogo = c.UrlCompanyLogo,
-                    ImageLogoLgr = c.ImageLogoLgr,
-                    TeamSize = c.TeamSize,
-                    Website = c.Website,
-                    Contact = c.Contact,
-                    IndustryId = c.IndustryId,
-                })
-                .ToListAsync();
-
-            return Ok(result);
-        }
-
-        [HttpPut("{userId}/lock")]
-        public async Task<IActionResult> LockCompany(int userId)
-        {
-            var company = await _context.CompanyProfile.FindAsync(userId);
-            if (company == null)
-                return NotFound("Company not found.");
-
-            company.IsActive = false;
-            await _context.SaveChangesAsync();
-            return Ok("Company has been locked.");
-        }
-
-        [HttpPut("{userId}/unlock")]
-        public async Task<IActionResult> UnlockCompany(int userId)
-        {
-            var company = await _context.CompanyProfile.FindAsync(userId);
-            if (company == null)
-                return NotFound("Company not found.");
-
-            company.IsActive = true;
-            await _context.SaveChangesAsync();
-            return Ok("Company has been unlocked.");
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CompanyProfileCreateDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!TeamSizeOptions.ValidSizes.Contains(dto.TeamSize))
-                return BadRequest("Invalid TeamSize. Allowed values are: " + string.Join(", ", TeamSizeOptions.ValidSizes));
-
-            var industry = await _context.Industries.FindAsync(dto.IndustryId);
->>>>>>> 323abc6 (cache)
             if (industry == null)
                 return BadRequest("Invalid IndustryId.");
 
@@ -317,7 +188,6 @@ namespace JOB_FINDER_API.Controllers
 
             return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
         }
-<<<<<<< HEAD
 
         /*[HttpPut("{userId}")]
         public async Task<IActionResult> UpdateCompanyProfile(
@@ -350,7 +220,3 @@ namespace JOB_FINDER_API.Controllers
         }*/
     }
 }
-=======
-    }
-}
->>>>>>> 323abc6 (cache)

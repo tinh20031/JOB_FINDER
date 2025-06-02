@@ -1,1 +1,11 @@
-{"Version":1,"Hash":"xse2enJHWlmcXt/xGOqVIW+tB0Nx0QRWU/ncS4yPpDA=","Source":"JOB_FINDER_API","BasePath":"_content/JOB_FINDER_API","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[{"Name":"JOB_FINDER_API\\wwwroot","Source":"JOB_FINDER_API","ContentRoot":"F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\wwwroot\\","BasePath":"_content/JOB_FINDER_API","Pattern":"**"}],"Assets":[],"Endpoints":[]}
+{
+  "Version": 1,
+  "Hash": "KpUzH2uGMQEdWPea14P1i6gdDol/3o64F4xq/Unc3xI=",
+  "Source": "JOB_FINDER_API",
+  "BasePath": "_content/JOB_FINDER_API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

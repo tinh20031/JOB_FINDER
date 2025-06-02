@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JOB_FINDER_API.Migrations
 {
     /// <inheritdoc />
-    public partial class FixCandidateSkillMapping : Migration
+    public partial class Initials : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -489,13 +489,67 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Industries",
+                columns: new[] { "IndustryId", "CreatedAt", "IndustryName", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5937), "Information Technology", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5937) },
+                    { 2, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5939), "Finance", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5939) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "JobTypes",
+                columns: new[] { "Id", "CreatedAt", "JobTypeName", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6007), "Full-time", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6008) },
+                    { 2, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6009), "Part-time", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6010) },
+                    { 3, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6011), "Remote", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6011) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Levels",
+                columns: new[] { "Id", "CreatedAt", "LevelName", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6039), "Intern", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6040) },
+                    { 2, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6042), "Junior", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6043) },
+                    { 3, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6044), "Senior", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6045) }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "RoleId", "CreatedAt", "RoleName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6777), "Candidate", new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6779) },
-                    { 2, new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6783), "Company", new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6783) },
-                    { 3, new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6784), "Admin", new DateTime(2025, 5, 25, 7, 48, 56, 705, DateTimeKind.Utc).AddTicks(6784) }
+                    { 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5742), "Candidate", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5744) },
+                    { 2, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5749), "Company", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5749) },
+                    { 3, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5750), "Admin", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5750) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Skills",
+                columns: new[] { "SkillId", "CreatedAt", "SkillName", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6069), "C#", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6070) },
+                    { 2, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6072), "JavaScript", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6072) },
+                    { 3, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6074), "SQL", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6074) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "CreatedAt", "Email", "FullName", "Image", "IsActive", "Password", "Phone", "RoleId", "UpdatedAt" },
+                values: new object[] { 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6108), "tinhadmin@gmail.com", "tinh", null, true, "123", "0123456789", 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(6109) });
+
+            migrationBuilder.InsertData(
+                table: "Experiences",
+                columns: new[] { "Id", "CreatedAt", "ExperienceName", "UpdatedAt", "UserId" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5899), "Less than 1 year", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5899), 1 },
+                    { 2, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5901), "1-3 years", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5902), 1 },
+                    { 3, new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5903), "More than 3 years", new DateTime(2025, 5, 30, 10, 11, 4, 255, DateTimeKind.Utc).AddTicks(5903), 1 }
                 });
 
             migrationBuilder.CreateIndex(

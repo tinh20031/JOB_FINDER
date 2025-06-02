@@ -10,24 +10,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Data\Migrations\**" />
-    <Compile Remove="Data\Repositories\**" />
-    <Compile Remove="DTOs\**" />
-    <Compile Remove="Services\**" />
-    <Content Remove="Data\Migrations\**" />
-    <Content Remove="Data\Repositories\**" />
-    <Content Remove="DTOs\**" />
-    <Content Remove="Services\**" />
-    <EmbeddedResource Remove="Data\Migrations\**" />
-    <EmbeddedResource Remove="Data\Repositories\**" />
-    <EmbeddedResource Remove="DTOs\**" />
-    <EmbeddedResource Remove="Services\**" />
-    <None Remove="Data\Migrations\**" />
-    <None Remove="Data\Repositories\**" />
-    <None Remove="DTOs\**" />
-    <None Remove="Services\**" />
-  </ItemGroup>
+  
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />

@@ -1,52 +1,69 @@
-using JOB_FINDER_API.Data;
+﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.DTO;
+using JOB_FINDER_API.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace JOB_FINDER_API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class MessageController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public MessageController(JobFinderDbContext context) => _context = context;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _context.Messages.ToListAsync());
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public MessageController(JobFinderDbContext context, IHubContext<ChatHub> hubContext)
         {
-            var item = await _context.Messages.FindAsync(id);
-            return item == null ? NotFound() : Ok(item);
+            _context = context;
+            _hubContext = hubContext;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(Message model)
+        // Lấy lịch sử tin nhắn giữa 2 người dùng
+        [HttpGet("history/{userId1}/{userId2}")]
+        public async Task<IActionResult> GetMessageHistory(int userId1, int userId2)
         {
-            _context.Messages.Add(model);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+            var messages = await _context.Messages
+                .Where(m =>
+                    (m.SenderId == userId1 && m.ReceiverId == userId2) ||
+                    (m.SenderId == userId2 && m.ReceiverId == userId1))
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+
+            return Ok(messages);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Message model)
-        {
-            if (id != model.Id) return BadRequest();
-            _context.Entry(model).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpPost("send")]
+        public async Task<IActionResult> SendMessage([FromBody] SendMessageDto dto)
         {
-            var item = await _context.Messages.FindAsync(id);
-            if (item == null) return NotFound();
-            _context.Messages.Remove(item);
+            var sender = await _context.Users.FindAsync(dto.SenderId);
+            var receiver = await _context.Users.FindAsync(dto.ReceiverId);
+
+            if (sender == null || receiver == null)
+                return BadRequest("Invalid sender or receiver");
+
+            var message = new Message
+            {
+                SenderId = dto.SenderId,
+                ReceiverId = dto.ReceiverId,
+                RelatedJobId = dto.RelatedJobId,
+                MessageText = dto.MessageText,
+                SentAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Messages.Add(message);
             await _context.SaveChangesAsync();
-            return NoContent();
+
+    
+            await _hubContext.Clients.Group(dto.ReceiverId.ToString())
+                .SendAsync("ReceiveMessage", dto.SenderId, dto.MessageText);
+
+            return Ok(message);
         }
     }
 }

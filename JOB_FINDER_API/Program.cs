@@ -1,6 +1,7 @@
 ﻿
 using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
@@ -114,7 +115,7 @@ builder.Services.AddAuthentication(options =>
 
 // Add Authorization
 builder.Services.AddAuthorization();
-
+builder.Services.AddSignalR();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -124,7 +125,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.MapHub<ChatHub>("/chathub"); // <-- Map endpoint SignalR
 app.UseHttpsRedirection();
 
 // Add CORS middleware - Đặt trước UseAuthentication và UseAuthorization

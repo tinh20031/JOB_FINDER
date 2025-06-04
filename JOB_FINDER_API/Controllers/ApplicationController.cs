@@ -2,6 +2,7 @@
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
 using JOB_FINDER_API.Models.Services;
+using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +26,7 @@ namespace JOB_FINDER_API.Controllers
             return item == null ? NotFound() : Ok(item);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(Application model)
-        {
-            _context.Applications.Add(model);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
-        }
+       
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, Application model)
@@ -52,29 +47,50 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        
+
         [Authorize]
         [HttpPost("apply")]
         public async Task<IActionResult> Apply(
-    [FromBody] ApplyJobRequest request,
-    [FromServices] ICvSnapshotService cvSnapshotService)
+    [FromForm] ApplyJobRequest request,
+    [FromServices] ICvSnapshotService cvSnapshotService,
+    [FromServices] CloudinaryService cloudinaryService) // Inject CloudinaryService
         {
-            // Lấy userId từ claim
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
 
-            // Lấy CV của user
-            var cv = await _context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
-            if (cv == null)
-                return BadRequest("CV not found");
+            CV? cv = null;
+            string? uploadedCvUrl = null;
 
-            // Snapshot toàn bộ các trang CV
+            if (request.CvFile != null && request.CvFile.Length > 0)
+            {
+                // Upload CV to Cloudinary (like CVController)
+                uploadedCvUrl = await cloudinaryService.UploadCvAsync(request.CvFile);
+                if (string.IsNullOrEmpty(uploadedCvUrl))
+                    return StatusCode(500, "Failed to upload CV to Cloudinary.");
+
+                // Create new CV record
+                cv = new CV
+                {
+                    UserId = userId,
+                    FileUrl = uploadedCvUrl,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.CVs.Add(cv);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // Use existing CV if no file uploaded
+                cv = await _context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
+                if (cv == null)
+                    return BadRequest("CV not found and no file uploaded");
+            }
+
+            // Snapshot CV
             var snapshotUrls = await cvSnapshotService.CaptureCvAsImagesAsync(cv);
-
-            // Nếu không có snapshot nào, báo lỗi
             if (snapshotUrls == null || snapshotUrls.Count == 0)
                 return BadRequest("Failed to snapshot CV");
 
-            // Tạo Application mới, lưu snapshot đầu tiên hoặc tất cả snapshot (tùy nhu cầu)
             var application = new Application
             {
                 UserId = userId,
@@ -82,7 +98,7 @@ namespace JOB_FINDER_API.Controllers
                 CvId = cv.Id,
                 CoverLetter = request.CoverLetter,
                 ResumeUrl = cv.FileUrl,
-                SnapshotCv = snapshotUrls.First(), // hoặc string.Join(";", snapshotUrls) nếu muốn lưu nhiều
+                SnapshotCv = snapshotUrls.First(),
                 Status = ApplicationStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
@@ -96,8 +112,64 @@ namespace JOB_FINDER_API.Controllers
             {
                 Message = "Applied successfully",
                 ApplicationId = application.Id,
-                SnapshotUrls = snapshotUrls // trả về danh sách snapshot cho client nếu muốn
+                SnapshotUrls = snapshotUrls
             });
+        }
+
+        // Add this endpoint inside your ApplicationController class
+
+        /*[Authorize]
+        [HttpGet("my-applications")]
+        public async Task<IActionResult> GetMyApplications()
+        {
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+
+            var applications = await _context.Applications
+                .Where(a => a.UserId == userId)
+                .Include(a => a.Job) // Optional: include job details if needed
+                .ToListAsync();
+
+            return Ok(applications);
+        }*/
+        [Authorize]
+        [HttpGet("my-applications")]
+        public async Task<IActionResult> GetMyApplications()
+        {
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+
+            var applications = await _context.Applications
+                .Where(a => a.UserId == userId)
+                .Include(a => a.Job)
+                .Select(a => new
+                {
+                    ApplicationId = a.Id,
+                    a.Status,
+                    a.SubmittedAt,
+                    a.CoverLetter,
+                    a.ResumeUrl,
+                    a.SnapshotCv,
+                    Job = new
+                    {
+                        a.Job.JobId,
+                        a.Job.Title,
+                        a.Job.Description,
+                        a.Job.CompanyId,
+                        a.Job.Salary,
+                        a.Job.IndustryId,
+                        a.Job.ExpiryDate,
+                        a.Job.LevelId,
+                        a.Job.JobTypeId,
+                        a.Job.ExperienceLevelId,
+                        a.Job.TimeStart,
+                        a.Job.TimeEnd,
+                        a.Job.Status,
+                        a.Job.ProvinceName,
+                        a.Job.AddressDetail
+                    }
+                })
+                .ToListAsync();
+
+            return Ok(applications);
         }
     }
 }

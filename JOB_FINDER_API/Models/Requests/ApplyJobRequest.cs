@@ -4,5 +4,7 @@
     {
         public int JobId { get; set; }
         public string? CoverLetter { get; set; }
+
+        public IFormFile? CvFile { get; set; }
     }
 }

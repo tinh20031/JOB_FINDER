@@ -6,10 +6,9 @@ namespace JOB_FINDER_API.Models
     {
         public enum JobStatus
         {
-            pending, 
-            active,    
-            inactive  
-            
+            inactive = 0,
+            pending = 1,
+            active = 2 
         }
 
         public int JobId { get; set; }

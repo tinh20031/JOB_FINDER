@@ -171,7 +171,7 @@ namespace JOB_FINDER_API.Controllers
       <p><b>Contact:</b> {request.Contact}</p>
       <p><b>IndustryId:</b> {request.IndustryId}</p>
       <div style='margin: 24px 0;'>
-        <a href='https://localhost:7266/api/CandidateToCompany/verify/{user.Id}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Xác thực ngay</a>
+        <a href='http://localhost:3000/admin-dashboard/user-manager/{user.Id}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Xác thực ngay</a>
       </div>
       <p style='font-size: 13px; color: #888;'>Vui lòng xác thực yêu cầu này nếu hợp lệ.</p>
     </div>

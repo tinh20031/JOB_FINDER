@@ -13,5 +13,6 @@
         public string? Website { get; set; }
         public string? Contact { get; set; }
         public int IndustryId { get; set; }
+        
     }
 }

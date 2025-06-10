@@ -30,6 +30,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
         public DbSet<CandidateSkill> CandidateSkill { get; set; }
         public DbSet<CandidateToCompanyRequest> CandidateToCompanyRequests { get; set; }
+        public DbSet<UserFavoriteCompany> UserFavoriteCompanies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using JOB_FINDER_API.Services;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -14,7 +15,12 @@ namespace JOB_FINDER_API.Controllers
     public class JobController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public JobController(JobFinderDbContext context) => _context = context;
+        private readonly EmailService _emailService;
+        public JobController(JobFinderDbContext context, EmailService emailService)
+        {
+            _context = context;
+            _emailService = emailService;
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Job>>> GetJobs() =>
@@ -169,6 +175,8 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (job.Status == newStatus)
                     return BadRequest("Job already in specified status.");
+                // Chỉ gửi mail khi duyệt từ pending sang active
+                bool shouldSendMail = job.Status == Job.JobStatus.pending && newStatus == Job.JobStatus.active;
 
                 job.Status = newStatus;
                 job.UpdatedAt = DateTime.UtcNow;
@@ -180,6 +188,49 @@ namespace JOB_FINDER_API.Controllers
                     job.DeactivatedByAdmin = false;
 
                 await _context.SaveChangesAsync();
+                
+                if (shouldSendMail)
+                {
+                    // Lấy danh sách user đã yêu thích công ty này
+                    var favoriteUsers = await _context.UserFavoriteCompanies
+                        .Where(f => f.CompanyId == job.CompanyId)
+                        .Select(f => f.User)
+                        .ToListAsync();
+
+                    // Lấy thông tin company profile
+                    var companyProfile = await _context.CompanyProfile
+                        .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
+
+                    string companyName = companyProfile?.CompanyName ?? "Công ty";
+                    string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}"; // Thay bằng domain thật
+
+                    string mailBody = $@"
+                        <div style='font-family: Arial, sans-serif;'>
+                            <h2 style='color:#2d8cf0;'>Công ty {companyName} vừa đăng việc mới!</h2>
+                            <p><b>Title Job:</b> {job.Title}</p>
+                            <p><b>Địa điểm:</b> {job.ProvinceName}</p>
+                            <p><b>Hạn nộp:</b> {job.ExpiryDate:dd/MM/yyyy}</p>
+                            <p><b>Mô tả:</b> {job.Description}</p>
+                            <div style='margin:20px 0;'>
+                                <a href='{jobUrl}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>Xem chi tiết & Ứng tuyển</a>
+                            </div>
+                        </div>
+                    ";
+
+                    foreach (var user in favoriteUsers)
+                    {
+                        if (!string.IsNullOrEmpty(user.Email))
+                        {
+                            _emailService.SendEmail(
+                                user.Email,
+                                $"[{companyName}] vừa đăng việc mới: {job.Title}",
+                                mailBody,
+                                true
+                            );
+                        }
+                    }
+                }
+
                 return Ok($"Admin updated job #{id} status to {newStatus}.");
             }
 
@@ -216,12 +267,6 @@ namespace JOB_FINDER_API.Controllers
 
             return Forbid("You do not have permission to update job status.");
         }
-
-
-
-
-
-
 
 
 

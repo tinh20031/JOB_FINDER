@@ -23,7 +23,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
 builder.Services.AddScoped<CloudinaryService>();
-
+builder.Services.AddScoped<EmailService>();
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
 var cloudinarySettings = builder.Configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();

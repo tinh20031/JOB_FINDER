@@ -1,5 +1,5 @@
 
-﻿using JOB_FINDER_API.Constants;
+using JOB_FINDER_API.Constants;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
@@ -18,9 +18,7 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public CompanyProfileController(JobFinderDbContext context) => _context = context;
 
-        /*        [HttpGet]
-                public async Task<IActionResult> GetAll() => Ok(await _context.CompanyProfile.ToListAsync());
-        */
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -38,10 +36,12 @@ namespace JOB_FINDER_API.Controllers
                     Website = c.Website,
                     Contact = c.Contact,
                     IndustryId = c.IndustryId,
-                    IndustryName = c.Industry != null ? c.Industry.IndustryName : null
+                    IndustryName = c.Industry != null ? c.Industry.IndustryName : null,
+                    IsVerified = c.IsVerified,
+                    IsActive = c.IsActive
                 })
                 .ToListAsync();
-
+                
             return Ok(companies);
         }
         [HttpGet("{userId}")]
@@ -84,38 +84,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        /*[HttpGet("filter")]
-        public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
-        {
-            var query = _context.CompanyProfile.Include(c => c.Industry).AsQueryable();
 
-            if (!string.IsNullOrEmpty(filter.CompanyName))
-                query = query.Where(c => c.CompanyName.Contains(filter.CompanyName));
-            if (!string.IsNullOrEmpty(filter.Location))
-                query = query.Where(c => c.Location.Contains(filter.Location));
-            if (!string.IsNullOrEmpty(filter.TeamSize))
-                query = query.Where(c => c.TeamSize.Trim().ToLower() == filter.TeamSize.Trim().ToLower());
-            if (filter.IndustryId.HasValue)
-                query = query.Where(c => c.IndustryId == filter.IndustryId);
-
-            var result = await query
-                .Select(c => new CompanyProfileDto
-                {
-                    UserId = c.UserId,
-                    CompanyName = c.CompanyName,
-                    CompanyProfileDescription = c.CompanyProfileDescription,
-                    Location = c.Location,
-                    UrlCompanyLogo = c.UrlCompanyLogo,
-                    ImageLogoLgr = c.ImageLogoLgr,
-                    TeamSize = c.TeamSize,
-                    Website = c.Website,
-                    Contact = c.Contact,
-                    IndustryId = c.IndustryId,
-                })
-                .ToListAsync();
-
-            return Ok(result);
-        }*/
         [HttpGet("filter")]
         public async Task<IActionResult> Filter([FromQuery] CompanyProfileFilterParams filter)
         {
@@ -222,8 +191,19 @@ namespace JOB_FINDER_API.Controllers
 
             return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
         }
+        [HttpPut("{userId}/verify")]
+        public async Task<IActionResult> VerifyCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
 
-        /*[HttpPut("{userId}")]
+            company.IsVerified = true;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been verified.");
+        }
+
+        [HttpPut("{userId}")]
         public async Task<IActionResult> UpdateCompanyProfile(
             int userId,
             [FromForm] CompanyProfileRequest request,
@@ -251,6 +231,6 @@ namespace JOB_FINDER_API.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(companyProfile);
-        }*/
+        }
     }
 }

@@ -11,7 +11,8 @@ namespace JOB_FINDER_API.Models.DTO
         public string? TeamSize { get; set; }
         public string? Website { get; set; }
         public string? Contact { get; set; }
-   
+        public bool IsVerified { get; set; } = false;
+        public bool IsActive { get; set; } = true;
         public int IndustryId { get; set; }
         public string? IndustryName { get; set; }
 

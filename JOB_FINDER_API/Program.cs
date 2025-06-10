@@ -1,5 +1,4 @@
-﻿
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
@@ -135,5 +134,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

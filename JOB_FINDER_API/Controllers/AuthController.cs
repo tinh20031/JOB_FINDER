@@ -91,8 +91,7 @@ namespace JOB_FINDER_API.Controllers
                     user.Email,
                     user.Phone,
                     user.RoleId,
-                    RoleName = user.Role.RoleName,
-                    user.Image
+                    RoleName = user.Role.RoleName
                 }
             });
 

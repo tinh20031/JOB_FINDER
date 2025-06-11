@@ -171,5 +171,44 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(applications);
         }
+
+
+
+        [HttpGet("job/{jobId}")]
+        public async Task<IActionResult> GetApplicationsByJob(int jobId)
+        {
+            var applications = await _context.Applications
+                .Where(a => a.JobId == jobId)
+                .Include(a => a.User)
+                .Include(a => a.Job)
+                .Select(a => new
+                {
+                    ApplicationId = a.Id,
+                    a.UserId,
+                    a.JobId,
+                    a.Status,
+                    a.SubmittedAt,
+                    a.CoverLetter,
+                    a.ResumeUrl,
+                    a.SnapshotCv,
+                    User = new
+                    {
+                        a.User.Id,
+                        a.User.FullName
+                    },
+                    Job = new
+                    {
+                        a.Job.JobId,
+                        a.Job.Title,
+                        a.Job.Description
+                    }
+                })
+                .ToListAsync();
+
+            if (!applications.Any())
+                return NotFound("No applications found for this job.");
+
+            return Ok(applications);
+        }
     }
 }

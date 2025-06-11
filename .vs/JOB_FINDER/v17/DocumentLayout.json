@@ -67,8 +67,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\ApplicationController.cs",
               "ViewState": "AgIAAIcAAAAAAAAAAAAcwAgBAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-10T11:45:43.105Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-10T11:45:43.105Z"
             },
             {
               "$type": "Document",
@@ -80,8 +79,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\Services\\EmailService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwBMAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-10T11:48:55.475Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-10T11:48:55.475Z"
             },
             {
               "$type": "Document",
@@ -93,8 +91,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\User.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-10T12:00:02.79Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-10T12:00:02.79Z"
             },
             {
               "$type": "Document",
@@ -106,8 +103,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-10T11:43:55.294Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-10T11:43:55.294Z"
             },
             {
               "$type": "Document",
@@ -119,8 +115,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Program.cs",
               "ViewState": "AgIAADwAAAAAAAAAAAAAAFUAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-10T11:49:07.508Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-10T11:49:07.508Z"
             }
           ]
         }

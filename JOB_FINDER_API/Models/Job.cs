@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace JOB_FINDER_API.Models
 {
@@ -13,6 +13,7 @@ namespace JOB_FINDER_API.Models
         public int JobId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Education { get; set; } = string.Empty;
         public int CompanyId { get; set; }
         public int? MinSalary { get; set; }
         public int? MaxSalary { get; set; }
@@ -46,5 +47,57 @@ namespace JOB_FINDER_API.Models
         public ICollection<Application> Applications { get; set; } = new List<Application>();
         [JsonIgnore]
         public ICollection<UserFavoriteJob> FavoritedByUsers { get; set; } = new List<UserFavoriteJob>();
+
+        public bool IsExpired()
+        {
+            return DateTime.UtcNow > TimeEnd;
+        }
+
+        
+        public bool CanCompanyEditContent()
+        {
+            // Không cho phép edit nếu bị admin lock
+            if (DeactivatedByAdmin)
+                return false;
+
+            // Được phép nếu job đang pending, active hoặc inactive (chưa hết hạn)
+            return (Status == JobStatus.pending ||
+                    Status == JobStatus.active ||
+                    Status == JobStatus.inactive) && !IsExpired();
+        }
+
+        public bool CanCompanyChangeStatus(JobStatus newStatus)
+        {
+            if (IsExpired() || DeactivatedByAdmin)
+                return false;
+
+            // Chỉ được chuyển giữa active <-> inactive trong thời gian còn hiệu lực
+            if ((Status == JobStatus.active && newStatus == JobStatus.inactive) ||
+                (Status == JobStatus.inactive && newStatus == JobStatus.active))
+                return true;
+
+            return false;
+        }
+
+        public bool CanAdminChangeStatus(JobStatus newStatus)
+        {
+            // Admin được chuyển từ pending sang active/inactive hoặc unlock job bị lock
+            if (Status == JobStatus.pending && (newStatus == JobStatus.active || newStatus == JobStatus.inactive))
+                return true;
+
+            if (DeactivatedByAdmin && Status == JobStatus.inactive && newStatus == JobStatus.active)
+                return true;
+
+            return false;
+        }
+
+        public void AutoExpireIfNeeded()
+        {
+            if (Status == JobStatus.active && IsExpired())
+            {
+                Status = JobStatus.inactive;
+            }
+        }
     }
+
 }

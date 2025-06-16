@@ -7,6 +7,7 @@ namespace JOB_FINDER_API.Models.Requests
     {
         public string Title { get; set; }
         public string Description { get; set; }
+        public string Education { get; set; }
         public int CompanyId { get; set; }
         public int? MinSalary { get; set; }
         public int? MaxSalary { get; set; }

@@ -41,12 +41,14 @@ namespace JOB_FINDER_API.Controllers
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
         }
 
+        
         [HttpPost("create")]
         public async Task<ActionResult<Job>> CreateJob([FromForm] JobCreateRequest dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Phải nhập lương tối thiểu và tối đa khi không chọn lương thỏa thuận.");
             if (dto.TimeEnd <= dto.TimeStart)
                 return BadRequest("TimeEnd must be after TimeStart.");
             if (dto.ExpiryDate <= DateTime.UtcNow)
@@ -57,7 +59,6 @@ namespace JOB_FINDER_API.Controllers
                 Title = dto.Title,
                 Description = dto.Description,
                 CompanyId = dto.CompanyId,
-                Salary = dto.Salary,
                 IndustryId = dto.IndustryId,
                 ExpiryDate = dto.ExpiryDate,
                 LevelId = dto.LevelId,
@@ -69,7 +70,10 @@ namespace JOB_FINDER_API.Controllers
                 AddressDetail = dto.AddressDetail,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Status = Job.JobStatus.pending 
+                Status = Job.JobStatus.pending,
+                IsSalaryNegotiable = dto.IsSalaryNegotiable,
+                MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
+                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary
             };
 
             _context.Jobs.Add(job);
@@ -77,17 +81,17 @@ namespace JOB_FINDER_API.Controllers
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
         }
 
-
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromForm] JobCreateRequest dto)
         {
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Phải nhập lương tối thiểu và tối đa khi không chọn lương thỏa thuận.");
             var job = await _context.Jobs.FindAsync(id);
             if (job == null) return NotFound();
 
             job.Title = dto.Title;
             job.Description = dto.Description;
             job.CompanyId = dto.CompanyId;
-            job.Salary = dto.Salary;
             job.IndustryId = dto.IndustryId;
             job.ExpiryDate = dto.ExpiryDate;
             job.LevelId = dto.LevelId;
@@ -99,7 +103,9 @@ namespace JOB_FINDER_API.Controllers
             job.ProvinceName = dto.ProvinceName;
             job.AddressDetail = dto.AddressDetail;
             job.UpdatedAt = DateTime.UtcNow;
-
+            job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
+            job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
+            job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -134,9 +140,9 @@ namespace JOB_FINDER_API.Controllers
             if (filter.ExperienceLevelId.HasValue)
                 query = query.Where(j => j.ExperienceLevelId == filter.ExperienceLevelId);
             if (filter.MinSalary.HasValue)
-                query = query.Where(j => j.Salary >= filter.MinSalary);
+                query = query.Where(j => j.MinSalary >= filter.MinSalary);
             if (filter.MaxSalary.HasValue)
-                query = query.Where(j => j.Salary <= filter.MaxSalary);
+                query = query.Where(j => j.MaxSalary <= filter.MaxSalary);
             if (!string.IsNullOrEmpty(filter.ProvinceName))
                 query = query.Where(j => j.ProvinceName.Contains(filter.ProvinceName));
             if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<Job.JobStatus>(filter.Status, out var status))

@@ -1,5 +1,4 @@
-﻿
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Services;
@@ -123,7 +122,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(
+        c =>
+        {
+            c.EnableFilter();
+        }
+        );
 }
 
 app.UseHttpsRedirection();

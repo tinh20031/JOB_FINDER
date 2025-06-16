@@ -10,12 +10,13 @@ namespace JOB_FINDER_API.Models
             active,
             inactive
         }
-
         public int JobId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int CompanyId { get; set; }
-        public int Salary { get; set; }
+        public int? MinSalary { get; set; }
+        public int? MaxSalary { get; set; }
+        public bool IsSalaryNegotiable { get; set; }
         public int IndustryId { get; set; }
         public DateTime ExpiryDate { get; set; }
         public int LevelId { get; set; }
@@ -23,17 +24,12 @@ namespace JOB_FINDER_API.Models
         public int ExperienceLevelId { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
-
         public JobStatus Status { get; set; } = JobStatus.pending;
-
-        public string ProvinceName { get; set; } = string.Empty; 
+        public string ProvinceName { get; set; } = string.Empty;
         public string AddressDetail { get; set; } = string.Empty;
         public bool DeactivatedByAdmin { get; set; } = false;
-
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
         [JsonIgnore]
         public User? Company { get; set; }
         [JsonIgnore]

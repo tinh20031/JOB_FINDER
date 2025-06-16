@@ -14,5 +14,7 @@
         public int? CompanyId { get; set; }
         public DateTime? TimeStart { get; set; }
         public DateTime? TimeEnd { get; set; }
+        public List<int>? SkillIds { get; set; }
+        public string? SkillName { get; set; }
     }
 }

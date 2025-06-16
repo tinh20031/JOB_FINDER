@@ -22,27 +22,163 @@ namespace JOB_FINDER_API.Controllers
             _emailService = emailService;
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public async Task<ActionResult<IEnumerable<Job>>> GetJobs() =>
-            await _context.Jobs.Include(j => j.Industry).ToListAsync();
+            await _context.Jobs.Include(j => j.Industry).ToListAsync();*/
+        // GET: api/Job
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<object>>> GetJobs()
+        {
+            var jobs = await _context.Jobs
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .Include(j => j.ExperienceLevel)
+                .ToListAsync();
 
-        [HttpGet("{id}")]
+            var result = jobs.Select(job => new
+            {
+                job.JobId,
+                job.Title,
+                job.Description,
+                job.CompanyId,
+                Company = job.Company == null ? null : new
+                {
+                    job.Company.Id,
+                    job.Company.FullName,
+                    job.Company.Email,
+                    job.Company.CompanyProfile?.CompanyName,
+                    job.Company.CompanyProfile?.Location,
+                    job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                job.IndustryId,
+                Industry = job.Industry == null ? null : new
+                {
+                    job.Industry.IndustryId,
+                    job.Industry.IndustryName
+                },
+                job.ExpiryDate,
+                job.LevelId,
+                Level = job.Level == null ? null : new
+                {
+                    job.Level.Id,
+                    job.Level.LevelName
+                },
+                job.JobTypeId,
+                JobType = job.JobType == null ? null : new
+                {
+                    job.JobType.Id,
+                    job.JobType.JobTypeName
+                },
+                job.ExperienceLevelId,
+                ExperienceLevel = job.ExperienceLevel == null ? null : new
+                {
+                    job.ExperienceLevel.id,
+                    job.ExperienceLevel.name
+                },
+                job.TimeStart,
+                job.TimeEnd,
+                job.Status,
+                job.ProvinceName,
+                job.AddressDetail,
+                job.IsSalaryNegotiable,
+                job.MinSalary,
+                job.MaxSalary,
+                job.CreatedAt,
+                job.UpdatedAt,
+                Skills = job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList()
+            });
+
+            return Ok(result);
+        }
+
+        /*[HttpGet("{id}")]
         public async Task<ActionResult<Job>> GetJob(int id)
         {
             var job = await _context.Jobs.Include(j => j.Industry).FirstOrDefaultAsync(j => j.JobId == id);
             return job == null ? NotFound() : job;
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<Job>> CreateJob(Job job)
+        }*/
+        // GET: api/Job/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<object>> GetJob(int id)
         {
-            _context.Jobs.Add(job);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
+            var job = await _context.Jobs
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .Include(j => j.ExperienceLevel)
+                .FirstOrDefaultAsync(j => j.JobId == id);
+
+            if (job == null)
+                return NotFound();
+
+            return Ok(new
+            {
+                job.JobId,
+                job.Title,
+                job.Description,
+                job.CompanyId,
+                Company = job.Company == null ? null : new
+                {
+                    job.Company.Id,
+                    job.Company.FullName,
+                    job.Company.Email,
+                    job.Company.CompanyProfile?.CompanyName,
+                    job.Company.CompanyProfile?.Location,
+                    job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                job.IndustryId,
+                Industry = job.Industry == null ? null : new
+                {
+                    job.Industry.IndustryId,
+                    job.Industry.IndustryName
+                },
+                job.ExpiryDate,
+                job.LevelId,
+                Level = job.Level == null ? null : new
+                {
+                    job.Level.Id,
+                    job.Level.LevelName
+                },
+                job.JobTypeId,
+                JobType = job.JobType == null ? null : new
+                {
+                    job.JobType.Id,
+                    job.JobType.JobTypeName
+                },
+                job.ExperienceLevelId,
+                ExperienceLevel = job.ExperienceLevel == null ? null : new
+                {
+                    job.ExperienceLevel.id,
+                    job.ExperienceLevel.name
+                },
+                job.TimeStart,
+                job.TimeEnd,
+                job.Status,
+                job.ProvinceName,
+                job.AddressDetail,
+                job.IsSalaryNegotiable,
+                job.MinSalary,
+                job.MaxSalary,
+                job.CreatedAt,
+                job.UpdatedAt,
+                Skills = job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList()
+            });
         }
 
-        
-        [HttpPost("create")]
+        /*[HttpPost("create")]
         public async Task<ActionResult<Job>> CreateJob([FromForm] JobCreateRequest dto)
         {
             if (!ModelState.IsValid)
@@ -78,6 +214,15 @@ namespace JOB_FINDER_API.Controllers
 
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
+            // Thêm JobSkill nếu có
+            if (dto.SkillIds != null && dto.SkillIds.Any())
+            {
+                foreach (var skillId in dto.SkillIds)
+                {
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+                await _context.SaveChangesAsync();
+            }
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
         }
 
@@ -107,6 +252,167 @@ namespace JOB_FINDER_API.Controllers
             job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
             job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
 
+            // Cập nhật lại JobSkill
+            if (dto.SkillIds != null)
+            {
+                // Xóa các skill cũ
+                var oldSkills = job.JobSkills.ToList();
+                _context.JobSkills.RemoveRange(oldSkills);
+
+                // Thêm skill mới
+                foreach (var skillId in dto.SkillIds)
+                {
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }*/
+        [HttpPost("create")]
+        public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateRequest dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Phải nhập lương tối thiểu và tối đa khi không chọn lương thỏa thuận.");
+            if (dto.TimeEnd <= dto.TimeStart)
+                return BadRequest("TimeEnd must be after TimeStart.");
+            if (dto.ExpiryDate <= DateTime.UtcNow)
+                return BadRequest("ExpiryDate must be in the future.");
+
+            var job = new Job
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                CompanyId = dto.CompanyId,
+                IndustryId = dto.IndustryId,
+                ExpiryDate = dto.ExpiryDate,
+                LevelId = dto.LevelId,
+                JobTypeId = dto.JobTypeId,
+                ExperienceLevelId = dto.ExperienceLevelId,
+                TimeStart = dto.TimeStart,
+                TimeEnd = dto.TimeEnd,
+                ProvinceName = dto.ProvinceName,
+                AddressDetail = dto.AddressDetail,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Status = Job.JobStatus.pending,
+                IsSalaryNegotiable = dto.IsSalaryNegotiable,
+                MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
+                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary
+            };
+
+            _context.Jobs.Add(job);
+            await _context.SaveChangesAsync();
+
+            // Thêm hoặc tạo mới Skill cho Job
+            if (dto.skillInputs != null && dto.skillInputs.Any())
+            {
+                foreach (var input in dto.skillInputs)
+                {
+                    int skillId;
+                    if (input.SkillId.HasValue)
+                    {
+                        skillId = input.SkillId.Value;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
+                    {
+                        var existingSkill = await _context.Skills
+                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+                        if (existingSkill != null)
+                        {
+                            skillId = existingSkill.SkillId;
+                        }
+                        else
+                        {
+                            var newSkill = new Skill { SkillName = input.SkillName };
+                            _context.Skills.Add(newSkill);
+                            await _context.SaveChangesAsync();
+                            skillId = newSkill.SkillId;
+                        }
+                    }
+                    else
+                    {
+                        continue; // Bỏ qua nếu không hợp lệ
+                    }
+
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+                await _context.SaveChangesAsync();
+            }
+            return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
+        {
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Phải nhập lương tối thiểu và tối đa khi không chọn lương thỏa thuận.");
+            var job = await _context.Jobs
+                .Include(j => j.JobSkills)
+                .FirstOrDefaultAsync(j => j.JobId == id);
+            if (job == null) return NotFound();
+
+            job.Title = dto.Title;
+            job.Description = dto.Description;
+            job.CompanyId = dto.CompanyId;
+            job.IndustryId = dto.IndustryId;
+            job.ExpiryDate = dto.ExpiryDate;
+            job.LevelId = dto.LevelId;
+            job.JobTypeId = dto.JobTypeId;
+            job.ExperienceLevelId = dto.ExperienceLevelId;
+            job.TimeStart = dto.TimeStart;
+            job.TimeEnd = dto.TimeEnd;
+            job.Status = dto.Status;
+            job.ProvinceName = dto.ProvinceName;
+            job.AddressDetail = dto.AddressDetail;
+            job.UpdatedAt = DateTime.UtcNow;
+            job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
+            job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
+            job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
+
+            // Cập nhật lại JobSkill
+            if (dto.skillInputs != null)
+            {
+                // Xóa các skill cũ
+                var oldSkills = job.JobSkills.ToList();
+                _context.JobSkills.RemoveRange(oldSkills);
+
+                // Thêm skill mới hoặc tạo mới nếu cần
+                foreach (var input in dto.skillInputs)
+                {
+                    int skillId;
+                    if (input.SkillId.HasValue)
+                    {
+                        skillId = input.SkillId.Value;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
+                    {
+                        var existingSkill = await _context.Skills
+                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+                        if (existingSkill != null)
+                        {
+                            skillId = existingSkill.SkillId;
+                        }
+                        else
+                        {
+                            var newSkill = new Skill { SkillName = input.SkillName };
+                            _context.Skills.Add(newSkill);
+                            await _context.SaveChangesAsync();
+                            skillId = newSkill.SkillId;
+                        }
+                    }
+                    else
+                    {
+                        continue; // Bỏ qua nếu không hợp lệ
+                    }
+
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+                await _context.SaveChangesAsync();
+            }
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -127,7 +433,10 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("filter")]
         public async Task<ActionResult<IEnumerable<Job>>> FilterJobs([FromQuery] JobFilterParams filter)
         {
-            var query = _context.Jobs.Include(j => j.Industry).AsQueryable();
+            var query = _context.Jobs
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(filter.Title))
                 query = query.Where(j => j.Title.Contains(filter.Title));
@@ -153,6 +462,11 @@ namespace JOB_FINDER_API.Controllers
                 query = query.Where(j => j.TimeStart >= filter.TimeStart);
             if (filter.TimeEnd.HasValue)
                 query = query.Where(j => j.TimeEnd <= filter.TimeEnd);
+            if (filter.SkillIds != null && filter.SkillIds.Any())
+                query = query.Where(j => j.JobSkills.Any(js => filter.SkillIds.Contains(js.SkillId)));
+
+            if (!string.IsNullOrEmpty(filter.SkillName))
+                query = query.Where(j => j.JobSkills.Any(js => js.Skill.SkillName.Contains(filter.SkillName)));
 
             var jobs = await query.ToListAsync();
             return jobs;

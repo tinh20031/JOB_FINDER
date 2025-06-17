@@ -1,3 +1,11 @@
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.AssemblyReference.cache
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.GeneratedMSBuildEditorConfig.editorconfig
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfoInputs.cache
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfo.cs
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.CoreCompileInputs.cache
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cs
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cache
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.sourcelink.json
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.Development.json
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\appsettings.json
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\JOB_FINDER_API.staticwebassets.runtime.json
@@ -132,14 +140,6 @@ E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.AssemblyReference.cache
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.GeneratedMSBuildEditorConfig.editorconfig
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfoInputs.cache
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.AssemblyInfo.cs
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.csproj.CoreCompileInputs.cache
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cs
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.MvcApplicationPartsAssemblyInfo.cache
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.sourcelink.json
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.json
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.development.json
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets\msbuild.JOB_FINDER_API.Microsoft.AspNetCore.StaticWebAssets.props

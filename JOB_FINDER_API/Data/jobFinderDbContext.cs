@@ -30,6 +30,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
         public DbSet<CandidateSkill> CandidateSkill { get; set; }
         public DbSet<CandidateToCompanyRequest> CandidateToCompanyRequests { get; set; }
+        public DbSet<UserFavoriteCompany> UserFavoriteCompanies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,11 +45,11 @@ namespace JOB_FINDER_API.Data
 
 
 
-            modelBuilder.Entity<Experience>().HasData(
+            /*modelBuilder.Entity<Experience>().HasData(
 new Experience { Id = 1, ExperienceName = "Less than 1 year", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
 new Experience { Id = 2, ExperienceName = "1-3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
 new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
-);
+);*/
             modelBuilder.Entity<Industry>().HasData(
     new Industry { IndustryId = 1, IndustryName = "Information Technology", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
     new Industry { IndustryId = 2, IndustryName = "Finance", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
@@ -76,7 +77,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                 new ExperienceLevel { id = 4, name = "Senior" }
             );
 
-            modelBuilder.Entity<Job>().HasData(
+            /*modelBuilder.Entity<Job>().HasData(
                 new Job
                 {
                     JobId = 1,
@@ -119,10 +120,10 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 }
-            );
+            );*/
 
 
-            modelBuilder.Entity<User>().HasData(
+           /* modelBuilder.Entity<User>().HasData(
     new User
     {
         Id = 1,
@@ -160,8 +161,8 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
         UpdatedAt = DateTime.UtcNow
     }
 
-);
-            modelBuilder.Entity<CandidateProfile>().HasData(
+);*/
+            /*modelBuilder.Entity<CandidateProfile>().HasData(
         new CandidateProfile
         {
             UserId = 1, 
@@ -175,9 +176,9 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
             Language = "English, Vietnamese"
           
         }
-    );
+    );*/
 
-            modelBuilder.Entity<CompanyProfile>().HasData(
+           /* modelBuilder.Entity<CompanyProfile>().HasData(
                 new CompanyProfile
                 {
                     UserId = 2, 
@@ -193,7 +194,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                     IndustryId = 1,
                     IsActive = true
                 }
-            );
+            );*/
 
          
             modelBuilder.Entity<CandidateProfile>()
@@ -326,6 +327,19 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
        .WithMany(el => el.Jobs)
        .HasForeignKey(j => j.ExperienceLevelId)
        .OnDelete(DeleteBehavior.NoAction);
+
+            // UserFavoriteCompany
+modelBuilder.Entity<UserFavoriteCompany>()
+    .HasOne(ufc => ufc.User)
+    .WithMany(u => u.FavoriteCompanies)
+    .HasForeignKey(ufc => ufc.UserId)
+    .OnDelete(DeleteBehavior.NoAction);
+
+modelBuilder.Entity<UserFavoriteCompany>()
+    .HasOne(ufc => ufc.Company)
+    .WithMany()
+    .HasForeignKey(ufc => ufc.CompanyId)
+    .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -88,10 +88,10 @@ namespace JOB_FINDER_API.Controllers
                 {
                     user.Id,
                     user.FullName,
-                    user.Image,
                     user.Email,
                     user.Phone,
                     user.RoleId,
+                    user.Image,
                     RoleName = user.Role.RoleName
                 }
             });

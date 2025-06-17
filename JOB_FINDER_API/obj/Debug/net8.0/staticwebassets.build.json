@@ -1,11 +1,39 @@
 {
   "Version": 1,
-  "Hash": "KpUzH2uGMQEdWPea14P1i6gdDol/3o64F4xq/Unc3xI=",
+  "Hash": "xvwirHvGJregNkQEupzv5R32BteObTHsS9HS4Z1IgGc=",
   "Source": "JOB_FINDER_API",
   "BasePath": "_content/JOB_FINDER_API",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "JOB_FINDER_API\\wwwroot",
+      "Source": "JOB_FINDER_API",
+      "ContentRoot": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\wwwroot\\",
+      "BasePath": "_content/JOB_FINDER_API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\wwwroot\\uploads\\cvs\\c98f370e-4e73-481d-884c-30f79b3d8d7e_cvtest.pdf",
+      "SourceId": "JOB_FINDER_API",
+      "SourceType": "Discovered",
+      "ContentRoot": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\wwwroot\\",
+      "BasePath": "_content/JOB_FINDER_API",
+      "RelativePath": "uploads/cvs/c98f370e-4e73-481d-884c-30f79b3d8d7e_cvtest.pdf",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\cvs\\c98f370e-4e73-481d-884c-30f79b3d8d7e_cvtest.pdf"
+    }
+  ]
 }

@@ -7,7 +7,7 @@ namespace JOB_FINDER_API.Models
         Pending,
         Interview,
         Rejected,
-        Accepted
+        Accepted    
     }
 
     public class Application

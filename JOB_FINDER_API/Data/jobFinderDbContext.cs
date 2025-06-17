@@ -68,6 +68,60 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
     new Skill { SkillId = 2, SkillName = "JavaScript", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
     new Skill { SkillId = 3, SkillName = "SQL", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
 );
+
+            modelBuilder.Entity<ExperienceLevel>().HasData(
+                new ExperienceLevel { id = 1, name = "Fresher" },
+                new ExperienceLevel { id = 2, name = "Junior" },
+                new ExperienceLevel { id = 3, name = "Middle" },
+                new ExperienceLevel { id = 4, name = "Senior" }
+            );
+
+            modelBuilder.Entity<Job>().HasData(
+                new Job
+                {
+                    JobId = 1,
+                    Title = "Junior Software Engineer",
+                    Description = "Develop and maintain web applications using C# and JavaScript.",
+                    CompanyId = 2, 
+                    Salary = 50000,
+                    IndustryId = 1, 
+                    ExpiryDate = DateTime.UtcNow.AddDays(30),
+                    LevelId = 2,
+                    JobTypeId = 1, 
+                    ExperienceLevelId = 2, 
+                    TimeStart = DateTime.UtcNow,
+                    TimeEnd = DateTime.UtcNow.AddDays(30),
+                    Status = Job.JobStatus.active,
+                    ProvinceName = "Ho Chi Minh City",
+                    AddressDetail = "123 Tech Street, District 1",
+                    DeactivatedByAdmin = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new Job
+                {
+                    JobId = 2,
+                    Title = "Senior Data Analyst",
+                    Description = "Analyze financial data and generate reports.",
+                    CompanyId = 2,
+                    Salary = 80000,
+                    IndustryId = 2, 
+                    ExpiryDate = DateTime.UtcNow.AddDays(45),
+                    LevelId = 3,
+                    JobTypeId = 3, 
+                    ExperienceLevelId = 4, 
+                    TimeStart = DateTime.UtcNow,
+                    TimeEnd = DateTime.UtcNow.AddDays(45),
+                    Status = Job.JobStatus.pending,
+                    ProvinceName = "Hanoi",
+                    AddressDetail = "456 Finance Avenue, Ba Dinh",
+                    DeactivatedByAdmin = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            );
+
+
             modelBuilder.Entity<User>().HasData(
     new User
     {
@@ -77,14 +131,71 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
         Phone = "0123456789",
         Password = "123",
         IsActive = true,
-        RoleId = 1, // Candidate
+        RoleId = 1, 
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    },
+    new User
+    {
+        Id = 2,
+        FullName = "Tech Corp",
+        Email = "contact@techcorp.com",
+        Phone = "0987654321",
+        Password = "123",
+        IsActive = true,
+        RoleId = 2, 
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    },
+    new User
+    {
+        Id = 3,
+        FullName = "Admin User",
+        Email = "admin@jobfinder.com",
+        Phone = "0912345678",
+        Password = "123",
+        IsActive = true,
+        RoleId = 3, 
         CreatedAt = DateTime.UtcNow,
         UpdatedAt = DateTime.UtcNow
     }
+
 );
+            modelBuilder.Entity<CandidateProfile>().HasData(
+        new CandidateProfile
+        {
+            UserId = 1, 
+            Gender = "Male",
+            Dob = new DateTime(1995, 5, 15),
+            JobTitle = "Software Developer",
+            Description = "A passionate developer with expertise in C# and JavaScript.",
+            Address = "123 Main Street",
+            Province = "Ho Chi Minh",
+            City = "Ho Chi Minh City",
+            Language = "English, Vietnamese"
+          
+        }
+    );
 
+            modelBuilder.Entity<CompanyProfile>().HasData(
+                new CompanyProfile
+                {
+                    UserId = 2, 
+                    CompanyName = "Tech Corp",
+                    CompanyProfileDescription = "A leading tech company specializing in software solutions.",
+                    Location = "123 Tech Street, District 1, Ho Chi Minh City",
+                    UrlCompanyLogo = "https://res.cloudinary.com/dzf0ccons/image/upload/v1748267504/image_user/bfltymsad63wfkyp3bvl.jpg",
+                    ImageLogoLgr = "https://res.cloudinary.com/dzf0ccons/image/upload/v1748267504/image_user/bfltymsad63wfkyp3bvl.jpg", // Thêm trường ImageLogoLgr
+                    TeamSize = "50-100 employees",
+                    IsVerified = true,
+                    Website = "https://techcorp.com",
+                    Contact = "contact@techcorp.com",
+                    IndustryId = 1,
+                    IsActive = true
+                }
+            );
 
-            // CandidateProfile
+         
             modelBuilder.Entity<CandidateProfile>()
                 .HasKey(cp => cp.UserId);
             modelBuilder.Entity<CandidateProfile>()
@@ -98,7 +209,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                 .HasForeignKey(cs => cs.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // CompanyProfile
+            
             modelBuilder.Entity<CompanyProfile>()
                 .HasKey(cp => cp.UserId);
             modelBuilder.Entity<CompanyProfile>()
@@ -107,7 +218,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                 .HasForeignKey<CompanyProfile>(cp => cp.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Job - Company relationship
+           
             modelBuilder.Entity<Job>()
                 .HasOne(j => j.Company)
                 .WithMany(u => u.PostedJobs)
@@ -162,14 +273,14 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
             // CandidateSkill - User
             modelBuilder.Entity<CandidateSkill>()
                 .HasOne(cs => cs.User)
-                .WithMany() // hoặc .WithMany(u => u.CandidateSkills) nếu User có navigation
+                .WithMany() 
                 .HasForeignKey(cs => cs.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // CandidateSkill - Skill
             modelBuilder.Entity<CandidateSkill>()
                 .HasOne(cs => cs.Skill)
-                .WithMany(s => s.CandidateSkills) // Đúng với property trong Skill
+                .WithMany(s => s.CandidateSkills) 
                 .HasForeignKey(cs => cs.SkillId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -193,7 +304,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                 .HasForeignKey(a => a.JobId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Giữ lại duy nhất cấu hình này cho CV
+        
             modelBuilder.Entity<Application>()
                 .HasOne(a => a.CV)
                 .WithMany(cv => cv.Applications)
@@ -201,7 +312,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                 .HasConstraintName("FK_Applications_CVs_UniqueCvId")
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Indexes
+         
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();

@@ -1,4 +1,3 @@
-
 using JOB_FINDER_API.Constants;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;

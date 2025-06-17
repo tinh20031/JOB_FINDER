@@ -1,11 +1,9 @@
-﻿using CloudinaryDotNet;
+
+using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
-using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
-
-//using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
+using System.Text;  
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,13 +106,16 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+        ClockSkew = TimeSpan.Zero,
     };
 });
 
 // Add Authorization
 builder.Services.AddAuthorization();
-builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -124,7 +125,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.MapHub<ChatHub>("/chathub"); // <-- Map endpoint SignalR
+
 app.UseHttpsRedirection();
 
 // Add CORS middleware - Đặt trước UseAuthentication và UseAuthorization

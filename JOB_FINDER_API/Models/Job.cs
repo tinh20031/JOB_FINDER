@@ -28,7 +28,9 @@ namespace JOB_FINDER_API.Models
         public JobStatus Status { get; set; } = JobStatus.pending;
 
         public string ProvinceName { get; set; } = string.Empty; 
-        public string AddressDetail { get; set; } = string.Empty; 
+        public string AddressDetail { get; set; } = string.Empty;
+        public bool DeactivatedByAdmin { get; set; } = false;
+
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

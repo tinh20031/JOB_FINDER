@@ -22,7 +22,7 @@ namespace JOB_FINDER_API.Controllers
             _emailService = emailService;
         }
 
-     
+
         // GET: api/Job
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetJobs()
@@ -102,7 +102,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
-        
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<object>> GetJob(int id)
         {
@@ -126,6 +126,20 @@ namespace JOB_FINDER_API.Controllers
             if (job.DeactivatedByAdmin && role != "admin" && job.CompanyId != userId)
                 return NotFound();
 
+            // Nếu là anonymous hoặc candidate, chỉ cho xem job Active hoặc đã hết hạn
+            bool isAnonymous = !User.Identity.IsAuthenticated;
+            if (isAnonymous || role == "candidate")
+            {
+                bool isActive = job.Status == Job.JobStatus.active;
+                bool isExpired = job.TimeEnd < DateTime.UtcNow;
+
+                // Chỉ cho xem nếu job active hoặc expired
+                if (!isActive && !isExpired)
+                {
+                    return StatusCode(403, "You do not have permission to view this job.");
+                }
+            }
+
             // ... trả về thông tin job như cũ
             return Ok(new
             {
@@ -134,7 +148,7 @@ namespace JOB_FINDER_API.Controllers
                 job.Description,
                 job.YourSkill,
                 job.YourExperience,
-              
+
                 job.Education,
                 job.CompanyId,
                 Company = job.Company == null ? null : new

@@ -43,7 +43,9 @@ namespace JOB_FINDER_API.Controllers
                 job.Title,
                 job.Description,
                 job.Education,
-                job.YourSkillAndExperience,
+                job.YourSkill,
+                job.YourExperience,
+
                 job.CompanyId,
                 Company = job.Company == null ? null : new
                 {
@@ -130,7 +132,9 @@ namespace JOB_FINDER_API.Controllers
                 job.JobId,
                 job.Title,
                 job.Description,
-                job.YourSkillAndExperience,
+                job.YourSkill,
+                job.YourExperience,
+              
                 job.Education,
                 job.CompanyId,
                 Company = job.Company == null ? null : new
@@ -203,7 +207,9 @@ namespace JOB_FINDER_API.Controllers
                 Title = dto.Title,
                 Description = dto.Description,
                 Education = dto.Education,
-                YourSkillAndExperience = dto.YourSkillAndExperience,
+                YourSkill = dto.YourSkill,
+                YourExperience = dto.YourExperience,
+                
                 CompanyId = dto.CompanyId,
                 IndustryId = dto.IndustryId,
                 ExpiryDate = dto.ExpiryDate,
@@ -387,7 +393,7 @@ namespace JOB_FINDER_API.Controllers
                 return Unauthorized("Invalid user ID.");
             var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
 
-            if (role == "Company")
+            if (role == "company")
             {
                 if (job.CompanyId != userId)
                     return StatusCode(403, "Bạn không phải chủ sở hữu job này.");
@@ -412,7 +418,7 @@ namespace JOB_FINDER_API.Controllers
                     job.Status = Job.JobStatus.pending;
                 }
             }
-            else if (role == "Admin")
+            else if (role == "admin")
             {
                 // Admin có thể chỉnh sửa mọi thứ
             }
@@ -425,7 +431,9 @@ namespace JOB_FINDER_API.Controllers
             job.Title = dto.Title;
             job.Description = dto.Description;
             job.Education = dto.Education;
-            job.YourSkillAndExperience = dto.YourSkillAndExperience;
+            job.YourSkill = dto.YourSkill;
+            job.YourExperience = dto.YourExperience;
+           
             job.IndustryId = dto.IndustryId;
             job.ExpiryDate = dto.ExpiryDate;
             job.LevelId = dto.LevelId;

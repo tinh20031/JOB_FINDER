@@ -265,11 +265,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                 .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(m => m.ReceiverId)
                 .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.RelatedJob)
-                .WithMany()
-                .HasForeignKey(m => m.RelatedJobId)
-                .OnDelete(DeleteBehavior.SetNull);
+       
 
             // CandidateSkill - User
             modelBuilder.Entity<CandidateSkill>()

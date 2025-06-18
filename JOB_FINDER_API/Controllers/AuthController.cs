@@ -62,6 +62,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
+                .Include(u => u.CompanyProfile)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
@@ -80,10 +81,20 @@ namespace JOB_FINDER_API.Controllers
             }
 
             var token = GenerateJwtToken(user);
+
+            // Lấy thông tin công ty nếu có
+            string? companyName = null;
+            string? urlCompanyLogo = null;
+            if (user.CompanyProfile != null)
+            {
+                companyName = user.CompanyProfile.CompanyName;
+                urlCompanyLogo = user.CompanyProfile.UrlCompanyLogo;
+            }
+
             return Ok(new
             {
                 Token = token,
-                Role = user.Role.RoleName, 
+                Role = user.Role.RoleName,
                 User = new
                 {
                     user.Id,
@@ -92,10 +103,11 @@ namespace JOB_FINDER_API.Controllers
                     user.Phone,
                     user.RoleId,
                     user.Image,
-                    RoleName = user.Role.RoleName
+                    RoleName = user.Role.RoleName,
+                    CompanyName = companyName,
+                    UrlCompanyLogo = urlCompanyLogo
                 }
             });
-
         }
 
         [HttpPost("logout")]
@@ -119,11 +131,12 @@ namespace JOB_FINDER_API.Controllers
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
-                Audience = _configuration["Jwt:Audience"], 
-                Issuer = _configuration["Jwt:Issuer"]     
+                Audience = _configuration["Jwt:Audience"],
+                Issuer = _configuration["Jwt:Issuer"]
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
     }
 }

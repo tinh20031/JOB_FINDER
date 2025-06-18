@@ -1,6 +1,7 @@
 
 using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
@@ -111,11 +112,25 @@ builder.Services.AddAuthentication(options =>
         RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
         ClockSkew = TimeSpan.Zero,
     };
+    // Bổ sung đoạn này để lấy token từ query string cho SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Add Authorization
 builder.Services.AddAuthorization();
-
+builder.Services.AddSignalR();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -138,6 +153,6 @@ app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapHub<ChatHub>("/chatHub");
 app.MapControllers();
 app.Run();

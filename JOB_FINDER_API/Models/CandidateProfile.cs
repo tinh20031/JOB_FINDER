@@ -9,7 +9,6 @@ namespace JOB_FINDER_API.Models
         public DateTime? Dob { get; set; }
         public string JobTitle { get; set; }
         public string Description { get; set; }
-        //public int? CandidateSkillId { get; set; } 
         public string Address { get; set; } = string.Empty;
         public string Province { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;

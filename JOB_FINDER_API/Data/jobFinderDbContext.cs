@@ -30,6 +30,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
         public DbSet<CandidateSkill> CandidateSkill { get; set; }
         public DbSet<CandidateToCompanyRequest> CandidateToCompanyRequests { get; set; }
+        public DbSet<UserFavoriteCompany> UserFavoriteCompanies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,49 +78,59 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
             );
 
             modelBuilder.Entity<Job>().HasData(
-                new Job
-                {
-                    JobId = 1,
-                    Title = "Junior Software Engineer",
-                    Description = "Develop and maintain web applications using C# and JavaScript.",
-                    CompanyId = 2, 
-                    Salary = 50000,
-                    IndustryId = 1, 
-                    ExpiryDate = DateTime.UtcNow.AddDays(30),
-                    LevelId = 2,
-                    JobTypeId = 1, 
-                    ExperienceLevelId = 2, 
-                    TimeStart = DateTime.UtcNow,
-                    TimeEnd = DateTime.UtcNow.AddDays(30),
-                    Status = Job.JobStatus.active,
-                    ProvinceName = "Ho Chi Minh City",
-                    AddressDetail = "123 Tech Street, District 1",
-                    DeactivatedByAdmin = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new Job
-                {
-                    JobId = 2,
-                    Title = "Senior Data Analyst",
-                    Description = "Analyze financial data and generate reports.",
-                    CompanyId = 2,
-                    Salary = 80000,
-                    IndustryId = 2, 
-                    ExpiryDate = DateTime.UtcNow.AddDays(45),
-                    LevelId = 3,
-                    JobTypeId = 3, 
-                    ExperienceLevelId = 4, 
-                    TimeStart = DateTime.UtcNow,
-                    TimeEnd = DateTime.UtcNow.AddDays(45),
-                    Status = Job.JobStatus.pending,
-                    ProvinceName = "Hanoi",
-                    AddressDetail = "456 Finance Avenue, Ba Dinh",
-                    DeactivatedByAdmin = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                }
-            );
+        new Job
+        {
+            JobId = 1,
+            Title = "Junior Software Engineer",
+            Description = "Develop and maintain web applications using C# and JavaScript.",
+            Education = "Bachelor's Degree in Computer Science",
+            YourSkill = "C#, .NET, JavaScript, SQL",
+            YourExperience = "1+ years working with web development",
+            CompanyId = 2,
+            MinSalary = 45000,
+            MaxSalary = 55000,
+            IsSalaryNegotiable = true,
+            IndustryId = 1,
+            ExpiryDate = DateTime.UtcNow.AddDays(30),
+            LevelId = 2,
+            JobTypeId = 1,
+            ExperienceLevelId = 2,
+            TimeStart = DateTime.UtcNow,
+            TimeEnd = DateTime.UtcNow.AddDays(30),
+            Status = Job.JobStatus.active,
+            ProvinceName = "Ho Chi Minh City",
+            AddressDetail = "123 Tech Street, District 1",
+            DeactivatedByAdmin = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        },
+        new Job
+        {
+            JobId = 2,
+            Title = "Senior Data Analyst",
+            Description = "Analyze financial data and generate reports.",
+            Education = "Master's Degree in Finance or Data Science",
+            YourSkill = "SQL, Python, Excel, Power BI",
+            YourExperience = "5+ years of data analysis experience",
+            CompanyId = 2,
+            MinSalary = 75000,
+            MaxSalary = 85000,
+            IsSalaryNegotiable = false,
+            IndustryId = 2,
+            ExpiryDate = DateTime.UtcNow.AddDays(45),
+            LevelId = 3,
+            JobTypeId = 3,
+            ExperienceLevelId = 4,
+            TimeStart = DateTime.UtcNow,
+            TimeEnd = DateTime.UtcNow.AddDays(45),
+            Status = Job.JobStatus.pending,
+            ProvinceName = "Hanoi",
+            AddressDetail = "456 Finance Avenue, Ba Dinh",
+            DeactivatedByAdmin = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        }
+    );
 
 
             modelBuilder.Entity<User>().HasData(
@@ -326,6 +337,19 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
        .WithMany(el => el.Jobs)
        .HasForeignKey(j => j.ExperienceLevelId)
        .OnDelete(DeleteBehavior.NoAction);
+
+            // UserFavoriteCompany
+modelBuilder.Entity<UserFavoriteCompany>()
+    .HasOne(ufc => ufc.User)
+    .WithMany(u => u.FavoriteCompanies)
+    .HasForeignKey(ufc => ufc.UserId)
+    .OnDelete(DeleteBehavior.NoAction);
+
+modelBuilder.Entity<UserFavoriteCompany>()
+    .HasOne(ufc => ufc.Company)
+    .WithMany()
+    .HasForeignKey(ufc => ufc.CompanyId)
+    .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

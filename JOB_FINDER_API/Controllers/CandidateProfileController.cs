@@ -31,41 +31,7 @@ namespace JOB_FINDER_API.Controllers
             return item == null ? NotFound() : Ok(item);
         }
 
-        /*[HttpPost]
-        public async Task<IActionResult> CreateCandidateProfile([FromBody] CreateCandidateProfileDto dto)
-        {
-            // Kiểm tra UserId đã có CandidateProfile chưa
-            if (_context.CandidateProfiles.Any(cp => cp.UserId == dto.UserId))
-                return BadRequest("CandidateProfile already exists for this UserId.");
-
-            // Tạo mới CandidateProfile
-            var profile = new CandidateProfile
-            {
-                UserId = dto.UserId,
-                Gender = dto.Gender,
-                Dob = dto.Dob,
-                JobTitle = dto.JobTitle,
-                Description = dto.Description,
-                Address = dto.Address,
-                Province = dto.Province,
-                City = dto.City,
-                Language = dto.Language
-            };
-            _context.CandidateProfiles.Add(profile);
-
-            // Thêm các CandidateSkill
-            foreach (var skillId in dto.SkillIds)
-            {
-                _context.CandidateSkill.Add(new CandidateSkill
-                {
-                    UserId = dto.UserId,
-                    SkillId = skillId
-                });
-            }
-
-            await _context.SaveChangesAsync();
-            return Ok();
-        }*/
+       
         [HttpPost]
         public async Task<IActionResult> CreateCandidateProfile([FromBody] CreateCandidateProfileDto dto)
         {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using JOB_FINDER_API.Services;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -14,33 +15,188 @@ namespace JOB_FINDER_API.Controllers
     public class JobController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public JobController(JobFinderDbContext context) => _context = context;
+        private readonly EmailService _emailService;
+        public JobController(JobFinderDbContext context, EmailService emailService)
+        {
+            _context = context;
+            _emailService = emailService;
+        }
 
+     
+        // GET: api/Job
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Job>>> GetJobs() =>
-            await _context.Jobs.Include(j => j.Industry).ToListAsync();
+        public async Task<ActionResult<IEnumerable<object>>> GetJobs()
+        {
+            var jobs = await _context.Jobs
+                .Where(j => !j.DeactivatedByAdmin)
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .Include(j => j.ExperienceLevel)
+                .ToListAsync();
 
+            var result = jobs.Select(job => new
+            {
+                job.JobId,
+                job.Title,
+                job.Description,
+                job.Education,
+                job.YourSkill,
+                job.YourExperience,
+
+                job.CompanyId,
+                Company = job.Company == null ? null : new
+                {
+                    job.Company.Id,
+                    job.Company.FullName,
+                    job.Company.Email,
+                    job.Company.CompanyProfile?.CompanyName,
+                    job.Company.CompanyProfile?.Location,
+                    job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                job.IndustryId,
+                Industry = job.Industry == null ? null : new
+                {
+                    job.Industry.IndustryId,
+                    job.Industry.IndustryName
+                },
+                job.ExpiryDate,
+                job.LevelId,
+                Level = job.Level == null ? null : new
+                {
+                    job.Level.Id,
+                    job.Level.LevelName
+                },
+                job.JobTypeId,
+                JobType = job.JobType == null ? null : new
+                {
+                    job.JobType.Id,
+                    job.JobType.JobTypeName
+                },
+                job.ExperienceLevelId,
+                ExperienceLevel = job.ExperienceLevel == null ? null : new
+                {
+                    job.ExperienceLevel.id,
+                    job.ExperienceLevel.name
+                },
+                job.TimeStart,
+                job.TimeEnd,
+                job.Status,
+                job.ProvinceName,
+                job.AddressDetail,
+                job.IsSalaryNegotiable,
+                job.MinSalary,
+                job.MaxSalary,
+                job.CreatedAt,
+                job.UpdatedAt,
+                Skills = job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList()
+            });
+
+            return Ok(result);
+        }
+
+
+        
         [HttpGet("{id}")]
-        public async Task<ActionResult<Job>> GetJob(int id)
+        public async Task<ActionResult<object>> GetJob(int id)
         {
-            var job = await _context.Jobs.Include(j => j.Industry).FirstOrDefaultAsync(j => j.JobId == id);
-            return job == null ? NotFound() : job;
+            var job = await _context.Jobs
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .Include(j => j.ExperienceLevel)
+                .FirstOrDefaultAsync(j => j.JobId == id);
+
+            if (job == null)
+                return NotFound();
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
+            var userIdStr = User.Identity?.Name;
+            int.TryParse(userIdStr, out var userId);
+
+            // Nếu job bị lock, chỉ cho phép admin hoặc company chủ job xem
+            if (job.DeactivatedByAdmin && role != "admin" && job.CompanyId != userId)
+                return NotFound();
+
+            // ... trả về thông tin job như cũ
+            return Ok(new
+            {
+                job.JobId,
+                job.Title,
+                job.Description,
+                job.YourSkill,
+                job.YourExperience,
+              
+                job.Education,
+                job.CompanyId,
+                Company = job.Company == null ? null : new
+                {
+                    job.Company.Id,
+                    job.Company.FullName,
+                    job.Company.Email,
+                    job.Company.CompanyProfile?.CompanyName,
+                    job.Company.CompanyProfile?.Location,
+                    job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                job.IndustryId,
+                Industry = job.Industry == null ? null : new
+                {
+                    job.Industry.IndustryId,
+                    job.Industry.IndustryName
+                },
+                job.ExpiryDate,
+                job.LevelId,
+                Level = job.Level == null ? null : new
+                {
+                    job.Level.Id,
+                    job.Level.LevelName
+                },
+                job.JobTypeId,
+                JobType = job.JobType == null ? null : new
+                {
+                    job.JobType.Id,
+                    job.JobType.JobTypeName
+                },
+                job.ExperienceLevelId,
+                ExperienceLevel = job.ExperienceLevel == null ? null : new
+                {
+                    job.ExperienceLevel.id,
+                    job.ExperienceLevel.name
+                },
+                job.TimeStart,
+                job.TimeEnd,
+                job.Status,
+                job.ProvinceName,
+                job.AddressDetail,
+                job.IsSalaryNegotiable,
+                job.MinSalary,
+                job.MaxSalary,
+                job.CreatedAt,
+                job.UpdatedAt,
+                Skills = job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList()
+            });
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Job>> CreateJob(Job job)
-        {
-            _context.Jobs.Add(job);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
-        }
 
         [HttpPost("create")]
-        public async Task<ActionResult<Job>> CreateJob([FromForm] JobCreateRequest dto)
+        public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateRequest dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Phải nhập lương tối thiểu và tối đa khi không chọn lương thỏa thuận.");
             if (dto.TimeEnd <= dto.TimeStart)
                 return BadRequest("TimeEnd must be after TimeStart.");
             if (dto.ExpiryDate <= DateTime.UtcNow)
@@ -50,8 +206,11 @@ namespace JOB_FINDER_API.Controllers
             {
                 Title = dto.Title,
                 Description = dto.Description,
+                Education = dto.Education,
+                YourSkill = dto.YourSkill,
+                YourExperience = dto.YourExperience,
+                
                 CompanyId = dto.CompanyId,
-                Salary = dto.Salary,
                 IndustryId = dto.IndustryId,
                 ExpiryDate = dto.ExpiryDate,
                 LevelId = dto.LevelId,
@@ -63,25 +222,218 @@ namespace JOB_FINDER_API.Controllers
                 AddressDetail = dto.AddressDetail,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Status = Job.JobStatus.pending 
+                Status = Job.JobStatus.pending,
+                IsSalaryNegotiable = dto.IsSalaryNegotiable,
+                MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
+                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary
             };
 
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
+
+            // Thêm hoặc tạo mới Skill cho Job
+            if (dto.skillInputs != null && dto.skillInputs.Any())
+            {
+                foreach (var input in dto.skillInputs)
+                {
+                    int skillId;
+                    if (input.SkillId.HasValue)
+                    {
+                        skillId = input.SkillId.Value;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
+                    {
+                        var existingSkill = await _context.Skills
+                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+                        if (existingSkill != null)
+                        {
+                            skillId = existingSkill.SkillId;
+                        }
+                        else
+                        {
+                            var newSkill = new Skill { SkillName = input.SkillName };
+                            _context.Skills.Add(newSkill);
+                            await _context.SaveChangesAsync();
+                            skillId = newSkill.SkillId;
+                        }
+                    }
+                    else
+                    {
+                        continue; // Bỏ qua nếu không hợp lệ
+                    }
+
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+                await _context.SaveChangesAsync();
+            }
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
         }
 
 
+        /* [HttpPut("{id}")]
+         public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
+         {
+             var job = await _context.Jobs
+                 .Include(j => j.JobSkills)
+                 .FirstOrDefaultAsync(j => j.JobId == id);
+             if (job == null) return NotFound();
+
+             var userIdStr = User.Identity?.Name;
+             if (!int.TryParse(userIdStr, out var userId))
+                 return Unauthorized("Invalid user ID.");
+             var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
+
+             if (role == "company")
+             {
+                 if (job.CompanyId != userId)
+                     return StatusCode(403, "Bạn không phải chủ sở hữu job này.");
+
+                 if (!job.CanCompanyEditContent() && job.Status != Job.JobStatus.active)
+                     return StatusCode(403, "Bạn không có quyền chỉnh sửa job này.");
+
+                 // Nếu job đang pending, chỉ cho phép chỉnh nội dung, KHÔNG cập nhật status
+                 if (job.Status == Job.JobStatus.pending)
+                 {
+                     // Không cập nhật status, giữ nguyên trạng thái pending
+                 }
+                 // Nếu job inactive (không bị admin lock, chưa hết hạn), cho phép chỉnh sửa và set lại status về pending
+                 else if (job.Status == Job.JobStatus.inactive && !job.DeactivatedByAdmin && !job.IsExpired())
+                 {
+                     job.Status = Job.JobStatus.pending;
+                 }
+                 // Nếu job active (đã được admin duyệt), cho phép chỉnh sửa và set lại status về pending
+                 else if (job.Status == Job.JobStatus.active && !job.DeactivatedByAdmin && !job.IsExpired())
+                 {
+                     job.Status = Job.JobStatus.pending;
+                 }
+                 // Nếu job hết hạn hoặc bị admin lock, không cho chỉnh sửa
+                 else if (job.IsExpired() || job.DeactivatedByAdmin)
+                 {
+                     return StatusCode(403, "Job đã hết hạn hoặc bị admin khóa, không thể chỉnh sửa.");
+                 }
+             }
+             else if (role == "admin")
+             {
+                 // Admin có thể chỉnh sửa mọi thứ
+             }
+             else
+             {
+                 return StatusCode(403, "Bạn không có quyền chỉnh sửa job này.");
+             }
+
+             // Cập nhật nội dung
+             job.Title = dto.Title;
+             job.Description = dto.Description;
+             job.IndustryId = dto.IndustryId;
+             job.ExpiryDate = dto.ExpiryDate;
+             job.LevelId = dto.LevelId;
+             job.JobTypeId = dto.JobTypeId;
+             job.ExperienceLevelId = dto.ExperienceLevelId;
+             job.TimeStart = dto.TimeStart;
+             job.TimeEnd = dto.TimeEnd;
+             job.ProvinceName = dto.ProvinceName;
+             job.AddressDetail = dto.AddressDetail;
+             job.UpdatedAt = DateTime.UtcNow;
+             job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
+             job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
+             job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
+
+             // Cập nhật lại JobSkill (giữ nguyên logic cũ)
+             if (dto.skillInputs != null)
+             {
+                 var oldSkills = job.JobSkills.ToList();
+                 _context.JobSkills.RemoveRange(oldSkills);
+
+                 foreach (var input in dto.skillInputs)
+                 {
+                     int skillId;
+                     if (input.SkillId.HasValue)
+                     {
+                         skillId = input.SkillId.Value;
+                     }
+                     else if (!string.IsNullOrWhiteSpace(input.SkillName))
+                     {
+                         var existingSkill = await _context.Skills
+                             .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+                         if (existingSkill != null)
+                         {
+                             skillId = existingSkill.SkillId;
+                         }
+                         else
+                         {
+                             var newSkill = new Skill { SkillName = input.SkillName };
+                             _context.Skills.Add(newSkill);
+                             await _context.SaveChangesAsync();
+                             skillId = newSkill.SkillId;
+                         }
+                     }
+                     else
+                     {
+                         continue;
+                     }
+
+                     _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                 }
+                 await _context.SaveChangesAsync();
+             }
+
+             await _context.SaveChangesAsync();
+             return NoContent();
+         }*/
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateJob(int id, [FromForm] JobCreateRequest dto)
+        public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
         {
-            var job = await _context.Jobs.FindAsync(id);
+            var job = await _context.Jobs
+                .Include(j => j.JobSkills)
+                .FirstOrDefaultAsync(j => j.JobId == id);
             if (job == null) return NotFound();
 
+            var userIdStr = User.Identity?.Name;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+            var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
+
+            if (role == "Company")
+            {
+                if (job.CompanyId != userId)
+                    return StatusCode(403, "Bạn không phải chủ sở hữu job này.");
+
+                // Không cho phép edit nếu bị admin lock hoặc hết hạn
+                if (!job.CanCompanyEditContent())
+                    return StatusCode(403, "Job đã bị admin khóa hoặc đã hết hạn, bạn không có quyền chỉnh sửa.");
+
+                // Nếu job đang pending, chỉ cho phép chỉnh nội dung, KHÔNG cập nhật status
+                if (job.Status == Job.JobStatus.pending)
+                {
+                    // Không cập nhật status, giữ nguyên trạng thái pending
+                }
+                // Nếu job inactive (không bị admin lock, chưa hết hạn), cho phép chỉnh sửa và set lại status về pending
+                else if (job.Status == Job.JobStatus.inactive && !job.IsExpired())
+                {
+                    job.Status = Job.JobStatus.pending;
+                }
+                // Nếu job active (đã được admin duyệt), cho phép chỉnh sửa và set lại status về pending
+                else if (job.Status == Job.JobStatus.active && !job.IsExpired())
+                {
+                    job.Status = Job.JobStatus.pending;
+                }
+            }
+            else if (role == "Admin")
+            {
+                // Admin có thể chỉnh sửa mọi thứ
+            }
+            else
+            {
+                return StatusCode(403, "Bạn không có quyền chỉnh sửa job này.");
+            }
+
+            // Cập nhật nội dung
             job.Title = dto.Title;
             job.Description = dto.Description;
-            job.CompanyId = dto.CompanyId;
-            job.Salary = dto.Salary;
+            job.Education = dto.Education;
+            job.YourSkill = dto.YourSkill;
+            job.YourExperience = dto.YourExperience;
+           
             job.IndustryId = dto.IndustryId;
             job.ExpiryDate = dto.ExpiryDate;
             job.LevelId = dto.LevelId;
@@ -89,11 +441,51 @@ namespace JOB_FINDER_API.Controllers
             job.ExperienceLevelId = dto.ExperienceLevelId;
             job.TimeStart = dto.TimeStart;
             job.TimeEnd = dto.TimeEnd;
-            job.Status = dto.Status;
             job.ProvinceName = dto.ProvinceName;
             job.AddressDetail = dto.AddressDetail;
             job.UpdatedAt = DateTime.UtcNow;
+            job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
+            job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
+            job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
 
+            // Cập nhật lại JobSkill
+            if (dto.skillInputs != null)
+            {
+                var oldSkills = job.JobSkills.ToList();
+                _context.JobSkills.RemoveRange(oldSkills);
+
+                foreach (var input in dto.skillInputs)
+                {
+                    int skillId;
+                    if (input.SkillId.HasValue)
+                    {
+                        skillId = input.SkillId.Value;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
+                    {
+                        var existingSkill = await _context.Skills
+                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+                        if (existingSkill != null)
+                        {
+                            skillId = existingSkill.SkillId;
+                        }
+                        else
+                        {
+                            var newSkill = new Skill { SkillName = input.SkillName };
+                            _context.Skills.Add(newSkill);
+                            await _context.SaveChangesAsync();
+                            skillId = newSkill.SkillId;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+                await _context.SaveChangesAsync();
+            }
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -115,7 +507,11 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("filter")]
         public async Task<ActionResult<IEnumerable<Job>>> FilterJobs([FromQuery] JobFilterParams filter)
         {
-            var query = _context.Jobs.Include(j => j.Industry).AsQueryable();
+            var query = _context.Jobs
+                .Where(j => !j.DeactivatedByAdmin)
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(filter.Title))
                 query = query.Where(j => j.Title.Contains(filter.Title));
@@ -128,9 +524,9 @@ namespace JOB_FINDER_API.Controllers
             if (filter.ExperienceLevelId.HasValue)
                 query = query.Where(j => j.ExperienceLevelId == filter.ExperienceLevelId);
             if (filter.MinSalary.HasValue)
-                query = query.Where(j => j.Salary >= filter.MinSalary);
+                query = query.Where(j => j.MinSalary >= filter.MinSalary);
             if (filter.MaxSalary.HasValue)
-                query = query.Where(j => j.Salary <= filter.MaxSalary);
+                query = query.Where(j => j.MaxSalary <= filter.MaxSalary);
             if (!string.IsNullOrEmpty(filter.ProvinceName))
                 query = query.Where(j => j.ProvinceName.Contains(filter.ProvinceName));
             if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<Job.JobStatus>(filter.Status, out var status))
@@ -141,6 +537,11 @@ namespace JOB_FINDER_API.Controllers
                 query = query.Where(j => j.TimeStart >= filter.TimeStart);
             if (filter.TimeEnd.HasValue)
                 query = query.Where(j => j.TimeEnd <= filter.TimeEnd);
+            if (filter.SkillIds != null && filter.SkillIds.Any())
+                query = query.Where(j => j.JobSkills.Any(js => filter.SkillIds.Contains(js.SkillId)));
+
+            if (!string.IsNullOrEmpty(filter.SkillName))
+                query = query.Where(j => j.JobSkills.Any(js => js.Skill.SkillName.Contains(filter.SkillName)));
 
             var jobs = await query.ToListAsync();
             return jobs;
@@ -169,6 +570,8 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (job.Status == newStatus)
                     return BadRequest("Job already in specified status.");
+                // Chỉ gửi mail khi duyệt từ pending sang active
+                bool shouldSendMail = job.Status == Job.JobStatus.pending && newStatus == Job.JobStatus.active;
 
                 job.Status = newStatus;
                 job.UpdatedAt = DateTime.UtcNow;
@@ -180,6 +583,49 @@ namespace JOB_FINDER_API.Controllers
                     job.DeactivatedByAdmin = false;
 
                 await _context.SaveChangesAsync();
+                
+                if (shouldSendMail)
+                {
+                    // Lấy danh sách user đã yêu thích công ty này
+                    var favoriteUsers = await _context.UserFavoriteCompanies
+                        .Where(f => f.CompanyId == job.CompanyId)
+                        .Select(f => f.User)
+                        .ToListAsync();
+
+                    // Lấy thông tin company profile
+                    var companyProfile = await _context.CompanyProfile
+                        .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
+
+                    string companyName = companyProfile?.CompanyName ?? "Công ty";
+                    string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}"; // Thay bằng domain thật
+
+                    string mailBody = $@"
+                        <div style='font-family: Arial, sans-serif;'>
+                            <h2 style='color:#2d8cf0;'>Công ty {companyName} vừa đăng việc mới!</h2>
+                            <p><b>Title Job:</b> {job.Title}</p>
+                            <p><b>Địa điểm:</b> {job.ProvinceName}</p>
+                            <p><b>Hạn nộp:</b> {job.ExpiryDate:dd/MM/yyyy}</p>
+                            <p><b>Mô tả:</b> {job.Description}</p>
+                            <div style='margin:20px 0;'>
+                                <a href='{jobUrl}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>Xem chi tiết & Ứng tuyển</a>
+                            </div>
+                        </div>
+                    ";
+
+                    foreach (var user in favoriteUsers)
+                    {
+                        if (!string.IsNullOrEmpty(user.Email))
+                        {
+                            _emailService.SendEmail(
+                                user.Email,
+                                $"[{companyName}] vừa đăng việc mới: {job.Title}",
+                                mailBody,
+                                true
+                            );
+                        }
+                    }
+                }
+
                 return Ok($"Admin updated job #{id} status to {newStatus}.");
             }
 
@@ -219,12 +665,6 @@ namespace JOB_FINDER_API.Controllers
 
 
 
-
-
-
-
-
-
         private async Task AutoDeactivateExpiredJobs()
         {
             var now = DateTime.UtcNow;
@@ -242,7 +682,32 @@ namespace JOB_FINDER_API.Controllers
                 await _context.SaveChangesAsync();
         }
 
+        [HttpPut("{id}/lock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> LockJob(int id, [FromQuery] bool isLock)
+        {
+            var job = await _context.Jobs.FindAsync(id);
+            if (job == null)
+                return NotFound("Job not found.");
 
+            job.DeactivatedByAdmin = isLock;
+
+            // Nếu lock thì chuyển trạng thái về inactive nếu đang active
+            if (isLock && job.Status == Job.JobStatus.active)
+                job.Status = Job.JobStatus.inactive;
+
+            // Nếu unlock và job chưa hết hạn, cho phép admin active lại nếu muốn
+            if (!isLock && !job.IsExpired())
+            {
+                // Không tự động chuyển trạng thái, chỉ unlock
+                // Admin có thể dùng API đổi status nếu muốn
+            }
+
+            job.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(isLock ? "Job đã bị admin khóa." : "Job đã được admin mở khóa.");
+        }
 
     }
 }

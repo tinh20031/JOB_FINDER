@@ -90,6 +90,7 @@ namespace JOB_FINDER_API.Controllers
                     user.Email,
                     user.Phone,
                     user.RoleId,
+                    user.Image,
                     RoleName = user.Role.RoleName
                 }
             });

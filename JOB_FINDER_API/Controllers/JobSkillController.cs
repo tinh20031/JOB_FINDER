@@ -1,5 +1,6 @@
-using JOB_FINDER_API.Data;
+﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,11 +28,25 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<JobSkill>> CreateJobSkill(JobSkill jobSkill)
+        public async Task<IActionResult> AddSkillToJob([FromBody] JobSkillDto dto)
         {
+            // Kiểm tra tồn tại
+            if (!_context.Jobs.Any(j => j.JobId == dto.JobId) || !_context.Skills.Any(s => s.SkillId == dto.SkillId))
+                return BadRequest("Job hoặc Skill không tồn tại.");
+
+            // Kiểm tra trùng
+            if (_context.JobSkills.Any(js => js.JobId == dto.JobId && js.SkillId == dto.SkillId))
+                return BadRequest("Skill đã tồn tại trong job.");
+
+            var jobSkill = new JobSkill
+            {
+                JobId = dto.JobId,
+                SkillId = dto.SkillId
+            };
+
             _context.JobSkills.Add(jobSkill);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetJobSkill), new { jobId = jobSkill.JobId, skillId = jobSkill.SkillId }, jobSkill);
+            return Ok();
         }
 
         [HttpDelete("{jobId}/{skillId}")]

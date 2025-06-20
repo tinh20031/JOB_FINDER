@@ -2,7 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
-//using JOB_FINDER_API.DTOs;
+using JOB_FINDER_API.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -108,7 +109,7 @@ namespace JOB_FINDER_API.Controllers
                     UrlCompanyLogo = urlCompanyLogo
                 }
             });
-        }
+        }                   
 
         [HttpPost("logout")]
         public IActionResult Logout()
@@ -116,6 +117,34 @@ namespace JOB_FINDER_API.Controllers
             // For JWT, logout is handled on the client by deleting the token.
             // Optionally, you can implement token blacklisting here if needed.
             return Ok(new { message = "Logged out successfully. Please remove the token on the client." });
+        }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+                return BadRequest("Current and new password are required.");
+
+            var userIdClaim = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+                return BadRequest("Current password is incorrect.");
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Password changed successfully.");
         }
 
         private string GenerateJwtToken(User user)

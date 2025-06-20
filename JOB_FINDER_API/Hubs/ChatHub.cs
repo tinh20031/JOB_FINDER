@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace JOB_FINDER_API.Hubs
 {
@@ -10,6 +12,8 @@ namespace JOB_FINDER_API.Hubs
     public class ChatHub : Hub
     {
         private readonly ILogger<ChatHub> _logger;
+        // Dictionary lưu số lượng kết nối online của user
+        public static ConcurrentDictionary<string, int> OnlineUsers = new();
 
         public ChatHub(ILogger<ChatHub> logger)
         {
@@ -20,16 +24,22 @@ namespace JOB_FINDER_API.Hubs
         {
             try
             {
-                // Lấy user ID từ JWT token
                 var userIdClaim = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
                 if (!string.IsNullOrEmpty(userIdClaim))
                 {
                     var userId = userIdClaim;
-
-                    // Join user vào group của chính họ
+                    // Tăng số lượng kết nối
+                    OnlineUsers.AddOrUpdate(userId, 1, (key, oldValue) => oldValue + 1);
                     await Groups.AddToGroupAsync(Context.ConnectionId, userId);
-
                     _logger.LogInformation("User {UserId} connected with connection {ConnectionId}", userId, Context.ConnectionId);
+
+                    // Chỉ gửi sự kiện online khi user thực sự online lần đầu
+                    if (OnlineUsers[userId] == 1)
+                        await Clients.All.SendAsync("UserOnlineStatusChanged", new { userId, isOnline = true });
+
+                    // Gửi danh sách tất cả user đang online cho user vừa kết nối
+                    var allOnlineUserIds = OnlineUsers.Where(x => x.Value > 0).Select(x => x.Key).ToList();
+                    await Clients.Caller.SendAsync("OnlineUsersList", allOnlineUserIds);
                 }
                 else
                 {
@@ -52,10 +62,18 @@ namespace JOB_FINDER_API.Hubs
                 if (!string.IsNullOrEmpty(userIdClaim))
                 {
                     var userId = userIdClaim;
-
-                    // Remove user from their group
+                    // Giảm số lượng kết nối
+                    if (OnlineUsers.ContainsKey(userId))
+                    {
+                        OnlineUsers[userId]--;
+                        if (OnlineUsers[userId] <= 0)
+                        {
+                            OnlineUsers.TryRemove(userId, out _);
+                            // Chỉ gửi sự kiện offline khi user thực sự không còn kết nối nào
+                            await Clients.All.SendAsync("UserOnlineStatusChanged", new { userId, isOnline = false });
+                        }
+                    }
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
-
                     _logger.LogInformation("User {UserId} disconnected with connection {ConnectionId}", userId, Context.ConnectionId);
                 }
             }
@@ -67,13 +85,14 @@ namespace JOB_FINDER_API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        // Method để client có thể join group thủ công nếu cần
         public async Task JoinUserGroup(string userId)
         {
             try
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, userId);
                 _logger.LogInformation("User {UserId} manually joined group", userId);
+                // Tăng số lượng kết nối khi join group thủ công
+                OnlineUsers.AddOrUpdate(userId, 1, (key, oldValue) => oldValue + 1);
             }
             catch (Exception ex)
             {
@@ -81,13 +100,21 @@ namespace JOB_FINDER_API.Hubs
             }
         }
 
-        // Method để client có thể leave group
         public async Task LeaveUserGroup(string userId)
         {
             try
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
                 _logger.LogInformation("User {UserId} left group", userId);
+                // Giảm số lượng kết nối khi leave group thủ công
+                if (OnlineUsers.ContainsKey(userId))
+                {
+                    OnlineUsers[userId]--;
+                    if (OnlineUsers[userId] <= 0)
+                    {
+                        OnlineUsers.TryRemove(userId, out _);
+                    }
+                }
             }
             catch (Exception ex)
             {

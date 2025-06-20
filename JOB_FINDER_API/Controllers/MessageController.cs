@@ -1,13 +1,14 @@
 ﻿using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
-using JOB_FINDER_API.Hubs;
+using JOB_FINDER_API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -18,17 +19,28 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly ILogger<MessageController> _logger;
-
-        public MessageController(JobFinderDbContext context, IHubContext<ChatHub> hubContext, ILogger<MessageController> logger)
+        private readonly CloudinaryService _cloudinaryService;
+        public MessageController(
+            JobFinderDbContext context,
+            IHubContext<ChatHub> hubContext,
+            ILogger<MessageController> logger,
+            CloudinaryService cloudinaryService)
         {
             _context = context;
             _hubContext = hubContext;
             _logger = logger;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpGet("history/{userId1}/{userId2}")]
         public async Task<IActionResult> GetMessageHistory(int userId1, int userId2)
         {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Invalid model state: {@ModelState}", ModelState);
+                return BadRequest(ModelState);
+            }
+
             var messages = await _context.Messages
                 .Where(m => (m.SenderId == userId1 && m.ReceiverId == userId2) ||
                             (m.SenderId == userId2 && m.ReceiverId == userId1))
@@ -40,20 +52,20 @@ namespace JOB_FINDER_API.Controllers
                     ReceiverId = m.ReceiverId,
                     SentAt = m.SentAt,
                     MessageText = m.MessageText,
-                    // Lấy thông tin sender
                     SenderFullName = _context.Users.Where(u => u.Id == m.SenderId).Select(u => u.FullName).FirstOrDefault(),
                     SenderImage = _context.Users.Where(u => u.Id == m.SenderId).Select(u => u.Image).FirstOrDefault(),
                     SenderRole = _context.Users
                         .Where(u => u.Id == m.SenderId)
                         .Join(_context.Roles, u => u.RoleId, r => r.RoleId, (u, r) => r.RoleName)
                         .FirstOrDefault(),
-                    // Lấy thông tin receiver
                     ReceiverFullName = _context.Users.Where(u => u.Id == m.ReceiverId).Select(u => u.FullName).FirstOrDefault(),
                     ReceiverImage = _context.Users.Where(u => u.Id == m.ReceiverId).Select(u => u.Image).FirstOrDefault(),
                     ReceiverRole = _context.Users
                         .Where(u => u.Id == m.ReceiverId)
                         .Join(_context.Roles, u => u.RoleId, r => r.RoleId, (u, r) => r.RoleName)
-                        .FirstOrDefault()
+                        .FirstOrDefault(),
+                    SenderIsOnline = Hubs.ChatHub.OnlineUsers.ContainsKey(m.SenderId.ToString()),
+                    ReceiverIsOnline = Hubs.ChatHub.OnlineUsers.ContainsKey(m.ReceiverId.ToString())
                 })
                 .ToListAsync();
 
@@ -63,6 +75,12 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("candidates-messaged/{companyId}")]
         public async Task<IActionResult> GetCandidatesMessagedByCompany(int companyId)
         {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Invalid model state: {@ModelState}", ModelState);
+                return BadRequest(ModelState);
+            }
+
             var messages = await _context.Messages
                 .Where(m => (m.SenderId == companyId && _context.Users.Any(u => u.Id == m.ReceiverId && _context.Roles.Any(r => r.RoleId == u.RoleId && r.RoleName == "Candidate")))
                       || (m.ReceiverId == companyId && _context.Users.Any(u => u.Id == m.SenderId && _context.Roles.Any(r => r.RoleId == u.RoleId && r.RoleName == "Candidate"))))
@@ -111,6 +129,12 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("companies-messaged/{candidateId}")]
         public async Task<IActionResult> GetCompaniesMessagedByCandidate(int candidateId)
         {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Invalid model state: {@ModelState}", ModelState);
+                return BadRequest(ModelState);
+            }
+
             // Lấy tất cả tin nhắn mà candidate là sender hoặc receiver, và đối phương là company
             var messages = await _context.Messages
                 .Where(m => (m.SenderId == candidateId && _context.Users.Any(u => u.Id == m.ReceiverId && _context.Roles.Any(r => r.RoleId == u.RoleId && r.RoleName == "Company")))
@@ -265,12 +289,109 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
+        [HttpPost("send-file")]
+        [Authorize]
+        public async Task<IActionResult> SendFile(
+     [FromForm] int receiverId,
+     [FromForm] IFormFile file,
+     [FromForm] int? relatedJobId = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Invalid model state: {@ModelState}", ModelState);
+                return BadRequest(ModelState);
+            }
+
+            // Lấy senderId từ JWT Claims
+            var senderIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(senderIdClaim))
+                return Unauthorized("Invalid token.");
+            int senderId = int.Parse(senderIdClaim);
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            // Validate file type (ví dụ chỉ cho phép image/pdf/docx)
+            var allowedTypes = new[] { "image/", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
+            if (!allowedTypes.Any(type => file.ContentType.StartsWith(type)))
+                return BadRequest("File type not allowed.");
+
+            // Validate file size (ví dụ tối đa 10MB)
+            if (file.Length > 10 * 1024 * 1024)
+                return BadRequest("File too large (max 10MB).");
+
+            string? fileUrl = null;
+            string fileType = file.ContentType.ToLower();
+            if (fileType.StartsWith("image/"))
+            {
+                fileUrl = await _cloudinaryService.UploadImageAsync(file);
+            }
+            else
+            {
+                fileUrl = await _cloudinaryService.UploadCvAsync(file);
+            }
+
+            if (string.IsNullOrEmpty(fileUrl))
+                return StatusCode(500, "Upload failed.");
+
+            var message = new Message
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                MessageText = fileUrl, // Nếu muốn chuẩn hơn, nên có trường FileUrl riêng
+                SentAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
+
+            _context.Messages.Add(message);
+            await _context.SaveChangesAsync();
+
+            var senderInfo = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == senderId);
+
+            var receiverInfo = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == receiverId);
+
+            var messageData = new
+            {
+                Id = message.Id,
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                MessageText = fileUrl,
+                SentAt = message.SentAt,
+                FileType = file.ContentType,
+                RelatedJobId = relatedJobId,
+                SenderFullName = senderInfo?.FullName,
+                SenderImage = senderInfo?.Image,
+                ReceiverFullName = receiverInfo?.FullName,
+                ReceiverImage = receiverInfo?.Image
+            };
+
+            // Gửi realtime qua SignalR
+            await _hubContext.Clients.Group(senderId.ToString()).SendAsync("ReceiveMessage", messageData);
+            await _hubContext.Clients.Group(receiverId.ToString()).SendAsync("ReceiveMessage", messageData);
+
+            await _hubContext.Clients.Group(senderId.ToString()).SendAsync("UpdateContactList");
+            await _hubContext.Clients.Group(receiverId.ToString()).SendAsync("UpdateContactList");
+
+            return Ok(messageData);
+        }
+
         [HttpPost("join-group")]
         [Authorize]
         public async Task<IActionResult> JoinSignalRGroup()
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Invalid model state: {@ModelState}", ModelState);
+                    return BadRequest(ModelState);
+                }
+
                 var currentUserIdClaim = User.FindFirst(ClaimTypes.Name)?.Value;
                 if (string.IsNullOrEmpty(currentUserIdClaim))
                 {

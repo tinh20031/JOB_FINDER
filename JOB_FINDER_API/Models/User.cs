@@ -29,8 +29,7 @@ namespace JOB_FINDER_API.Models
         public ICollection<UserFavoriteJob> FavoriteJobs { get; set; } = new List<UserFavoriteJob>();
         [JsonIgnore]
         public ICollection<Experience> Experiences { get; set; } = new List<Experience>();
-        [JsonIgnore]
-        public ICollection<Education> Educations { get; set; } = new List<Education>();
+        
         [JsonIgnore]
         public ICollection<CV> CVs { get; set; } = new List<CV>();
         [JsonIgnore]
@@ -41,5 +40,8 @@ namespace JOB_FINDER_API.Models
         public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
         [JsonIgnore]
         public ICollection<UserFavoriteCompany> FavoriteCompanies { get; set; } = new List<UserFavoriteCompany>();
+       
+        
+
     }
 }

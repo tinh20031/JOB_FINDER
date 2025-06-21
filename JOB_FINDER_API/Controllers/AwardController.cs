@@ -7,10 +7,10 @@ namespace JOB_FINDER_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EducationController : ControllerBase
+    public class AwardController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public EducationController(JobFinderDbContext context) => _context = context;
+        public AwardController(JobFinderDbContext context) => _context = context;
 
         [HttpGet("me")]
         public async Task<IActionResult> GetForMe()
@@ -23,15 +23,15 @@ namespace JOB_FINDER_API.Controllers
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var educations = await _context.Educations
-                .Where(e => e.CandidateProfileId == candidateProfile.CandidateProfileId)
+            var awards = await _context.Awards
+                .Where(a => a.CandidateProfileId == candidateProfile.CandidateProfileId)
                 .ToListAsync();
 
-            return Ok(educations);
+            return Ok(awards);
         }
 
         [HttpPost("me")]
-        public async Task<IActionResult> CreateForMe([FromBody] Education model)
+        public async Task<IActionResult> CreateForMe([FromBody] Award model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -41,13 +41,13 @@ namespace JOB_FINDER_API.Controllers
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
             model.CandidateProfileId = candidateProfile.CandidateProfileId;
-            _context.Educations.Add(model);
+            _context.Awards.Add(model);
             await _context.SaveChangesAsync();
             return Ok(model);
         }
 
         [HttpPut("me/{id}")]
-        public async Task<IActionResult> UpdateForMe(int id, [FromBody] Education model)
+        public async Task<IActionResult> UpdateForMe(int id, [FromBody] Award model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -56,19 +56,15 @@ namespace JOB_FINDER_API.Controllers
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var education = await _context.Educations.FirstOrDefaultAsync(e => e.EducationId == id && e.CandidateProfileId == candidateProfile.CandidateProfileId);
-            if (education == null) return NotFound();
+            var award = await _context.Awards.FirstOrDefaultAsync(a => a.AwardId == id && a.CandidateProfileId == candidateProfile.CandidateProfileId);
+            if (award == null) return NotFound();
 
-            education.School = model.School;
-            education.Degree = model.Degree;
-            education.Major = model.Major;
-            education.IsStudying = model.IsStudying;
-            education.MonthStart = model.MonthStart;
-            education.YearStart = model.YearStart;
-            education.MonthEnd = model.MonthEnd;
-            education.YearEnd = model.YearEnd;
-            education.Detail = model.Detail;
-            education.UpdatedAt = DateTime.UtcNow;
+            award.AwardName = model.AwardName;
+            award.AwardOrganization = model.AwardOrganization;
+            award.Month = model.Month;
+            award.Year = model.Year;
+            award.AwardDescription = model.AwardDescription;
+            award.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -77,9 +73,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var education = await _context.Educations.FindAsync(id);
-            if (education == null) return NotFound();
-            _context.Educations.Remove(education);
+            var award = await _context.Awards.FindAsync(id);
+            if (award == null) return NotFound();
+            _context.Awards.Remove(award);
             await _context.SaveChangesAsync();
             return NoContent();
         }

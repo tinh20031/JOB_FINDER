@@ -28,9 +28,15 @@ namespace JOB_FINDER_API.Data
         public DbSet<Education> Educations { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
-        public DbSet<CandidateSkill> CandidateSkill { get; set; }
         public DbSet<CandidateToCompanyRequest> CandidateToCompanyRequests { get; set; }
         public DbSet<UserFavoriteCompany> UserFavoriteCompanies { get; set; }
+        
+        public DbSet<WorkExperience> WorkExperiences { get; set; }
+        public DbSet<HighlightProject> HighlightProjects { get; set; }
+        public DbSet<Certificate> Certificates { get; set; }
+        public DbSet<Award> Awards { get; set; }
+        public DbSet<ForeignLanguage> ForeignLanguages { get; set; }
+        public DbSet<AboutMe> AboutMes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,14 +48,7 @@ namespace JOB_FINDER_API.Data
                 new Role { RoleId = 2, RoleName = "Company" },
                 new Role { RoleId = 3, RoleName = "Admin" }
             );
-
-
-
-            /*modelBuilder.Entity<Experience>().HasData(
-new Experience { Id = 1, ExperienceName = "Less than 1 year", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-new Experience { Id = 2, ExperienceName = "1-3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
-);*/
+ 
             modelBuilder.Entity<Industry>().HasData(
     new Industry { IndustryId = 1, IndustryName = "Information Technology", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
     new Industry { IndustryId = 2, IndustryName = "Finance", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
@@ -64,11 +63,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
     new Level { Id = 2, LevelName = "Junior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
     new Level { Id = 3, LevelName = "Senior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
 );
-            modelBuilder.Entity<Skill>().HasData(
-    new Skill { SkillId = 1, SkillName = "C#", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-    new Skill { SkillId = 2, SkillName = "JavaScript", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-    new Skill { SkillId = 3, SkillName = "SQL", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
-);
+           
 
             modelBuilder.Entity<ExperienceLevel>().HasData(
                 new ExperienceLevel { id = 1, name = "Fresher" },
@@ -195,22 +190,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                     IsActive = true
                 }
             );*/
-
-         
-            modelBuilder.Entity<CandidateProfile>()
-                .HasKey(cp => cp.UserId);
-            modelBuilder.Entity<CandidateProfile>()
-                .HasOne(cp => cp.User)
-                .WithOne(u => u.CandidateProfile)
-                .HasForeignKey<CandidateProfile>(cp => cp.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<CandidateProfile>()
-                .HasMany(cp => cp.CandidateSkills)
-                .WithOne()
-                .HasForeignKey(cs => cs.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            
+                       
             modelBuilder.Entity<CompanyProfile>()
                 .HasKey(cp => cp.UserId);
             modelBuilder.Entity<CompanyProfile>()
@@ -271,26 +251,7 @@ new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, Creat
                 .HasForeignKey(m => m.RelatedJobId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // CandidateSkill - User
-            modelBuilder.Entity<CandidateSkill>()
-                .HasOne(cs => cs.User)
-                .WithMany() 
-                .HasForeignKey(cs => cs.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // CandidateSkill - Skill
-            modelBuilder.Entity<CandidateSkill>()
-                .HasOne(cs => cs.Skill)
-                .WithMany(s => s.CandidateSkills) 
-                .HasForeignKey(cs => cs.SkillId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // CandidateProfile - CandidateSkill
-            modelBuilder.Entity<CandidateProfile>()
-                .HasMany(cp => cp.CandidateSkills)
-                .WithOne()
-                .HasForeignKey(cs => cs.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            
 
             // Application
             modelBuilder.Entity<Application>()
@@ -340,6 +301,69 @@ modelBuilder.Entity<UserFavoriteCompany>()
     .WithMany()
     .HasForeignKey(ufc => ufc.CompanyId)
     .OnDelete(DeleteBehavior.NoAction);
+
+            // CandidateProfile - User (1-1)
+            modelBuilder.Entity<CandidateProfile>()
+                .HasOne(cp => cp.User)
+                .WithOne(u => u.CandidateProfile)
+                .HasForeignKey<CandidateProfile>(cp => cp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Education - CandidateProfile (n-1)
+            modelBuilder.Entity<Education>()
+                .HasOne(e => e.CandidateProfile)
+                .WithMany(cp => cp.Educations)
+                .HasForeignKey(e => e.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // AboutMe - CandidateProfile (n-1)
+            modelBuilder.Entity<AboutMe>()
+                .HasOne(a => a.CandidateProfile)
+                .WithMany(cp => cp.AboutMes)
+                .HasForeignKey(a => a.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkExperience - CandidateProfile (n-1)
+            modelBuilder.Entity<WorkExperience>()
+                .HasOne(w => w.CandidateProfile)
+                .WithMany(cp => cp.WorkExperiences)
+                .HasForeignKey(w => w.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // HighlightProject - CandidateProfile (n-1)
+            modelBuilder.Entity<HighlightProject>()
+                .HasOne(h => h.CandidateProfile)
+                .WithMany(cp => cp.HighlightProjects)
+                .HasForeignKey(h => h.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Certificate - CandidateProfile (n-1)
+            modelBuilder.Entity<Certificate>()
+                .HasOne(c => c.CandidateProfile)
+                .WithMany(cp => cp.Certificates)
+                .HasForeignKey(c => c.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Award - CandidateProfile (n-1)
+            modelBuilder.Entity<Award>()
+                .HasOne(a => a.CandidateProfile)
+                .WithMany(cp => cp.Awards)
+                .HasForeignKey(a => a.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ForeignLanguage - CandidateProfile (n-1)
+            modelBuilder.Entity<ForeignLanguage>()
+                .HasOne(f => f.CandidateProfile)
+                .WithMany(cp => cp.ForeginLanguages)
+                .HasForeignKey(f => f.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Skill - CandidateProfile (n-1)
+            modelBuilder.Entity<Skill>()
+                .HasOne(s => s.CandidateProfile)
+                .WithMany(cp => cp.Skills)
+                .HasForeignKey(s => s.CandidateProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
-}
+    }

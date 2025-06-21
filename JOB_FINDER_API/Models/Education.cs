@@ -4,19 +4,24 @@ namespace JOB_FINDER_API.Models
 {
     public class Education
     {
-        public int Id { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-        public string School { get; set; } = string.Empty;
-        public string Industry { get; set; } = string.Empty;
-        public string MonthStart { get; set; } = string.Empty;
-        public string YearStart { get; set; } = string.Empty;
-        public string MonthEnd { get; set; } = string.Empty;
-        public string YearEnd { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int UserId { get; set; }
+        public int EducationId { get; set; }
+      
+        public int CandidateProfileId { get; set; }
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+        public string? School { get; set; } = string.Empty;
+        public string? Degree { get; set; } = string.Empty;
+        public string? Major { get; set; } = string.Empty;
+        public bool? IsStudying { get; set; } = false;
+        public DateTime? MonthStart { get; set; }   
+        public DateTime? YearStart { get; set; }    
+        public DateTime? MonthEnd { get; set; } 
+        public DateTime? YearEnd { get; set; }  
+        public string? Detail { get; set; } = string.Empty;
+       
 
+      
         [JsonIgnore]
-        public User User { get; set; } = null!;
+        public CandidateProfile? CandidateProfile { get; set; }
     }
 }

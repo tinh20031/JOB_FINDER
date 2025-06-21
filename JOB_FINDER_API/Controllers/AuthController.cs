@@ -103,14 +103,14 @@ namespace JOB_FINDER_API.Controllers
             await _dbContext.SaveChangesAsync();
 
             // Tạo các entity liên kết với CandidateProfile (mỗi entity 1 bản ghi rỗng)
-            _dbContext.AboutMes.Add(new AboutMe { CandidateProfileId = candidateProfile.CandidateProfileId });
-            _dbContext.Awards.Add(new Award { CandidateProfileId = candidateProfile.CandidateProfileId });
-            _dbContext.Certificates.Add(new Certificate { CandidateProfileId = candidateProfile.CandidateProfileId });
-            _dbContext.Educations.Add(new Education { CandidateProfileId = candidateProfile.CandidateProfileId });
-            _dbContext.ForeignLanguages.Add(new ForeignLanguage { CandidateProfileId = candidateProfile.CandidateProfileId });
-            _dbContext.HighlightProjects.Add(new HighlightProject { CandidateProfileId = candidateProfile.CandidateProfileId });
-            _dbContext.Skills.Add(new Skill { CandidateProfileId = candidateProfile.CandidateProfileId });
-            _dbContext.WorkExperiences.Add(new WorkExperience { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.AboutMes.Add(new AboutMe { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Awards.Add(new Award { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Certificates.Add(new Certificate { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Educations.Add(new Education { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.ForeignLanguages.Add(new ForeignLanguage { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.HighlightProjects.Add(new HighlightProject { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Skills.Add(new Skill { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.WorkExperiences.Add(new WorkExperience { CandidateProfileId = candidateProfile.CandidateProfileId });
 
             await _dbContext.SaveChangesAsync();
 

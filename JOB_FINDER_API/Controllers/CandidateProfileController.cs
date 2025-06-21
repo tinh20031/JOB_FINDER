@@ -161,5 +161,32 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpGet("me/profile-strength")]
+        public async Task<IActionResult> GetMyProfileStrength([FromServices] ProfileStrengthService profileStrengthService)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized("Không tìm thấy thông tin user id trong token.");
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var profile = await _context.CandidateProfiles
+                .Include(p => p.User)
+                .Include(p => p.AboutMes)
+                .Include(p => p.Educations)
+                .Include(p => p.WorkExperiences)
+                .Include(p => p.Skills)
+                .Include(p => p.Certificates)
+                .Include(p => p.HighlightProjects)
+                .Include(p => p.Awards)
+                .Include(p => p.ForeginLanguages)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (profile == null) return NotFound();
+
+            var result = profileStrengthService.Calculate(profile);
+            return Ok(result);
+        }
     }
 }

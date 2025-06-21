@@ -67,5 +67,15 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var aboutme = await _context.AboutMes.FindAsync(id);
+            if (aboutme == null) return NotFound();
+            _context.AboutMes.Remove(aboutme);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
     }
 }

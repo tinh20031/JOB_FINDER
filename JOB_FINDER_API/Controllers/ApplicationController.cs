@@ -322,9 +322,7 @@ namespace JOB_FINDER_API.Controllers
                 })
                 .ToListAsync();
 
-            if (!applications.Any())
-                return NotFound("No applications found for this job.");
-
+            // Luôn trả về 200 OK với mảng (có thể rỗng)
             return Ok(applications);
         }
 

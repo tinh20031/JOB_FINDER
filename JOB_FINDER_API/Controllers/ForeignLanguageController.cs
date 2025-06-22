@@ -7,10 +7,10 @@ namespace JOB_FINDER_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EducationController : ControllerBase
+    public class ForeignLanguageController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public EducationController(JobFinderDbContext context) => _context = context;
+        public ForeignLanguageController(JobFinderDbContext context) => _context = context;
 
         [HttpGet("me")]
         public async Task<IActionResult> GetForMe()
@@ -23,15 +23,15 @@ namespace JOB_FINDER_API.Controllers
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var educations = await _context.Educations
-                .Where(e => e.CandidateProfileId == candidateProfile.CandidateProfileId)
+            var langs = await _context.ForeignLanguages
+                .Where(f => f.CandidateProfileId == candidateProfile.CandidateProfileId)
                 .ToListAsync();
 
-            return Ok(educations);
+            return Ok(langs);
         }
 
         [HttpPost("me")]
-        public async Task<IActionResult> CreateForMe([FromBody] Education model)
+        public async Task<IActionResult> CreateForMe([FromBody] ForeignLanguage model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -41,13 +41,13 @@ namespace JOB_FINDER_API.Controllers
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
             model.CandidateProfileId = candidateProfile.CandidateProfileId;
-            _context.Educations.Add(model);
+            _context.ForeignLanguages.Add(model);
             await _context.SaveChangesAsync();
             return Ok(model);
         }
 
         [HttpPut("me/{id}")]
-        public async Task<IActionResult> UpdateForMe(int id, [FromBody] Education model)
+        public async Task<IActionResult> UpdateForMe(int id, [FromBody] ForeignLanguage model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -56,19 +56,12 @@ namespace JOB_FINDER_API.Controllers
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var education = await _context.Educations.FirstOrDefaultAsync(e => e.EducationId == id && e.CandidateProfileId == candidateProfile.CandidateProfileId);
-            if (education == null) return NotFound();
+            var lang = await _context.ForeignLanguages.FirstOrDefaultAsync(f => f.ForeignLanguageId == id && f.CandidateProfileId == candidateProfile.CandidateProfileId);
+            if (lang == null) return NotFound();
 
-            education.School = model.School;
-            education.Degree = model.Degree;
-            education.Major = model.Major;
-            education.IsStudying = model.IsStudying;
-            education.MonthStart = model.MonthStart;
-            education.YearStart = model.YearStart;
-            education.MonthEnd = model.MonthEnd;
-            education.YearEnd = model.YearEnd;
-            education.Detail = model.Detail;
-            education.UpdatedAt = DateTime.UtcNow;
+            lang.LanguageName = model.LanguageName;
+            lang.LanguageLevel = model.LanguageLevel;
+            lang.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -77,9 +70,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var education = await _context.Educations.FindAsync(id);
-            if (education == null) return NotFound();
-            _context.Educations.Remove(education);
+            var lang = await _context.ForeignLanguages.FindAsync(id);
+            if (lang == null) return NotFound();
+            _context.ForeignLanguages.Remove(lang);
             await _context.SaveChangesAsync();
             return NoContent();
         }

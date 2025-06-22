@@ -25,6 +25,47 @@ namespace JOB_FINDER_API.Controllers
             _configuration = configuration;
         }
 
+
+        /* [HttpPost("register")]
+         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+         {
+             if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
+             {
+                 return BadRequest("Email is already in use.");
+             }
+
+             var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
+             if (userRole == null)
+             {
+                 return StatusCode(500, "Default role not found.");
+             }
+
+             var user = new User
+             {
+                 FullName = request.FullName,
+                 Email = request.Email,
+                 Phone = request.Phone,
+                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                 RoleId = userRole.RoleId,
+                 CreatedAt = DateTime.UtcNow,
+                 UpdatedAt = DateTime.UtcNow,
+                 Image = request.Image
+             };
+
+             _dbContext.Users.Add(user);
+             await _dbContext.SaveChangesAsync();
+
+             // Tạo CandidateProfile với thông tin cơ bản
+             var candidateProfile = new CandidateProfile
+             {
+                 UserId = user.Id ?? 0,
+
+             };
+             _dbContext.CandidateProfiles.Add(candidateProfile);
+             await _dbContext.SaveChangesAsync();
+
+             return Ok("User registered successfully.");
+         }*/
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -53,6 +94,26 @@ namespace JOB_FINDER_API.Controllers
             };
 
             _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            // Tạo CandidateProfile
+            var candidateProfile = new CandidateProfile
+            {
+                UserId = user.Id ?? 0
+            };
+            _dbContext.CandidateProfiles.Add(candidateProfile);
+            await _dbContext.SaveChangesAsync();
+
+            // Tạo các entity liên kết với CandidateProfile (mỗi entity 1 bản ghi rỗng)
+            //_dbContext.AboutMes.Add(new AboutMe { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Awards.Add(new Award { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Certificates.Add(new Certificate { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Educations.Add(new Education { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.ForeignLanguages.Add(new ForeignLanguage { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.HighlightProjects.Add(new HighlightProject { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Skills.Add(new Skill { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.WorkExperiences.Add(new WorkExperience { CandidateProfileId = candidateProfile.CandidateProfileId });
+
             await _dbContext.SaveChangesAsync();
 
             return Ok("User registered successfully.");
@@ -118,7 +179,6 @@ namespace JOB_FINDER_API.Controllers
             // Optionally, you can implement token blacklisting here if needed.
             return Ok(new { message = "Logged out successfully. Please remove the token on the client." });
         }
-
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -155,9 +215,9 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Id.ToString()),
-                    new Claim(ClaimTypes.Role, user.Role.RoleName)
-                }),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Sửa dòng này
+            new Claim(ClaimTypes.Role, user.Role.RoleName)
+        }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
                 Audience = _configuration["Jwt:Audience"],

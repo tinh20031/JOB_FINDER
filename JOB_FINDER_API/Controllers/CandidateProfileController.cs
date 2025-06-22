@@ -1,8 +1,10 @@
 ﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
+using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -13,103 +15,178 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public CandidateProfileController(JobFinderDbContext context) => _context = context;
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var profiles = await _context.CandidateProfiles
-                .Include(cp => cp.CandidateSkills)
-                .ToListAsync();
-            return Ok(profiles);
-        }
-
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get(int userId)
         {
-            var item = await _context.CandidateProfiles
-                .Include(cp => cp.CandidateSkills)
-                .FirstOrDefaultAsync(cp => cp.UserId == userId);
-            return item == null ? NotFound() : Ok(item);
+            var profile = await _context.CandidateProfiles
+                .Include(p => p.User)
+                .Include(p => p.AboutMes)
+                .Include(p => p.Skills)
+                .Include(p => p.Educations)
+                .Include(p => p.WorkExperiences)
+                .Include(p => p.HighlightProjects)
+                .Include(p => p.Certificates)
+                .Include(p => p.Awards)
+                .Include(p => p.ForeginLanguages)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (profile == null) return NotFound();
+            return Ok(profile);
         }
 
-       
-        [HttpPost]
-        public async Task<IActionResult> CreateCandidateProfile([FromBody] CreateCandidateProfileDto dto)
+        
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyProfile()
         {
-            if (_context.CandidateProfiles.Any(cp => cp.UserId == dto.UserId))
-                return BadRequest("CandidateProfile already exists for this UserId.");
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized("Không tìm thấy thông tin user id trong token.");
 
-            var profile = new CandidateProfile
-            {
-                UserId = dto.UserId,
-                Gender = dto.Gender,
-                Dob = dto.Dob,
-                JobTitle = dto.JobTitle,
-                Description = dto.Description,
-                Address = dto.Address,
-                Province = dto.Province,
-                City = dto.City,
-                Language = dto.Language
-            };
-            _context.CandidateProfiles.Add(profile);
+            var userId = int.Parse(userIdClaim.Value);
 
-            // Thêm nhiều skill cho candidate dựa trên danh sách SkillIds
-            foreach (var skillId in dto.SkillIds)
+            var profile = await _context.CandidateProfiles
+                .Include(p => p.User)
+                .Include(p => p.AboutMes)
+                .Include(p => p.Skills)
+                .Include(p => p.Educations)
+                .Include(p => p.WorkExperiences)
+                .Include(p => p.HighlightProjects)
+                .Include(p => p.Certificates)
+                .Include(p => p.Awards)
+                .Include(p => p.ForeginLanguages)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (profile == null)
             {
-                _context.CandidateSkill.Add(new CandidateSkill
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return NotFound();
+
+                return Ok(new
                 {
-                    UserId = dto.UserId,
-                    SkillId = skillId
+                    CandidateProfileId = (int?)null,
+                    UserId = user.Id,
+                    Gender = string.Empty,
+                    Dob = (DateTime?)null,
+                    JobTitle = string.Empty,
+                    Address = string.Empty,
+                    Province = string.Empty,
+                    City = string.Empty,
+                    PersonalLink = string.Empty,
+                    Email = user.Email ?? string.Empty,
+                    FullName = user.FullName ?? string.Empty,
+                    Phone = user.Phone ?? string.Empty,
+                    Image = user.Image ?? string.Empty,
+                    AboutMes = new List<object>(),
+                    Skills = new List<object>(),
+                    Educations = new List<object>(),
+                    WorkExperiences = new List<object>(),
+                    HighlightProjects = new List<object>(),
+                    Certificates = new List<object>(),
+                    Awards = new List<object>(),
+                    ForeginLanguages = new List<object>()
                 });
             }
 
-            await _context.SaveChangesAsync();
-            return Ok();
-        }
-
-        [HttpPut("{userId}")]
-        public async Task<IActionResult> Update(int userId, CandidateProfile model)
-        {
-            if (userId != model.UserId) return BadRequest();
-
-            var existingProfile = await _context.CandidateProfiles
-                .Include(cp => cp.CandidateSkills)
-                .FirstOrDefaultAsync(cp => cp.UserId == userId);
-
-            if (existingProfile == null) return NotFound();
-
-            // Cập nhật thông tin cơ bản
-            existingProfile.Gender = model.Gender;
-            existingProfile.Dob = model.Dob;
-            existingProfile.JobTitle = model.JobTitle;
-            existingProfile.Description = model.Description;
-            existingProfile.Address = model.Address;
-            existingProfile.Province = model.Province;
-            existingProfile.City = model.City;
-            existingProfile.Language = model.Language;
-
-            // Cập nhật danh sách kỹ năng (nếu có)
-            if (model.CandidateSkills != null)
+            return Ok(new
             {
-                // Xóa kỹ năng cũ
-                _context.CandidateSkill.RemoveRange(existingProfile.CandidateSkills ?? new List<CandidateSkill>());
-                // Thêm kỹ năng mới
-                existingProfile.CandidateSkills = model.CandidateSkills;
+                profile.CandidateProfileId,
+                profile.UserId,
+                profile.Gender,
+                profile.Dob,
+                profile.JobTitle,
+                profile.Address,
+                profile.Province,
+                profile.City,
+                profile.PersonalLink,
+                Email = profile.User?.Email ?? string.Empty,
+                FullName = profile.User?.FullName ?? string.Empty,
+                Phone = profile.User?.Phone ?? string.Empty,
+                Image = profile.User?.Image ?? string.Empty,
+               /* AboutMes = profile.AboutMes,
+                Skills = profile.Skills,
+                Educations = profile.Educations,
+                WorkExperiences = profile.WorkExperiences,
+                HighlightProjects = profile.HighlightProjects,
+                Certificates = profile.Certificates,
+                Awards = profile.Awards,
+                ForeginLanguages = profile.ForeginLanguages*/
+            });
+        }
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateMyProfile([FromForm] UpdateCandidateProfileDto model, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized("Không tìm thấy thông tin user id trong token.");
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var profile = await _context.CandidateProfiles
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (profile == null) return NotFound();
+
+            // Cập nhật các trường của CandidateProfile
+            profile.Gender = model.Gender;
+            profile.Dob = model.Dob;
+            profile.JobTitle = model.JobTitle;
+            profile.Address = model.Address;
+            profile.Province = model.Province;
+            profile.City = model.City;
+            profile.PersonalLink = model.PersonalLink;
+
+            // Chỉ cho phép cập nhật FullName
+            if (!string.IsNullOrEmpty(model.FullName))
+            {
+                profile.User.FullName = model.FullName;
+            }
+          
+            if (imageFile != null)
+            {
+                profile.User.Image = await cloudinaryService.UploadImageAsync(imageFile);
             }
 
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        
 
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete(int userId)
         {
-            var item = await _context.CandidateProfiles
-                .Include(cp => cp.CandidateSkills)
-                .FirstOrDefaultAsync(cp => cp.UserId == userId);
-            if (item == null) return NotFound();
-            _context.CandidateProfiles.Remove(item);
+            var profile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+            if (profile == null) return NotFound();
+            _context.CandidateProfiles.Remove(profile);
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet("me/profile-strength")]
+        public async Task<IActionResult> GetMyProfileStrength([FromServices] ProfileStrengthService profileStrengthService)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized("Không tìm thấy thông tin user id trong token.");
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var profile = await _context.CandidateProfiles
+                .Include(p => p.User)
+                .Include(p => p.AboutMes)
+                .Include(p => p.Educations)
+                .Include(p => p.WorkExperiences)
+                .Include(p => p.Skills)
+                .Include(p => p.Certificates)
+                .Include(p => p.HighlightProjects)
+                .Include(p => p.Awards)
+                .Include(p => p.ForeginLanguages)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (profile == null) return NotFound();
+
+            var result = profileStrengthService.Calculate(profile);
+            return Ok(result);
         }
     }
 }

@@ -222,7 +222,7 @@ namespace JOB_FINDER_API.Controllers
                 Education = dto.Education,
                 YourSkill = dto.YourSkill,
                 YourExperience = dto.YourExperience,
-                
+
                 CompanyId = dto.CompanyId,
                 IndustryId = dto.IndustryId,
                 ExpiryDate = dto.ExpiryDate,
@@ -446,7 +446,7 @@ namespace JOB_FINDER_API.Controllers
             job.Education = dto.Education;
             job.YourSkill = dto.YourSkill;
             job.YourExperience = dto.YourExperience;
-           
+
             job.IndustryId = dto.IndustryId;
             job.ExpiryDate = dto.ExpiryDate;
             job.LevelId = dto.LevelId;
@@ -596,7 +596,7 @@ namespace JOB_FINDER_API.Controllers
                     job.DeactivatedByAdmin = false;
 
                 await _context.SaveChangesAsync();
-                
+
                 if (shouldSendMail)
                 {
                     // Lấy danh sách user đã yêu thích công ty này
@@ -653,7 +653,7 @@ namespace JOB_FINDER_API.Controllers
                 if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
                 {
                     job.Status = Job.JobStatus.inactive;
-                    job.DeactivatedByAdmin = false; 
+                    job.DeactivatedByAdmin = false;
                     job.UpdatedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
                     return Ok("Company deactivated the job successfully.");

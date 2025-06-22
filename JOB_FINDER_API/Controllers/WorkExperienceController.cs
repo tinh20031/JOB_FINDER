@@ -7,10 +7,10 @@ namespace JOB_FINDER_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EducationController : ControllerBase
+    public class WorkExperienceController : ControllerBase
     {
         private readonly JobFinderDbContext _context;
-        public EducationController(JobFinderDbContext context) => _context = context;
+        public WorkExperienceController(JobFinderDbContext context) => _context = context;
 
         [HttpGet("me")]
         public async Task<IActionResult> GetForMe()
@@ -23,15 +23,15 @@ namespace JOB_FINDER_API.Controllers
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var educations = await _context.Educations
-                .Where(e => e.CandidateProfileId == candidateProfile.CandidateProfileId)
+            var works = await _context.WorkExperiences
+                .Where(w => w.CandidateProfileId == candidateProfile.CandidateProfileId)
                 .ToListAsync();
 
-            return Ok(educations);
+            return Ok(works);
         }
 
         [HttpPost("me")]
-        public async Task<IActionResult> CreateForMe([FromBody] Education model)
+        public async Task<IActionResult> CreateForMe([FromBody] WorkExperience model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -41,13 +41,13 @@ namespace JOB_FINDER_API.Controllers
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
             model.CandidateProfileId = candidateProfile.CandidateProfileId;
-            _context.Educations.Add(model);
+            _context.WorkExperiences.Add(model);
             await _context.SaveChangesAsync();
             return Ok(model);
         }
 
         [HttpPut("me/{id}")]
-        public async Task<IActionResult> UpdateForMe(int id, [FromBody] Education model)
+        public async Task<IActionResult> UpdateForMe(int id, [FromBody] WorkExperience model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -56,19 +56,19 @@ namespace JOB_FINDER_API.Controllers
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var education = await _context.Educations.FirstOrDefaultAsync(e => e.EducationId == id && e.CandidateProfileId == candidateProfile.CandidateProfileId);
-            if (education == null) return NotFound();
+            var work = await _context.WorkExperiences.FirstOrDefaultAsync(w => w.WorkExperienceId == id && w.CandidateProfileId == candidateProfile.CandidateProfileId);
+            if (work == null) return NotFound();
 
-            education.School = model.School;
-            education.Degree = model.Degree;
-            education.Major = model.Major;
-            education.IsStudying = model.IsStudying;
-            education.MonthStart = model.MonthStart;
-            education.YearStart = model.YearStart;
-            education.MonthEnd = model.MonthEnd;
-            education.YearEnd = model.YearEnd;
-            education.Detail = model.Detail;
-            education.UpdatedAt = DateTime.UtcNow;
+            work.JobTitle = model.JobTitle;
+            work.CompanyName = model.CompanyName;
+            work.IsWorking = model.IsWorking;
+            work.MonthStart = model.MonthStart;
+            work.YearStart = model.YearStart;
+            work.MonthEnd = model.MonthEnd;
+            work.YearEnd = model.YearEnd;
+            work.WorkDescription = model.WorkDescription;
+            work.ProJects = model.ProJects;
+            work.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -77,9 +77,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var education = await _context.Educations.FindAsync(id);
-            if (education == null) return NotFound();
-            _context.Educations.Remove(education);
+            var work = await _context.WorkExperiences.FindAsync(id);
+            if (work == null) return NotFound();
+            _context.WorkExperiences.Remove(work);
             await _context.SaveChangesAsync();
             return NoContent();
         }

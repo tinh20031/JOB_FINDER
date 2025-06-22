@@ -31,6 +31,10 @@ namespace JOB_FINDER_API.Models
         public string ProvinceName { get; set; } = string.Empty;
         public string AddressDetail { get; set; } = string.Empty;
         public bool DeactivatedByAdmin { get; set; } = false;
+        public float DescriptionWeight { get; set; }
+        public float SkillsWeight { get; set; } 
+        public float ExperienceWeight { get; set; } 
+        public float EducationWeight { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         [JsonIgnore]

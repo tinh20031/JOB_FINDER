@@ -1,4 +1,5 @@
-﻿using static JOB_FINDER_API.Models.Job;
+﻿using System.ComponentModel.DataAnnotations;
+using static JOB_FINDER_API.Models.Job;
 
 namespace JOB_FINDER_API.Models.Requests
 {
@@ -26,6 +27,14 @@ namespace JOB_FINDER_API.Models.Requests
         public string ProvinceName { get; set; }
         public string AddressDetail { get; set; }
         public List<SkillInput>? skillInputs { get; set; }
+        [Range(0, 1)]
+        public float DescriptionWeight { get; set; } 
+        [Range(0, 1)]
+        public float SkillsWeight { get; set; } 
+        [Range(0, 1)]
+        public float ExperienceWeight { get; set; } 
+        [Range(0, 1)]
+        public float EducationWeight { get; set; } 
     }
     public class SkillInput
     {

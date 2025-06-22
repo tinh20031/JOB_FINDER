@@ -7,56 +7,38 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using OpenAI;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-
-// Register DbContext
-builder.Services.AddDbContext<JobFinderDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Register IHttpClientFactory (ensure it is called before other services that depend on it)
-builder.Services.AddHttpClient(); // Đăng ký IHttpClientFactory
-
-// Register other services
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<SemanticMatchingService>();
-
-// Configure OpenAI settings
-builder.Services.Configure<OpenAIConfig>(builder.Configuration.GetSection("OpenAI"));
-
-// Configure Cloudinary settings
+builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
-var cloudinarySettings = builder.Configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
-if (cloudinarySettings != null)
-{
-    var account = new Account(cloudinarySettings.CloudName, cloudinarySettings.ApiKey, cloudinarySettings.ApiSecret);
-    var cloudinary = new Cloudinary(account);
-    builder.Services.AddSingleton(cloudinary);
-}
-else
-{
-    throw new InvalidOperationException("CloudinarySettings not found in configuration.");
-}
 
-// Add Swagger
+var cloudinarySettings = builder.Configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
+var account = new Account(cloudinarySettings.CloudName, cloudinarySettings.ApiKey, cloudinarySettings.ApiSecret);
+var cloudinary = new Cloudinary(account);
+
+builder.Services.AddSingleton(cloudinary);
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-    c.OperationFilter<UploadFileOperationFilter>();
+    c.OperationFilter<UploadFileOperationFilter>(); // Thêm filter này
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
+    // Check if the XML file exists before including it
     if (File.Exists(xmlPath))
     {
         c.IncludeXmlComments(xmlPath);
@@ -66,6 +48,7 @@ builder.Services.AddSwaggerGen(c =>
         Console.WriteLine($"Warning: XML documentation file not found at {xmlPath}");
     }
 
+    // Thêm cấu hình bảo mật JWT
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -80,9 +63,13 @@ builder.Services.AddSwaggerGen(c =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
             },
-            Array.Empty<string>()
+            new string[] {}
         }
     });
 });
@@ -91,13 +78,25 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
-        builder => builder.WithOrigins("http://localhost:3000")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials());
+        builder =>
+        {
+            builder.WithOrigins("https://job-finder-fe.vercel.app", "http://localhost:3000", "http://localhost:5194")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        });
 });
 
-// Add Authentication
+builder.Services.AddDbContext<JobFinderDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -120,7 +119,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add Authorization
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -130,17 +128,25 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.EnableFilter());
+    app.UseSwaggerUI(c =>
+    {
+        c.EnableFilter(); 
+    });
 }
 
 app.UseHttpsRedirection();
 
-// Add CORS middleware
 app.UseCors("AllowReactApp");
+app.Use(async (context, next) =>
+{
+    var origin = context.Request.Headers["Origin"].ToString();
+    Console.WriteLine($"CORS applied for {context.Request.Path}, Origin: {(string.IsNullOrEmpty(origin) ? "null/empty" : origin)}");
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseSession();
 app.MapControllers();
 
 app.Run();

@@ -1,5 +1,6 @@
 ﻿using JOB_FINDER_API.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace JOB_FINDER_API.Data
 {
@@ -25,6 +26,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<UserFavoriteJob> UserFavoriteJobs { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<CV> CVs { get; set; }
+        public DbSet<Embedding> Embeddings { get; set; }
         public DbSet<Education> Educations { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
@@ -350,6 +352,16 @@ modelBuilder.Entity<UserFavoriteCompany>()
     .WithMany()
     .HasForeignKey(ufc => ufc.CompanyId)
     .OnDelete(DeleteBehavior.NoAction);
+
+
+            modelBuilder.Entity<Embedding>().HasKey(e => e.Id);
+
+            modelBuilder.Entity<Embedding>()
+                .Property(e => e.Vector)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
+                    v => JsonSerializer.Deserialize<float[]>(v, new JsonSerializerOptions()) ?? new float[0]
+                );
         }
     }
 }

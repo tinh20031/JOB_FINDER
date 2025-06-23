@@ -6,6 +6,7 @@ using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -55,8 +56,11 @@ namespace JOB_FINDER_API.Controllers
     [FromServices] ICvSnapshotService cvSnapshotService,
     [FromServices] CloudinaryService cloudinaryService) // Inject CloudinaryService
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+           
 
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             CV? cv = null;
             string? uploadedCvUrl = null;
 

@@ -157,6 +157,7 @@ E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.js
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.json.cache
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.development.json
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FIND.9BEEF214.Up2Date
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.dll
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\refint\JOB_FINDER_API.dll
@@ -164,4 +165,3 @@ E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.xml
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.pdb
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\JOB_FINDER_API.genruntimeconfig.cache
 E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\ref\JOB_FINDER_API.dll
-E:\Đồ Án\JOB_FINDER\JOB_FINDER_API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

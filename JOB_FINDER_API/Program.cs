@@ -1,4 +1,3 @@
-
 using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
@@ -13,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-
+using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -108,8 +107,9 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
-        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+        
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = ClaimTypes.Role,
         ClockSkew = TimeSpan.Zero,
     };
     // Bổ sung đoạn này để lấy token từ query string cho SignalR

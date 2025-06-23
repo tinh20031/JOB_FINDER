@@ -283,116 +283,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
-        /* [HttpPut("{id}")]
-         public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
-         {
-             var job = await _context.Jobs
-                 .Include(j => j.JobSkills)
-                 .FirstOrDefaultAsync(j => j.JobId == id);
-             if (job == null) return NotFound();
-
-             var userIdStr = User.Identity?.Name;
-             if (!int.TryParse(userIdStr, out var userId))
-                 return Unauthorized("Invalid user ID.");
-             var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
-
-             if (role == "company")
-             {
-                 if (job.CompanyId != userId)
-                     return StatusCode(403, "Bạn không phải chủ sở hữu job này.");
-
-                 if (!job.CanCompanyEditContent() && job.Status != Job.JobStatus.active)
-                     return StatusCode(403, "Bạn không có quyền chỉnh sửa job này.");
-
-                 // Nếu job đang pending, chỉ cho phép chỉnh nội dung, KHÔNG cập nhật status
-                 if (job.Status == Job.JobStatus.pending)
-                 {
-                     // Không cập nhật status, giữ nguyên trạng thái pending
-                 }
-                 // Nếu job inactive (không bị admin lock, chưa hết hạn), cho phép chỉnh sửa và set lại status về pending
-                 else if (job.Status == Job.JobStatus.inactive && !job.DeactivatedByAdmin && !job.IsExpired())
-                 {
-                     job.Status = Job.JobStatus.pending;
-                 }
-                 // Nếu job active (đã được admin duyệt), cho phép chỉnh sửa và set lại status về pending
-                 else if (job.Status == Job.JobStatus.active && !job.DeactivatedByAdmin && !job.IsExpired())
-                 {
-                     job.Status = Job.JobStatus.pending;
-                 }
-                 // Nếu job hết hạn hoặc bị admin lock, không cho chỉnh sửa
-                 else if (job.IsExpired() || job.DeactivatedByAdmin)
-                 {
-                     return StatusCode(403, "Job đã hết hạn hoặc bị admin khóa, không thể chỉnh sửa.");
-                 }
-             }
-             else if (role == "admin")
-             {
-                 // Admin có thể chỉnh sửa mọi thứ
-             }
-             else
-             {
-                 return StatusCode(403, "Bạn không có quyền chỉnh sửa job này.");
-             }
-
-             // Cập nhật nội dung
-             job.Title = dto.Title;
-             job.Description = dto.Description;
-             job.IndustryId = dto.IndustryId;
-             job.ExpiryDate = dto.ExpiryDate;
-             job.LevelId = dto.LevelId;
-             job.JobTypeId = dto.JobTypeId;
-             job.ExperienceLevelId = dto.ExperienceLevelId;
-             job.TimeStart = dto.TimeStart;
-             job.TimeEnd = dto.TimeEnd;
-             job.ProvinceName = dto.ProvinceName;
-             job.AddressDetail = dto.AddressDetail;
-             job.UpdatedAt = DateTime.UtcNow;
-             job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
-             job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
-             job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
-
-             // Cập nhật lại JobSkill (giữ nguyên logic cũ)
-             if (dto.skillInputs != null)
-             {
-                 var oldSkills = job.JobSkills.ToList();
-                 _context.JobSkills.RemoveRange(oldSkills);
-
-                 foreach (var input in dto.skillInputs)
-                 {
-                     int skillId;
-                     if (input.SkillId.HasValue)
-                     {
-                         skillId = input.SkillId.Value;
-                     }
-                     else if (!string.IsNullOrWhiteSpace(input.SkillName))
-                     {
-                         var existingSkill = await _context.Skills
-                             .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
-                         if (existingSkill != null)
-                         {
-                             skillId = existingSkill.SkillId;
-                         }
-                         else
-                         {
-                             var newSkill = new Skill { SkillName = input.SkillName };
-                             _context.Skills.Add(newSkill);
-                             await _context.SaveChangesAsync();
-                             skillId = newSkill.SkillId;
-                         }
-                     }
-                     else
-                     {
-                         continue;
-                     }
-
-                     _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
-                 }
-                 await _context.SaveChangesAsync();
-             }
-
-             await _context.SaveChangesAsync();
-             return NoContent();
-         }*/
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
         {
@@ -568,16 +459,18 @@ namespace JOB_FINDER_API.Controllers
             var job = await _context.Jobs.FindAsync(id);
             if (job == null) return NotFound("Job not found.");
 
-            // Lấy userId từ User.Identity.Name (theo NameClaimType đã cấu hình)
-            var userIdStr = User.Identity?.Name;
-            if (!int.TryParse(userIdStr, out var userId))
+           
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"DEBUG: nameid claim = {userIdClaim}");
+            if (!int.TryParse(userIdClaim, out var userId))
                 return Unauthorized("Invalid user ID.");
 
-            // Lấy role theo ClaimTypes.Role (đã ánh xạ theo RoleClaimType)
+
             var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
 
             if (job.TimeEnd < DateTime.UtcNow)
                 return BadRequest("Cannot change status of expired job.");
+
 
             if (role == "admin")
             {

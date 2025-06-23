@@ -206,7 +206,6 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("Password changed successfully.");
         }
-
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -215,7 +214,7 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Sửa dòng này
+            new Claim("nameid", user.Id.ToString()),
             new Claim(ClaimTypes.Role, user.Role.RoleName)
         }),
                 Expires = DateTime.UtcNow.AddDays(7),

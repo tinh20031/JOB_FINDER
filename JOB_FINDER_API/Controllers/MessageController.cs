@@ -214,7 +214,7 @@ namespace JOB_FINDER_API.Controllers
                     return BadRequest("Message text cannot be empty.");
                 }
 
-                var currentUserIdClaim = User.FindFirst(ClaimTypes.Name)?.Value;
+                var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(currentUserIdClaim))
                 {
                     _logger.LogWarning("No UserId found in JWT token");
@@ -392,7 +392,7 @@ namespace JOB_FINDER_API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var currentUserIdClaim = User.FindFirst(ClaimTypes.Name)?.Value;
+                var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(currentUserIdClaim))
                 {
                     return Unauthorized("Invalid token");

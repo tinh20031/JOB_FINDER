@@ -6,6 +6,7 @@ using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -55,8 +56,11 @@ namespace JOB_FINDER_API.Controllers
     [FromServices] ICvSnapshotService cvSnapshotService,
     [FromServices] CloudinaryService cloudinaryService) // Inject CloudinaryService
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+           
 
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             CV? cv = null;
             string? uploadedCvUrl = null;
 
@@ -122,7 +126,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applications")]
         public async Task<IActionResult> GetMyApplications()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
             var applications = await _context.Applications
                 .Where(a => a.UserId == userId)
@@ -166,7 +170,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applied-jobs-with-cvs")]
         public async Task<IActionResult> GetMyAppliedJobsWithCvs()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
             // Get job IDs the current user has applied to
             var appliedJobIds = await _context.Applications
@@ -226,7 +230,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("favorite-company/{companyId}")]
         public async Task<IActionResult> FavoriteCompany(int companyId)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
             if (await _context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
                 return BadRequest("Already favorited");

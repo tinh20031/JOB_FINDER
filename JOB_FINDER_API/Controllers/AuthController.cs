@@ -186,7 +186,7 @@ namespace JOB_FINDER_API.Controllers
             if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
                 return BadRequest("Current and new password are required.");
 
-            var userIdClaim = User.FindFirst(ClaimTypes.Name)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
                 return Unauthorized();
 

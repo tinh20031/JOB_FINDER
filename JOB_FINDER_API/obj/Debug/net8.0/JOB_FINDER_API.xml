@@ -4,5 +4,17 @@
         <name>JOB_FINDER_API</name>
     </assembly>
     <members>
+        <member name="T:JOB_FINDER_API.Migrations.updateDBSkill">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateDBSkill.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateDBSkill.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateDBSkill.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

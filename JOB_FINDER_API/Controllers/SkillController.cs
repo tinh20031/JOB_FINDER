@@ -43,12 +43,23 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        /*[HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var skill = await _context.Skills.FindAsync(id);
             if (skill == null) return NotFound();
             _context.Skills.Remove(skill);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }*/
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var skill = await _context.Skills.FindAsync(id);
+            if (skill == null) return NotFound();
+
+            // Nếu skill đang liên kết với CandidateProfile, chỉ xóa liên kết
+            skill.CandidateProfileId = null; // hoặc null nếu cho phép null
             await _context.SaveChangesAsync();
             return NoContent();
         }

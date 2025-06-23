@@ -220,7 +220,6 @@ namespace JOB_FINDER_API.Controllers
                     _logger.LogWarning("No UserId found in JWT token");
                     return Unauthorized("Invalid token");
                 }
-
                 var currentUserId = int.Parse(currentUserIdClaim);
                 if (currentUserId != dto.SenderId)
                 {
@@ -395,9 +394,9 @@ namespace JOB_FINDER_API.Controllers
                 var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(currentUserIdClaim))
                 {
+                    _logger.LogWarning("No UserId found in JWT token");
                     return Unauthorized("Invalid token");
                 }
-
                 var currentUserId = int.Parse(currentUserIdClaim);
 
                 await _hubContext.Groups.AddToGroupAsync(currentUserId.ToString(), currentUserId.ToString());

@@ -50,16 +50,17 @@ namespace JOB_FINDER_API.Data
                 new Role { RoleId = 3, RoleName = "Admin" }
             );
 
-            modelBuilder.Entity<Experience>().HasData(
-                new Experience { Id = 1, ExperienceName = "Less than 1 year", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new Experience { Id = 2, ExperienceName = "1-3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new Experience { Id = 3, ExperienceName = "More than 3 years", UserId = 1, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
-            );
-
+     
             modelBuilder.Entity<Industry>().HasData(
-                new Industry { IndustryId = 1, IndustryName = "Information Technology", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new Industry { IndustryId = 2, IndustryName = "Finance", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
-            );
+         new Industry { IndustryId = 3, IndustryName = "Software Development", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+         new Industry { IndustryId = 4, IndustryName = "Cybersecurity", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+         new Industry { IndustryId = 5, IndustryName = "Data Science", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+         new Industry { IndustryId = 6, IndustryName = "Cloud Computing", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+         new Industry { IndustryId = 7, IndustryName = "UI/UX Design", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+         new Industry { IndustryId = 8, IndustryName = "Artificial Intelligence", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+         new Industry { IndustryId = 9, IndustryName = "DevOps", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+     );
+
 
             modelBuilder.Entity<JobType>().HasData(
                 new JobType { Id = 1, JobTypeName = "Full-time", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
@@ -78,132 +79,14 @@ namespace JOB_FINDER_API.Data
                 new ExperienceLevel { id = 2, name = "Junior" },
                 new ExperienceLevel { id = 3, name = "Middle" },
                 new ExperienceLevel { id = 4, name = "Senior" }
+          
+
+  
             );
 
-            modelBuilder.Entity<Job>().HasData(
-                new Job
-                {
-                    JobId = 1,
-                    Title = "Junior Software Engineer",
-                    Description = "Develop and maintain web applications using C# and JavaScript.",
-                    Education = "Bachelor's Degree in Computer Science",
-                    YourSkill = "C#, .NET, JavaScript, SQL",
-                    YourExperience = "1+ years working with web development",
-                    CompanyId = 2,
-                    MinSalary = 45000,
-                    MaxSalary = 55000,
-                    IsSalaryNegotiable = true,
-                    IndustryId = 1,
-                    ExpiryDate = DateTime.UtcNow.AddDays(30),
-                    LevelId = 2,
-                    JobTypeId = 1,
-                    ExperienceLevelId = 2,
-                    TimeStart = DateTime.UtcNow,
-                    TimeEnd = DateTime.UtcNow.AddDays(30),
-                    Status = Job.JobStatus.active,
-                    ProvinceName = "Ho Chi Minh City",
-                    AddressDetail = "123 Tech Street, District 1",
-                    DeactivatedByAdmin = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new Job
-                {
-                    JobId = 2,
-                    Title = "Senior Data Analyst",
-                    Description = "Analyze financial data and generate reports.",
-                    Education = "Master's Degree in Finance or Data Science",
-                    YourSkill = "SQL, Python, Excel, Power BI",
-                    YourExperience = "5+ years of data analysis experience",
-                    CompanyId = 2,
-                    MinSalary = 75000,
-                    MaxSalary = 85000,
-                    IsSalaryNegotiable = false,
-                    IndustryId = 2,
-                    ExpiryDate = DateTime.UtcNow.AddDays(45),
-                    LevelId = 3,
-                    JobTypeId = 3,
-                    ExperienceLevelId = 4,
-                    TimeStart = DateTime.UtcNow,
-                    TimeEnd = DateTime.UtcNow.AddDays(45),
-                    Status = Job.JobStatus.pending,
-                    ProvinceName = "Hanoi",
-                    AddressDetail = "456 Finance Avenue, Ba Dinh",
-                    DeactivatedByAdmin = false,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                }
-            );
+          
 
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    FullName = "tinh",
-                    Email = "tinhadmin@gmail.com",
-                    Phone = "0123456789",
-                    Password = "123",
-                    IsActive = true,
-                    RoleId = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new User
-                {
-                    Id = 2,
-                    FullName = "Tech Corp",
-                    Email = "contact@techcorp.com",
-                    Phone = "0987654321",
-                    Password = "123",
-                    IsActive = true,
-                    RoleId = 2,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new User
-                {
-                    Id = 3,
-                    FullName = "Admin User",
-                    Email = "admin@jobfinder.com",
-                    Phone = "0912345678",
-                    Password = "123",
-                    IsActive = true,
-                    RoleId = 3,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                }
-            );
-
-            modelBuilder.Entity<CandidateProfile>().HasData(
-                new CandidateProfile
-                {
-                    UserId = 1,
-                    Gender = "Male",
-                    Dob = new DateTime(1995, 5, 15),
-                    JobTitle = "Software Developer",
-                    Address = "123 Main Street",
-                    Province = "Ho Chi Minh",
-                    City = "Ho Chi Minh City"
-                }
-            );
-
-            modelBuilder.Entity<CompanyProfile>().HasData(
-                new CompanyProfile
-                {
-                    UserId = 2,
-                    CompanyName = "Tech Corp",
-                    CompanyProfileDescription = "A leading tech company specializing in software solutions.",
-                    Location = "123 Tech Street, District 1, Ho Chi Minh City",
-                    UrlCompanyLogo = "https://res.cloudinary.com/dzf0ccons/image/upload/v1748267504/image_user/bfltymsad63wfkyp3bvl.jpg",
-                    ImageLogoLgr = "https://res.cloudinary.com/dzf0ccons/image/upload/v1748267504/image_user/bfltymsad63wfkyp3bvl.jpg",
-                    TeamSize = "50-100 employees",
-                    IsVerified = true,
-                    Website = "https://techcorp.com",
-                    Contact = "contact@techcorp.com",
-                    IndustryId = 1,
-                    IsActive = true
-                }
-            );
+           
 
          
           

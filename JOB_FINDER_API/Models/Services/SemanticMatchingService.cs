@@ -547,8 +547,4 @@ namespace JOB_FINDER_API.Models.Services
             }
         }
     }
-
-
-
-  
 }

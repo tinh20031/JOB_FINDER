@@ -87,14 +87,6 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest(new { Success = false, ErrorMessage = error });
             }
 
-            // Chụp snapshot CV
-            var snapshotUrls = await cvSnapshotService.CaptureCvAsImagesAsync(cv);
-            if (snapshotUrls == null || snapshotUrls.Count == 0)
-            {
-                _logger.LogError("Failed to create CV snapshots for User {UserId}", userId);
-                return BadRequest(new { Success = false, ErrorMessage = "Unable to create CV snapshots" });
-            }
-
             // Lấy Job và tóm tắt
             var job = await _context.Jobs.FindAsync(request.JobId);
             if (job == null)
@@ -106,7 +98,7 @@ namespace JOB_FINDER_API.Controllers
             string jobSummary = await SummarizeJobAsync(job);
 
             // Lưu application
-            var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, snapshotUrls.First());
+            var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl);
             _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
 
             // Tính similarity
@@ -139,7 +131,6 @@ namespace JOB_FINDER_API.Controllers
                 Success = true,
                 Message = "Application submitted successfully",
                 ApplicationId = application.Id,
-                SnapshotUrls = snapshotUrls,
                 SimilarityScore = matchingResult.Success ? matchingResult.TotalSimilarity : (float?)null,
                 CvSummary = cvSummary,
                 JobSummary = jobSummary,
@@ -261,7 +252,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        private async Task<Application> SaveApplicationAsync(int userId, ApplyJobRequest request, CV cv, string resumeUrl, string snapshotCv)
+        private async Task<Application> SaveApplicationAsync(int userId, ApplyJobRequest request, CV cv, string resumeUrl)
         {
             var application = new Application
             {
@@ -270,7 +261,6 @@ namespace JOB_FINDER_API.Controllers
                 CvId = cv.Id,
                 CoverLetter = request.CoverLetter,
                 ResumeUrl = resumeUrl,
-                SnapshotCv = snapshotCv,
                 Status = ApplicationStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
@@ -309,7 +299,6 @@ namespace JOB_FINDER_API.Controllers
                     a.SubmittedAt,
                     a.CoverLetter,
                     a.ResumeUrl,
-                    a.SnapshotCv,
                     a.SimilarityScore,
                     Job = new
                     {
@@ -380,7 +369,6 @@ namespace JOB_FINDER_API.Controllers
                         a.SubmittedAt,
                         a.CoverLetter,
                         a.ResumeUrl,
-                        a.SnapshotCv,
                         a.SimilarityScore,
                         CvInfo = new
                         {
@@ -483,7 +471,6 @@ namespace JOB_FINDER_API.Controllers
                     a.SubmittedAt,
                     a.CoverLetter,
                     a.ResumeUrl,
-                    a.SnapshotCv,
                     a.SimilarityScore,
                     User = new
                     {

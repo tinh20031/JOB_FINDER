@@ -94,26 +94,13 @@ namespace JOB_FINDER_API.Controllers
             };
 
             _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(); // user.Id sẽ được cập nhật tự động
 
-            // Tạo CandidateProfile
             var candidateProfile = new CandidateProfile
             {
-                UserId = user.Id ?? 0
+                UserId = user.Id ?? 0 
             };
             _dbContext.CandidateProfiles.Add(candidateProfile);
-            await _dbContext.SaveChangesAsync();
-
-            // Tạo các entity liên kết với CandidateProfile (mỗi entity 1 bản ghi rỗng)
-            //_dbContext.AboutMes.Add(new AboutMe { CandidateProfileId = candidateProfile.CandidateProfileId });
-            //_dbContext.Awards.Add(new Award { CandidateProfileId = candidateProfile.CandidateProfileId });
-            //_dbContext.Certificates.Add(new Certificate { CandidateProfileId = candidateProfile.CandidateProfileId });
-            //_dbContext.Educations.Add(new Education { CandidateProfileId = candidateProfile.CandidateProfileId });
-            //_dbContext.ForeignLanguages.Add(new ForeignLanguage { CandidateProfileId = candidateProfile.CandidateProfileId });
-            //_dbContext.HighlightProjects.Add(new HighlightProject { CandidateProfileId = candidateProfile.CandidateProfileId });
-            //_dbContext.Skills.Add(new Skill { CandidateProfileId = candidateProfile.CandidateProfileId });
-            //_dbContext.WorkExperiences.Add(new WorkExperience { CandidateProfileId = candidateProfile.CandidateProfileId });
-
             await _dbContext.SaveChangesAsync();
 
             return Ok("User registered successfully.");
@@ -122,7 +109,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var user = await _dbContext.Users
+            var user = await _dbContext.Users   
                 .Include(u => u.Role)
                 .Include(u => u.CompanyProfile)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -179,8 +166,33 @@ namespace JOB_FINDER_API.Controllers
             // Optionally, you can implement token blacklisting here if needed.
             return Ok(new { message = "Logged out successfully. Please remove the token on the client." });
         }
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+                return BadRequest("Current and new password are required.");
 
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
 
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+                return BadRequest("Current password is incorrect.");
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Password changed successfully.");
+        }
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();

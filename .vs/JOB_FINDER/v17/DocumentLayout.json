@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\summer2025\\datn\\job_finder\\job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\summer2025\\datn\\job_finder\\job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -22,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 188,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -34,7 +38,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\appsettings.json",
+              "ToolTip": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
+              "RelativeToolTip": "JOB_FINDER_API\\appsettings.json",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-06-23T02:49:57.878Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "ProfileStrengthService.cs",
               "DocumentMoniker": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Models\\Services\\ProfileStrengthService.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Services\\ProfileStrengthService.cs",
@@ -46,7 +63,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Program.cs",
@@ -59,7 +76,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "CandidateProfileController.cs",
               "DocumentMoniker": "F:\\SUMMER2025\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\CandidateProfileController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\CandidateProfileController.cs",

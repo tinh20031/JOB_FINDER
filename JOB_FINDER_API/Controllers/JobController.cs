@@ -208,8 +208,15 @@ namespace JOB_FINDER_API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            // Kiểm tra NaN
+            if (float.IsNaN(dto.DescriptionWeight) || float.IsNaN(dto.SkillsWeight) ||
+                float.IsNaN(dto.ExperienceWeight) || float.IsNaN(dto.EducationWeight))
+                return BadRequest("Trọng số không được là NaN.");
+
+            // Kiểm tra các ràng buộc khác
             if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
-                return BadRequest("Phải nhập lương tối thiểu và tối đa khi không chọn lương thỏa thuận.");
+                return BadRequest("Minimum and maximum salary must be entered if 'negotiable salary' is not selected.");
             if (dto.TimeEnd <= dto.TimeStart)
                 return BadRequest("TimeEnd must be after TimeStart.");
             if (dto.ExpiryDate <= DateTime.UtcNow)
@@ -222,7 +229,6 @@ namespace JOB_FINDER_API.Controllers
                 Education = dto.Education,
                 YourSkill = dto.YourSkill,
                 YourExperience = dto.YourExperience,
-
                 CompanyId = dto.CompanyId,
                 IndustryId = dto.IndustryId,
                 ExpiryDate = dto.ExpiryDate,
@@ -238,7 +244,11 @@ namespace JOB_FINDER_API.Controllers
                 Status = Job.JobStatus.pending,
                 IsSalaryNegotiable = dto.IsSalaryNegotiable,
                 MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
-                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary
+                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary,
+                DescriptionWeight = dto.DescriptionWeight / 100f,
+                SkillsWeight = dto.SkillsWeight / 100f,
+                ExperienceWeight = dto.ExperienceWeight / 100f,
+                EducationWeight = dto.EducationWeight / 100f
             };
 
             _context.Jobs.Add(job);
@@ -272,18 +282,19 @@ namespace JOB_FINDER_API.Controllers
                     }
                     else
                     {
-                        continue; // Bỏ qua nếu không hợp lệ
+                        continue;
                     }
 
                     _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
                 }
                 await _context.SaveChangesAsync();
             }
+
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
         }
 
 
-        
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
         {

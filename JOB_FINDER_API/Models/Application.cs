@@ -21,6 +21,7 @@ namespace JOB_FINDER_API.Models
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
         public int CvId { get; set; }
         public string? SnapshotCv { get; set; }
+        public float? SimilarityScore { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

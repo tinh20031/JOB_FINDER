@@ -461,7 +461,7 @@ namespace JOB_FINDER_API.Controllers
 
            
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            Console.WriteLine($"DEBUG: nameid claim = {userIdClaim}");
+           
             if (!int.TryParse(userIdClaim, out var userId))
                 return Unauthorized("Invalid user ID.");
 

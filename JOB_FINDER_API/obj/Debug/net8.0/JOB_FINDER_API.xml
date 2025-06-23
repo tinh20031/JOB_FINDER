@@ -16,5 +16,17 @@
         <member name="M:JOB_FINDER_API.Migrations.initttt.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:JOB_FINDER_API.Migrations.updateDBSkill">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateDBSkill.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateDBSkill.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:JOB_FINDER_API.Migrations.updateDBSkill.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

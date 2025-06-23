@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -73,7 +74,9 @@ namespace JOB_FINDER_API.Controllers
             [FromServices] CloudinaryService cloudinaryService,
             [FromServices] EmailService emailService)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
 
             // Xử lý CV

@@ -7,5 +7,6 @@
         public string Model { get; set; }
         public float[] Vector { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? ExpiresAt { get; set; }
     }
 }

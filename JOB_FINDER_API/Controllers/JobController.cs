@@ -22,13 +22,12 @@ namespace JOB_FINDER_API.Controllers
             _emailService = emailService;
         }
 
-     
+
         // GET: api/Job
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetJobs()
         {
             var jobs = await _context.Jobs
-                .Where(j => !j.DeactivatedByAdmin)
                 .Include(j => j.Industry)
                 .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
@@ -102,7 +101,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
-        
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<object>> GetJob(int id)
         {
@@ -126,6 +125,20 @@ namespace JOB_FINDER_API.Controllers
             if (job.DeactivatedByAdmin && role != "admin" && job.CompanyId != userId)
                 return NotFound();
 
+            // Nếu là anonymous hoặc candidate, chỉ cho xem job Active hoặc đã hết hạn
+            bool isAnonymous = !User.Identity.IsAuthenticated;
+            if (isAnonymous || role == "candidate")
+            {
+                bool isActive = job.Status == Job.JobStatus.active;
+                bool isExpired = job.TimeEnd < DateTime.UtcNow;
+
+                // Chỉ cho xem nếu job active hoặc expired
+                if (!isActive && !isExpired)
+                {
+                    return StatusCode(403, "You do not have permission to view this job.");
+                }
+            }
+
             // ... trả về thông tin job như cũ
             return Ok(new
             {
@@ -134,7 +147,7 @@ namespace JOB_FINDER_API.Controllers
                 job.Description,
                 job.YourSkill,
                 job.YourExperience,
-              
+
                 job.Education,
                 job.CompanyId,
                 Company = job.Company == null ? null : new
@@ -282,6 +295,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
         {
@@ -295,7 +309,7 @@ namespace JOB_FINDER_API.Controllers
                 return Unauthorized("Invalid user ID.");
             var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
 
-            if (role == "Company")
+            if (role == "company")
             {
                 if (job.CompanyId != userId)
                     return StatusCode(403, "Bạn không phải chủ sở hữu job này.");
@@ -320,7 +334,7 @@ namespace JOB_FINDER_API.Controllers
                     job.Status = Job.JobStatus.pending;
                 }
             }
-            else if (role == "Admin")
+            else if (role == "admin")
             {
                 // Admin có thể chỉnh sửa mọi thứ
             }
@@ -457,16 +471,18 @@ namespace JOB_FINDER_API.Controllers
             var job = await _context.Jobs.FindAsync(id);
             if (job == null) return NotFound("Job not found.");
 
-            // Lấy userId từ User.Identity.Name (theo NameClaimType đã cấu hình)
-            var userIdStr = User.Identity?.Name;
-            if (!int.TryParse(userIdStr, out var userId))
+           
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"DEBUG: nameid claim = {userIdClaim}");
+            if (!int.TryParse(userIdClaim, out var userId))
                 return Unauthorized("Invalid user ID.");
 
-            // Lấy role theo ClaimTypes.Role (đã ánh xạ theo RoleClaimType)
+
             var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
 
             if (job.TimeEnd < DateTime.UtcNow)
                 return BadRequest("Cannot change status of expired job.");
+
 
             if (role == "admin")
             {

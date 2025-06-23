@@ -2,7 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
-//using JOB_FINDER_API.DTOs;
+using JOB_FINDER_API.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +25,47 @@ namespace JOB_FINDER_API.Controllers
             _configuration = configuration;
         }
 
+
+        /* [HttpPost("register")]
+         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+         {
+             if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
+             {
+                 return BadRequest("Email is already in use.");
+             }
+
+             var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
+             if (userRole == null)
+             {
+                 return StatusCode(500, "Default role not found.");
+             }
+
+             var user = new User
+             {
+                 FullName = request.FullName,
+                 Email = request.Email,
+                 Phone = request.Phone,
+                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                 RoleId = userRole.RoleId,
+                 CreatedAt = DateTime.UtcNow,
+                 UpdatedAt = DateTime.UtcNow,
+                 Image = request.Image
+             };
+
+             _dbContext.Users.Add(user);
+             await _dbContext.SaveChangesAsync();
+
+             // Tạo CandidateProfile với thông tin cơ bản
+             var candidateProfile = new CandidateProfile
+             {
+                 UserId = user.Id ?? 0,
+
+             };
+             _dbContext.CandidateProfiles.Add(candidateProfile);
+             await _dbContext.SaveChangesAsync();
+
+             return Ok("User registered successfully.");
+         }*/
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -45,12 +87,33 @@ namespace JOB_FINDER_API.Controllers
                 Phone = request.Phone,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 RoleId = userRole.RoleId,
+                Image = request.Image,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Image = request.Image
+                
             };
 
             _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            // Tạo CandidateProfile
+            var candidateProfile = new CandidateProfile
+            {
+                UserId = user.Id ?? 0
+            };
+            _dbContext.CandidateProfiles.Add(candidateProfile);
+            await _dbContext.SaveChangesAsync();
+
+            // Tạo các entity liên kết với CandidateProfile (mỗi entity 1 bản ghi rỗng)
+            //_dbContext.AboutMes.Add(new AboutMe { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Awards.Add(new Award { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Certificates.Add(new Certificate { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Educations.Add(new Education { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.ForeignLanguages.Add(new ForeignLanguage { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.HighlightProjects.Add(new HighlightProject { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.Skills.Add(new Skill { CandidateProfileId = candidateProfile.CandidateProfileId });
+            //_dbContext.WorkExperiences.Add(new WorkExperience { CandidateProfileId = candidateProfile.CandidateProfileId });
+
             await _dbContext.SaveChangesAsync();
 
             return Ok("User registered successfully.");
@@ -61,6 +124,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
+                .Include(u => u.CompanyProfile)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
@@ -79,6 +143,16 @@ namespace JOB_FINDER_API.Controllers
             }
 
             var token = GenerateJwtToken(user);
+
+            // Lấy thông tin công ty nếu có
+            string? companyName = null;
+            string? urlCompanyLogo = null;
+            if (user.CompanyProfile != null)
+            {
+                companyName = user.CompanyProfile.CompanyName;
+                urlCompanyLogo = user.CompanyProfile.UrlCompanyLogo;
+            }
+
             return Ok(new
             {
                 Token = token,
@@ -91,11 +165,12 @@ namespace JOB_FINDER_API.Controllers
                     user.Phone,
                     user.RoleId,
                     user.Image,
-                    RoleName = user.Role.RoleName
+                    RoleName = user.Role.RoleName,
+                    CompanyName = companyName,
+                    UrlCompanyLogo = urlCompanyLogo
                 }
             });
-
-        }
+        }                   
 
         [HttpPost("logout")]
         public IActionResult Logout()
@@ -105,6 +180,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(new { message = "Logged out successfully. Please remove the token on the client." });
         }
 
+
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -113,16 +189,17 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Id.ToString()),
-                    new Claim(ClaimTypes.Role, user.Role.RoleName)
-                }),
+            new Claim("nameid", user.Id.ToString()),
+            new Claim(ClaimTypes.Role, user.Role.RoleName)
+        }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
-                Audience = _configuration["Jwt:Audience"], 
-                Issuer = _configuration["Jwt:Issuer"]     
+                Audience = _configuration["Jwt:Audience"],
+                Issuer = _configuration["Jwt:Issuer"]
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
     }
 }

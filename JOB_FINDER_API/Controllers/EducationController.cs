@@ -1,7 +1,7 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -12,29 +12,64 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public EducationController(JobFinderDbContext context) => _context = context;
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _context.Educations.ToListAsync());
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [HttpGet("me")]
+        public async Task<IActionResult> GetForMe()
         {
-            var item = await _context.Educations.FindAsync(id);
-            return item == null ? NotFound() : Ok(item);
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var candidateProfile = await _context.CandidateProfiles
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
+
+            var educations = await _context.Educations
+                .Where(e => e.CandidateProfileId == candidateProfile.CandidateProfileId)
+                .ToListAsync();
+
+            return Ok(educations);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(Education model)
+        [HttpPost("me")]
+        public async Task<IActionResult> CreateForMe([FromBody] Education model)
         {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
+
+            model.CandidateProfileId = candidateProfile.CandidateProfileId;
             _context.Educations.Add(model);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+            return Ok(model);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Education model)
+        [HttpPut("me/{id}")]
+        public async Task<IActionResult> UpdateForMe(int id, [FromBody] Education model)
         {
-            if (id != model.Id) return BadRequest();
-            _context.Entry(model).State = EntityState.Modified;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
+
+            var education = await _context.Educations.FirstOrDefaultAsync(e => e.EducationId == id && e.CandidateProfileId == candidateProfile.CandidateProfileId);
+            if (education == null) return NotFound();
+
+            education.School = model.School;
+            education.Degree = model.Degree;
+            education.Major = model.Major;
+            education.IsStudying = model.IsStudying;
+            education.MonthStart = model.MonthStart;
+            education.YearStart = model.YearStart;
+            education.MonthEnd = model.MonthEnd;
+            education.YearEnd = model.YearEnd;
+            education.Detail = model.Detail;
+            education.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -42,9 +77,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var item = await _context.Educations.FindAsync(id);
-            if (item == null) return NotFound();
-            _context.Educations.Remove(item);
+            var education = await _context.Educations.FindAsync(id);
+            if (education == null) return NotFound();
+            _context.Educations.Remove(education);
             await _context.SaveChangesAsync();
             return NoContent();
         }

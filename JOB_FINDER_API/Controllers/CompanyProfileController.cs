@@ -38,10 +38,9 @@ namespace JOB_FINDER_API.Controllers
                     IndustryName = c.Industry != null ? c.Industry.IndustryName : null,
                     IsVerified = c.IsVerified,
                     IsActive = c.IsActive
-
                 })
                 .ToListAsync();
-
+                
             return Ok(companies);
         }
         [HttpGet("{userId}")]
@@ -191,6 +190,17 @@ namespace JOB_FINDER_API.Controllers
 
             return CreatedAtAction(nameof(Get), new { userId = companyProfile.UserId }, companyProfile);
         }
+        [HttpPut("{userId}/verify")]
+        public async Task<IActionResult> VerifyCompany(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
+
+            company.IsVerified = true;
+            await _context.SaveChangesAsync();
+            return Ok("Company has been verified.");
+        }
 
         [HttpPut("{userId}")]
         public async Task<IActionResult> UpdateCompanyProfile(
@@ -220,17 +230,6 @@ namespace JOB_FINDER_API.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(companyProfile);
-        }
-        [HttpPut("{userId}/verify")]
-        public async Task<IActionResult> VerifyCompany(int userId)
-        {
-            var company = await _context.CompanyProfile.FindAsync(userId);
-            if (company == null)
-                return NotFound("Company not found.");
-
-            company.IsVerified = true;
-            await _context.SaveChangesAsync();
-            return Ok("Company has been verified.");
         }
     }
 }

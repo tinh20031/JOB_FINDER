@@ -296,8 +296,10 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applications")]
         public async Task<IActionResult> GetMyApplications()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
-            _logger.LogInformation("Fetching applications for User {UserId}", userId);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+
 
             var applications = await _context.Applications
                 .Where(a => a.UserId == userId)

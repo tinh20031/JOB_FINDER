@@ -627,16 +627,16 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             IndustryId = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8539),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3998),
                             IndustryName = "Information Technology",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8541)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3999)
                         },
                         new
                         {
                             IndustryId = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8543),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4001),
                             IndustryName = "Finance",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8543)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4001)
                         });
                 });
 
@@ -791,23 +791,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8626),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4036),
                             JobTypeName = "Full-time",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8628)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4037)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8630),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4039),
                             JobTypeName = "Part-time",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8630)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4039)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8632),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4041),
                             JobTypeName = "Remote",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8632)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4041)
                         });
                 });
 
@@ -837,23 +837,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8662),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4068),
                             LevelName = "Intern",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8663)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4069)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8665),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4071),
                             LevelName = "Junior",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8665)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4071)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8667),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4073),
                             LevelName = "Senior",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8668)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(4073)
                         });
                 });
 
@@ -921,23 +921,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8381),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3840),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8383)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3842)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8388),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3845),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8388)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3845)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8389),
+                            CreatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3846),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8389)
+                            UpdatedAt = new DateTime(2025, 6, 24, 13, 45, 52, 827, DateTimeKind.Utc).AddTicks(3846)
                         });
                 });
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JOB_FINDER_API.Migrations
 {
     [DbContext(typeof(JobFinderDbContext))]
-    [Migration("20250623114159_init")]
-    partial class init
+    [Migration("20250623131543_init23")]
+    partial class init23
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -630,16 +630,16 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             IndustryId = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8539),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2953),
                             IndustryName = "Information Technology",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8541)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2954)
                         },
                         new
                         {
                             IndustryId = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8543),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2957),
                             IndustryName = "Finance",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8543)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2957)
                         });
                 });
 
@@ -794,23 +794,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8626),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2998),
                             JobTypeName = "Full-time",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8628)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2998)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8630),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3001),
                             JobTypeName = "Part-time",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8630)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3001)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8632),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3003),
                             JobTypeName = "Remote",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8632)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3003)
                         });
                 });
 
@@ -840,23 +840,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8662),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3036),
                             LevelName = "Intern",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8663)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3037)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8665),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3038),
                             LevelName = "Junior",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8665)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3039)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8667),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3040),
                             LevelName = "Senior",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8668)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(3041)
                         });
                 });
 
@@ -924,23 +924,23 @@ namespace JOB_FINDER_API.Migrations
                         new
                         {
                             RoleId = 1,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8381),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2798),
                             RoleName = "Candidate",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8383)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2800)
                         },
                         new
                         {
                             RoleId = 2,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8388),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2804),
                             RoleName = "Company",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8388)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2805)
                         },
                         new
                         {
                             RoleId = 3,
-                            CreatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8389),
+                            CreatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2806),
                             RoleName = "Admin",
-                            UpdatedAt = new DateTime(2025, 6, 23, 11, 41, 58, 772, DateTimeKind.Utc).AddTicks(8389)
+                            UpdatedAt = new DateTime(2025, 6, 23, 13, 15, 42, 823, DateTimeKind.Utc).AddTicks(2806)
                         });
                 });
 

@@ -3,16 +3,32 @@
   "WorkspaceRootPath": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\user_favorite_jobs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\user_favorite_jobs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\userfavoritecompany.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\userfavoritecompany.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\controllers\\userfavoritejobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\userfavoritejobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\data\\jobfinderdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\data\\jobfinderdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\dto\\jobupdaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\jobupdaterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\dto\\jobcreatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\jobcreatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -26,7 +42,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 188,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 9,
           "Children": [
             {
               "$type": "Bookmark",
@@ -54,7 +70,59 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "jobFinderDbContext.cs",
+              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
+              "ViewState": "AgIAAPMAAAAAAAAAAAAUwAMBAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-24T13:00:39.135Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserFavoriteJobController.cs",
+              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAA7wBgAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-24T12:59:02.778Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "UserFavoriteCompany.cs",
+              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-24T12:57:09.776Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "User_Favorite_Jobs.cs",
+              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\User_Favorite_Jobs.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\User_Favorite_Jobs.cs",
+              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\User_Favorite_Jobs.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\User_Favorite_Jobs.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-24T12:55:07.63Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "JobCreateDto.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\JobCreateDto.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\JobCreateDto.cs",
@@ -62,38 +130,36 @@
               "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\JobCreateDto.cs",
               "ViewState": "AgIAACMAAAAAAAAAAAA0wAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T07:49:40.024Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T07:49:40.024Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 5,
               "Title": "JobUpdateRequest.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\JobUpdateRequest.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\JobUpdateRequest.cs",
               "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\JobUpdateRequest.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\JobUpdateRequest.cs",
-              "ViewState": "AgIAABEAAAAAAAAAAAA2wB0AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T07:47:13.469Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T07:47:13.469Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "JobController.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\JobController.cs",
               "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Controllers\\JobController.cs",
-              "ViewState": "AgIAAHkBAAAAAAAAAAAMwIQBAAAqAAAAAAAAAA==",
+              "ViewState": "AgIAAJcBAAAAAAAAAAAMwIMBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-24T04:47:17.29Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "Program.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Program.cs",
@@ -101,8 +167,7 @@
               "RelativeToolTip": "JOB_FINDER_API\\Program.cs",
               "ViewState": "AgIAAHgAAAAAAAAAAAAAAIcAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T03:30:07.387Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-24T03:30:07.387Z"
             }
           ]
         }

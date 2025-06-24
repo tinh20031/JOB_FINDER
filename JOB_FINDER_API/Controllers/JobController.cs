@@ -1,12 +1,13 @@
 ﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
 using JOB_FINDER_API.Models.Requests;
+using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using JOB_FINDER_API.Services;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -94,7 +95,11 @@ namespace JOB_FINDER_API.Controllers
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList()
+                }).ToList(),
+                job.DescriptionWeight,
+                job.SkillsWeight,
+                job.ExperienceWeight,
+                job.EducationWeight,
             });
 
             return Ok(result);
@@ -198,7 +203,11 @@ namespace JOB_FINDER_API.Controllers
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList()
+                }).ToList(),
+                job.DescriptionWeight,
+                job.SkillsWeight,
+                job.ExperienceWeight,
+                job.EducationWeight,
             });
         }
 
@@ -296,8 +305,16 @@ namespace JOB_FINDER_API.Controllers
 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateJob(int id, [FromBody] JobCreateRequest dto)
+        public async Task<IActionResult> UpdateJob(int id, [FromBody] JobUpdateRequest dto)
         {
+            // Kiểm tra các ràng buộc khác
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Minimum and maximum salary must be entered if 'negotiable salary' is not selected.");
+            if (dto.TimeEnd <= dto.TimeStart)
+                return BadRequest("TimeEnd must be after TimeStart.");
+            if (dto.ExpiryDate <= DateTime.UtcNow)
+                return BadRequest("ExpiryDate must be in the future.");
+
             var job = await _context.Jobs
                 .Include(j => j.JobSkills)
                 .FirstOrDefaultAsync(j => j.JobId == id);
@@ -362,45 +379,45 @@ namespace JOB_FINDER_API.Controllers
             job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
             job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
             job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
+     
+            //// Cập nhật lại JobSkill
+            //if (dto.skillInputs != null)
+            //{
+            //    var oldSkills = job.JobSkills.ToList();
+            //    _context.JobSkills.RemoveRange(oldSkills);
 
-            // Cập nhật lại JobSkill
-            if (dto.skillInputs != null)
-            {
-                var oldSkills = job.JobSkills.ToList();
-                _context.JobSkills.RemoveRange(oldSkills);
+            //    foreach (var input in dto.skillInputs)
+            //    {
+            //        int skillId;
+            //        if (input.SkillId.HasValue)
+            //        {
+            //            skillId = input.SkillId.Value;
+            //        }
+            //        else if (!string.IsNullOrWhiteSpace(input.SkillName))
+            //        {
+            //            var existingSkill = await _context.Skills
+            //                .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+            //            if (existingSkill != null)
+            //            {
+            //                skillId = existingSkill.SkillId;
+            //            }
+            //            else
+            //            {
+            //                var newSkill = new Skill { SkillName = input.SkillName };
+            //                _context.Skills.Add(newSkill);
+            //                await _context.SaveChangesAsync();
+            //                skillId = newSkill.SkillId;
+            //            }
+            //        }
+            //        else
+            //        {
+            //            continue;
+            //        }
 
-                foreach (var input in dto.skillInputs)
-                {
-                    int skillId;
-                    if (input.SkillId.HasValue)
-                    {
-                        skillId = input.SkillId.Value;
-                    }
-                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
-                    {
-                        var existingSkill = await _context.Skills
-                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
-                        if (existingSkill != null)
-                        {
-                            skillId = existingSkill.SkillId;
-                        }
-                        else
-                        {
-                            var newSkill = new Skill { SkillName = input.SkillName };
-                            _context.Skills.Add(newSkill);
-                            await _context.SaveChangesAsync();
-                            skillId = newSkill.SkillId;
-                        }
-                    }
-                    else
-                    {
-                        continue;
-                    }
-
-                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
-                }
-                await _context.SaveChangesAsync();
-            }
+            //        _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+            //    }
+            //    await _context.SaveChangesAsync();
+            //}
 
             await _context.SaveChangesAsync();
             return NoContent();

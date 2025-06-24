@@ -67,7 +67,10 @@ namespace JOB_FINDER_API.Controllers
             work.MonthEnd = model.MonthEnd;
             work.YearEnd = model.YearEnd;
             work.WorkDescription = model.WorkDescription;
-            work.ProJects = model.ProJects;
+            work.Technologies = model.Technologies;
+            work.Responsibilities = model.Responsibilities;
+            work.ProjectName = model.ProjectName;
+            work.Achievements = model.Achievements;
             work.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();

@@ -402,7 +402,14 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("favorite-company/{companyId}")]
         public async Task<IActionResult> FavoriteCompany(int companyId)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            // Fix: Use User.Identity?.Name instead of User.FindFirst(ClaimTypes.Name)
+            var userIdStr = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            {
+                _logger.LogWarning("User ID not found in the token");
+                return Unauthorized("User information missing in the authentication token");
+            }
+
             if (await _context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
                 return BadRequest("Company is already favorited");
 
@@ -456,7 +463,14 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("favorite-company/{companyId}")]
         public async Task<IActionResult> UnfavoriteCompany(int companyId)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            // Update to use User.Identity?.Name for consistency
+            var userIdStr = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            {
+                _logger.LogWarning("User ID not found in the token");
+                return Unauthorized("User information missing in the authentication token");
+            }
+
             var favorite = await _context.UserFavoriteCompanies
                 .FirstOrDefaultAsync(f => f.UserId == userId && f.CompanyId == companyId);
             if (favorite == null)

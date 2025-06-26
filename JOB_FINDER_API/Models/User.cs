@@ -12,6 +12,9 @@ namespace JOB_FINDER_API.Models
         public string? Password { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public int? RoleId { get; set; }
+        public bool IsEmailVerified { get; set; } = false;
+        public string EmailVerificationCode { get; set; }
+        public DateTime? EmailVerificationCodeExpiry { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

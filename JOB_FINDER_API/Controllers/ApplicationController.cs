@@ -404,6 +404,8 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Company added to favorites successfully");
         }
 
+
+
         [Authorize]
         [HttpGet("my-favorite-companies")]
         public async Task<IActionResult> GetMyFavoriteCompanies()
@@ -453,6 +455,10 @@ namespace JOB_FINDER_API.Controllers
             _logger.LogInformation("Company {CompanyId} removed from favorites by User {UserId}", companyId, userId);
             return Ok("Company removed from favorites successfully");
         }
+
+
+
+
 
         [HttpGet("job/{jobId}")]
         public async Task<IActionResult> GetApplicationsByJob(int jobId)

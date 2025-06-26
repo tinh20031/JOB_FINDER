@@ -12,7 +12,6 @@ namespace JOB_FINDER_API.Hubs
     public class ChatHub : Hub
     {
         private readonly ILogger<ChatHub> _logger;
-        // Dictionary lưu số lượng kết nối online của user
         public static ConcurrentDictionary<string, int> OnlineUsers = new();
 
         public ChatHub(ILogger<ChatHub> logger)
@@ -24,20 +23,18 @@ namespace JOB_FINDER_API.Hubs
         {
             try
             {
-                var userIdClaim = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+                // SỬA Ở ĐÂY: Dùng NameIdentifier thay vì Name
+                var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(userIdClaim))
                 {
                     var userId = userIdClaim;
-                    // Tăng số lượng kết nối
                     OnlineUsers.AddOrUpdate(userId, 1, (key, oldValue) => oldValue + 1);
                     await Groups.AddToGroupAsync(Context.ConnectionId, userId);
                     _logger.LogInformation("User {UserId} connected with connection {ConnectionId}", userId, Context.ConnectionId);
 
-                    // Chỉ gửi sự kiện online khi user thực sự online lần đầu
                     if (OnlineUsers[userId] == 1)
                         await Clients.All.SendAsync("UserOnlineStatusChanged", new { userId, isOnline = true });
 
-                    // Gửi danh sách tất cả user đang online cho user vừa kết nối
                     var allOnlineUserIds = OnlineUsers.Where(x => x.Value > 0).Select(x => x.Key).ToList();
                     await Clients.Caller.SendAsync("OnlineUsersList", allOnlineUserIds);
                 }
@@ -58,18 +55,17 @@ namespace JOB_FINDER_API.Hubs
         {
             try
             {
-                var userIdClaim = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+                // SỬA Ở ĐÂY: Dùng NameIdentifier thay vì Name
+                var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(userIdClaim))
                 {
                     var userId = userIdClaim;
-                    // Giảm số lượng kết nối
                     if (OnlineUsers.ContainsKey(userId))
                     {
                         OnlineUsers[userId]--;
                         if (OnlineUsers[userId] <= 0)
                         {
                             OnlineUsers.TryRemove(userId, out _);
-                            // Chỉ gửi sự kiện offline khi user thực sự không còn kết nối nào
                             await Clients.All.SendAsync("UserOnlineStatusChanged", new { userId, isOnline = false });
                         }
                     }
@@ -85,13 +81,13 @@ namespace JOB_FINDER_API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        // Các phương thức còn lại giữ nguyên
         public async Task JoinUserGroup(string userId)
         {
             try
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, userId);
                 _logger.LogInformation("User {UserId} manually joined group", userId);
-                // Tăng số lượng kết nối khi join group thủ công
                 OnlineUsers.AddOrUpdate(userId, 1, (key, oldValue) => oldValue + 1);
             }
             catch (Exception ex)
@@ -106,7 +102,6 @@ namespace JOB_FINDER_API.Hubs
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
                 _logger.LogInformation("User {UserId} left group", userId);
-                // Giảm số lượng kết nối khi leave group thủ công
                 if (OnlineUsers.ContainsKey(userId))
                 {
                     OnlineUsers[userId]--;

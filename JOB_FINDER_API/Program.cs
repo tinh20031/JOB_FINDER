@@ -26,8 +26,8 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
-builder.Services.AddScoped<SemanticMatchingService>();
 builder.Services.AddScoped<ProfileStrengthService>();
+builder.Services.AddScoped<SemanticMatchingService>();
 
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
@@ -37,7 +37,6 @@ var cloudinarySettings = builder.Configuration.GetSection("CloudinarySettings").
 var account = new Account(cloudinarySettings.CloudName, cloudinarySettings.ApiKey, cloudinarySettings.ApiSecret);
 var cloudinary = new Cloudinary(account);
 builder.Services.AddSingleton(cloudinary);
-
 // Swagger
 builder.Services.AddSwaggerGen(c =>
 {
@@ -79,6 +78,12 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+// Add this to your services configuration
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+    //options.LowercaseQueryStrings = true;
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -94,6 +99,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
+
         });
 });
 
@@ -110,11 +116,14 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Authentication & JWT
+
+
+// Authentication & JWT & Google
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = "External";
 })
 .AddJwtBearer(options =>
 {
@@ -146,8 +155,29 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+})
+// Update your cookie and Google authentication configuration
+.AddCookie("External", options =>
+{
+    options.Cookie.Name = ".AspNetCore.External";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Must be Always when SameSite=None
+    options.Cookie.IsEssential = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+})
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.CallbackPath = "/api/auth/google-response"; // Use lowercase consistently
+    options.SignInScheme = "External";
+    options.SaveTokens = true;
+    options.CorrelationCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.CorrelationCookie.HttpOnly = true;
+    options.CorrelationCookie.IsEssential = true;
 });
-
 // Authorization
 builder.Services.AddAuthorization();
 

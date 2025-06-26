@@ -50,7 +50,8 @@ namespace JOB_FINDER_API.Data
                 new Role { RoleId = 3, RoleName = "Admin" }
             );
 
-     
+
+
             modelBuilder.Entity<Industry>().HasData(
          new Industry { IndustryId = 3, IndustryName = "Software Development", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
          new Industry { IndustryId = 4, IndustryName = "Cybersecurity", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
@@ -79,15 +80,10 @@ namespace JOB_FINDER_API.Data
                 new ExperienceLevel { id = 2, name = "Junior" },
                 new ExperienceLevel { id = 3, name = "Middle" },
                 new ExperienceLevel { id = 4, name = "Senior" }
-          
 
-  
             );
 
-          
-
-          
-
+        
             modelBuilder.Entity<CompanyProfile>()
                 .HasKey(cp => cp.UserId);
 

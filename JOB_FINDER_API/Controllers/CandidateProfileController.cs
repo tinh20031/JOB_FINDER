@@ -101,14 +101,14 @@ namespace JOB_FINDER_API.Controllers
                 FullName = profile.User?.FullName ?? string.Empty,
                 Phone = profile.User?.Phone ?? string.Empty,
                 Image = profile.User?.Image ?? string.Empty,
-               /* AboutMes = profile.AboutMes,
+                AboutMes = profile.AboutMes,
                 Skills = profile.Skills,
                 Educations = profile.Educations,
                 WorkExperiences = profile.WorkExperiences,
                 HighlightProjects = profile.HighlightProjects,
                 Certificates = profile.Certificates,
                 Awards = profile.Awards,
-                ForeginLanguages = profile.ForeginLanguages*/
+                ForeginLanguages = profile.ForeginLanguages
             });
         }
         [HttpPut("me")]
@@ -139,6 +139,7 @@ namespace JOB_FINDER_API.Controllers
             if (!string.IsNullOrEmpty(model.FullName))
             {
                 profile.User.FullName = model.FullName;
+                profile.User.Phone = model.Phone;
             }
           
             if (imageFile != null)

@@ -88,19 +88,19 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 // Validate email format
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
+                    return BadRequest("Invalid email format. Please provide a valid email address.");
                 }
 
                 // Check if email already exists
                 if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
                 {
-                    return BadRequest("Email này đã được sử dụng.");
+                    return BadRequest("This email is already in use.");
                 }
 
                 var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (userRole == null)
                 {
-                    return StatusCode(500, "Không tìm thấy vai trò mặc định.");
+                    return StatusCode(500, "No default role found.");
                 }
 
                 // Generate verification code
@@ -140,19 +140,19 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 catch (Exception ex)
                 {
                     // Log email sending error but continue registration process
-                    Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
+                    Console.WriteLine($"Unable to send verification email: {ex.Message}");
                 }
 
                 return Ok(new
                 {
-                    message = "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.",
+                    message = "Registration successful. Please check your email to verify your account.",
                     userId = user.Id,
                     email = user.Email
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi đăng ký: {ex.Message}");
+                return StatusCode(500, $"Registration error: {ex.Message}");
             }
         }
 
@@ -216,7 +216,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 // Validate email format
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
+                    return BadRequest("Invalid email format. Please provide a valid email address.");
                 }
 
                 var user = await _dbContext.Users
@@ -226,12 +226,12 @@ private readonly EmailService _emailService = new EmailService(new Configuration
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
-                    return Unauthorized("Thông tin đăng nhập không hợp lệ.");
+                    return Unauthorized("Invalid login information.");
                 }
 
                 if (!user.IsActive)
                 {
-                    return Forbid("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+                    return Forbid("Your account has been locked. Please contact support.");
                 }
 
                 // Email verification check
@@ -252,13 +252,13 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                         catch (Exception ex)
                         {
                             // Log but continue
-                            Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
+                            Console.WriteLine($"Unable to send verification email: {ex.Message}");
                         }
                     }
 
                     return BadRequest(new
                     {
-                        message = "Email chưa được xác thực. Vui lòng kiểm tra hộp thư để xác thực tài khoản trước khi đăng nhập.",
+                        message = "Email is not verified. Please check your inbox to verify your account before logging in.",
                         requiresVerification = true,
                         userId = user.Id,
                         email = user.Email
@@ -267,7 +267,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
 
                 if (user.Role == null)
                 {
-                    return StatusCode(500, "Không tìm thấy vai trò người dùng.");
+                    return StatusCode(500, "User role not found.");
                 }
 
                 var token = GenerateJwtToken(user);
@@ -301,7 +301,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi đăng nhập: {ex.Message}");
+                return StatusCode(500, $"Login error: {ex.Message}");
             }
         }
 
@@ -319,25 +319,25 @@ private readonly EmailService _emailService = new EmailService(new Configuration
             {
                 if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.VerificationCode))
                 {
-                    return BadRequest("Email và mã xác thực không được để trống.");
+                    return BadRequest("Email and verification code cannot be blank.");
                 }
 
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (user == null)
                 {
-                    return NotFound("Không tìm thấy người dùng.");
+                    return NotFound("User not found.");
                 }
 
                 if (user.IsEmailVerified)
                 {
-                    return Ok("Email đã được xác thực trước đó.");
+                    return Ok("Email has been previously verified.");
                 }
 
                 if (user.EmailVerificationCode != request.VerificationCode ||
                     user.EmailVerificationCodeExpiry == null ||
                     user.EmailVerificationCodeExpiry < DateTime.UtcNow)
                 {
-                    return BadRequest("Mã xác thực không hợp lệ hoặc đã hết hạn.");
+                    return BadRequest("The verification code is invalid or has expired.");
                 }
 
                 // Mark email as verified
@@ -347,11 +347,11 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 user.UpdatedAt = DateTime.UtcNow;
                 await _dbContext.SaveChangesAsync();
 
-                return Ok("Xác thực email thành công. Bạn có thể đăng nhập ngay bây giờ.");
+                return Ok("Email verification successful. You can log in now.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi xác thực email: {ex.Message}");
+                return StatusCode(500, $"Email authentication error: {ex.Message}");
             }
         }
         // Resend verification email
@@ -362,18 +362,18 @@ private readonly EmailService _emailService = new EmailService(new Configuration
             {
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Định dạng email không hợp lệ.");
+                    return BadRequest("Invalid email format.");
                 }
 
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (user == null)
                 {
-                    return NotFound("Không tìm thấy người dùng.");
+                    return NotFound("User not found.");
                 }
 
                 if (user.IsEmailVerified)
                 {
-                    return Ok("Email đã được xác thực trước đó.");
+                    return Ok("Email has been previously verified.");
                 }
 
                 // Generate new verification code
@@ -385,16 +385,16 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 try
                 {
                     _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
-                    return Ok("Mã xác thực đã được gửi lại đến email của bạn. Vui lòng kiểm tra hộp thư.");
+                    return Ok("The verification code has been re-sent to your email. Please check your inbox.");
                 }
                 catch (Exception ex)
                 {
-                    return StatusCode(500, $"Không thể gửi email xác thực: {ex.Message}");
+                    return StatusCode(500, $"Unable to send verification email: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi gửi lại mã xác thực: {ex.Message}");
+                return StatusCode(500, $"Error resending verification code: {ex.Message}");
             }
         }
 
@@ -473,8 +473,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
         }
 
         // Make sure Google response endpoint matches exactly
-        [HttpGet("google-response")]
-        //[Route("google-response")]  // Add additional route for case-insensitive matching
+        /*[HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse()
         {
             var authenticateResult = await HttpContext.AuthenticateAsync("External");
@@ -529,6 +528,112 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 user = await _dbContext.Users
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == email);
+            }
+
+            // Generate JWT token
+            var token = GenerateJwtToken(user);
+
+            // Sign out of the temporary External cookie
+            await HttpContext.SignOutAsync("External");
+
+            // Redirect to frontend with token and role
+            return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
+        }*/
+        [HttpGet("google-response")]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var authenticateResult = await HttpContext.AuthenticateAsync("External");
+            if (!authenticateResult.Succeeded)
+            {
+                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Xác thực không thành công")}");
+            }
+
+            var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email không được cung cấp")}");
+            }
+
+            // Check if user exists
+            var user = await _dbContext.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                // Create new user with Candidate role
+                var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
+                if (candidateRole == null)
+                {
+                    return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Không tìm thấy vai trò người dùng")}");
+                }
+
+                user = new User
+                {
+                    FullName = name,
+                    Email = email,
+                    RoleId = candidateRole.RoleId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsActive = true,
+                    IsEmailVerified = true,
+                    EmailVerificationCode = "VERIFIED_WITH_GOOGLE" // Khởi tạo trường này với một giá trị không phải null
+                };
+                _dbContext.Users.Add(user);
+                await _dbContext.SaveChangesAsync();
+
+                // Create CandidateProfile for new user
+                var candidateProfile = new CandidateProfile
+                {
+                    UserId = user.Id ?? 0
+                };
+                _dbContext.CandidateProfiles.Add(candidateProfile);
+                await _dbContext.SaveChangesAsync();
+
+                // Refresh user to include the role
+                user = await _dbContext.Users
+                    .Include(u => u.Role)
+                    .FirstOrDefaultAsync(u => u.Email == email);
+            }
+            else
+            {
+                // Xử lý trường hợp email đã đăng ký nhưng chưa xác nhận
+                if (!user.IsEmailVerified)
+                {
+                    // Tự động xác thực email vì người dùng đã đăng nhập qua Google
+                    user.IsEmailVerified = true;
+                    user.EmailVerificationCode = "VERIFIED_WITH_GOOGLE";
+                    user.EmailVerificationCodeExpiry = null;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    await _dbContext.SaveChangesAsync();
+
+                    // Tùy chọn: Gửi email thông báo cho người dùng
+                    try
+                    {
+                        string subject = "Email của bạn đã được xác thực qua Google";
+                        string body = $@"
+<html>
+  <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+      <h2 style='color: #2d8cf0;'>Xác thực email thành công</h2>
+      <p>Chào bạn,</p>
+      <p>Email của bạn đã được xác thực tự động thông qua đăng nhập Google.</p>
+      <p>Bây giờ bạn có thể sử dụng đầy đủ tính năng của hệ thống Job Finder.</p>
+      <p>Trân trọng,<br>Đội ngũ Job Finder</p>
+    </div>
+  </body>
+</html>
+";
+                        _emailService.SendEmail(user.Email, subject, body, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Ghi log lỗi nhưng vẫn tiếp tục xử lý
+                        Console.WriteLine($"Không thể gửi email thông báo: {ex.Message}");
+                    }
+                }
             }
 
             // Generate JWT token

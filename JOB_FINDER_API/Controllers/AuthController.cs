@@ -545,7 +545,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
             var authenticateResult = await HttpContext.AuthenticateAsync("External");
             if (!authenticateResult.Succeeded)
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Xác thực không thành công")}");
+                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
             }
 
             var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
@@ -553,7 +553,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
 
             if (string.IsNullOrEmpty(email))
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email không được cung cấp")}");
+                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
             }
 
             // Check if user exists
@@ -567,7 +567,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (candidateRole == null)
                 {
-                    return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Không tìm thấy vai trò người dùng")}");
+                    return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
                 }
 
                 user = new User
@@ -612,16 +612,16 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                     // Tùy chọn: Gửi email thông báo cho người dùng
                     try
                     {
-                        string subject = "Email của bạn đã được xác thực qua Google";
+                        string subject = "Your email has been verified via Google";
                         string body = $@"
 <html>
   <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
     <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
       <h2 style='color: #2d8cf0;'>Xác thực email thành công</h2>
-      <p>Chào bạn,</p>
-      <p>Email của bạn đã được xác thực tự động thông qua đăng nhập Google.</p>
-      <p>Bây giờ bạn có thể sử dụng đầy đủ tính năng của hệ thống Job Finder.</p>
-      <p>Trân trọng,<br>Đội ngũ Job Finder</p>
+      <p>Hello,</p>
+      <p>Your email has been automatically verified via Google login.</p>
+      <p>You can now use the full functionality of the Job Finder system.</p>
+      <p>Best regards,<br>Job Finder Team</p>
     </div>
   </body>
 </html>
@@ -631,7 +631,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                     catch (Exception ex)
                     {
                         // Ghi log lỗi nhưng vẫn tiếp tục xử lý
-                        Console.WriteLine($"Không thể gửi email thông báo: {ex.Message}");
+                        Console.WriteLine($"Unable to send notification email: {ex.Message}");
                     }
                 }
             }

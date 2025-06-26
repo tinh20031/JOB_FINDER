@@ -480,7 +480,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
             var authenticateResult = await HttpContext.AuthenticateAsync("External");
             if (!authenticateResult.Succeeded)
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
+                return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
             }
 
             var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
@@ -488,7 +488,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
 
             if (string.IsNullOrEmpty(email))
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
+                return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Email not provided")}");
             }
 
             // Check if user exists
@@ -502,7 +502,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
                 var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (candidateRole == null)
                 {
-                    return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
+                    return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("User role not found")}");
                 }
 
                 user = new User
@@ -538,7 +538,7 @@ private readonly EmailService _emailService = new EmailService(new Configuration
             await HttpContext.SignOutAsync("External");
 
             // Redirect to frontend with token and role
-            return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
+            return Redirect($"https://job-finder-fe.vercel.app/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
         }
 
     }

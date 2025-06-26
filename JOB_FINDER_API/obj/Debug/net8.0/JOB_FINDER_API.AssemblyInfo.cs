@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JOB_FINDER_API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9034a1dc5b3024f0891c58fc7eaa4758d89c816")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6c9b4d8b2cb5007c34b9ad6c09110de7f5680f6e")]
 [assembly: System.Reflection.AssemblyProductAttribute("JOB_FINDER_API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JOB_FINDER_API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -21,13 +21,14 @@ namespace JOB_FINDER_API.Controllers
     {
         private readonly JobFinderDbContext _dbContext;
         private readonly IConfiguration _configuration;
-private readonly EmailService _emailService = new EmailService(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
-
-        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration, EmailService emailService)
+        private readonly EmailService _emailService = new EmailService(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
+        private readonly IWebHostEnvironment _hostingEnvironment;
+        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration, EmailService emailService, IWebHostEnvironment hostingEnvironment)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         // Helper method to validate email format
@@ -458,7 +459,17 @@ private readonly EmailService _emailService = new EmailService(new Configuration
         {
             // Don't use Url.Action as it might not construct URLs correctly
             // Instead, use an absolute URL:
-            var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google-response/";
+            //var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google-response/";
+            // Sử dụng URL tuyệt đối cho môi trường production
+            string callbackUrl;
+            if (_hostingEnvironment.IsProduction())
+            {
+                callbackUrl = "https://job-finder-kjt2.onrender.com/api/auth/google-response/";
+            }
+            else
+            {
+                callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google-response/";
+            }
 
             var properties = new AuthenticationProperties
             {

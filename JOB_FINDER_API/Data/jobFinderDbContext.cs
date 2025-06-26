@@ -86,19 +86,7 @@ namespace JOB_FINDER_API.Data
 
           
 
-           
-
-         
           
-            // Các cấu hình khác giữ nguyên
-            modelBuilder.Entity<CandidateProfile>()
-                .HasKey(cp => cp.UserId);
-
-            modelBuilder.Entity<CandidateProfile>()
-                .HasOne(cp => cp.User)
-                .WithOne(u => u.CandidateProfile)
-                .HasForeignKey<CandidateProfile>(cp => cp.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<CompanyProfile>()
                 .HasKey(cp => cp.UserId);

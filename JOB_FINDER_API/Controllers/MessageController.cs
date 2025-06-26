@@ -214,13 +214,12 @@ namespace JOB_FINDER_API.Controllers
                     return BadRequest("Message text cannot be empty.");
                 }
 
-                var currentUserIdClaim = User.FindFirst(ClaimTypes.Name)?.Value;
+                var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(currentUserIdClaim))
                 {
                     _logger.LogWarning("No UserId found in JWT token");
                     return Unauthorized("Invalid token");
                 }
-
                 var currentUserId = int.Parse(currentUserIdClaim);
                 if (currentUserId != dto.SenderId)
                 {
@@ -392,12 +391,12 @@ namespace JOB_FINDER_API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var currentUserIdClaim = User.FindFirst(ClaimTypes.Name)?.Value;
+                var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(currentUserIdClaim))
                 {
+                    _logger.LogWarning("No UserId found in JWT token");
                     return Unauthorized("Invalid token");
                 }
-
                 var currentUserId = int.Parse(currentUserIdClaim);
 
                 await _hubContext.Groups.AddToGroupAsync(currentUserId.ToString(), currentUserId.ToString());
@@ -423,4 +422,4 @@ namespace JOB_FINDER_API.Controllers
             return receiver.Role.RoleName == "Company" || receiver.Role.RoleName == "Admin";
         }
     }
-}       
+}

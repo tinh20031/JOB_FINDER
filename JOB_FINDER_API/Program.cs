@@ -27,6 +27,7 @@ builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<SemanticMatchingService>();
+builder.Services.AddScoped<ProfileStrengthService>();
 
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
@@ -102,7 +103,6 @@ builder.Services.AddDbContext<JobFinderDbContext>(options =>
 
 // Session
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);

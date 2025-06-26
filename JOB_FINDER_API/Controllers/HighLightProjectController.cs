@@ -66,6 +66,10 @@ namespace JOB_FINDER_API.Controllers
             project.MonthEnd = model.MonthEnd;
             project.YearEnd = model.YearEnd;
             project.ProjectDescription = model.ProjectDescription;
+            project.Technologies = model.Technologies;
+            project.Responsibilities = model.Responsibilities;
+            project.TeamSize = model.TeamSize;
+            project.Achievements = model.Achievements;
             project.ProjectLink = model.ProjectLink;
             project.UpdatedAt = DateTime.UtcNow;
 

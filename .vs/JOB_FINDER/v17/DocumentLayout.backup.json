@@ -7,6 +7,10 @@
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\controllers\\applicationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\applicationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -46,7 +50,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 188,
-          "SelectedChildIndex": 12,
+          "SelectedChildIndex": 11,
           "Children": [
             {
               "$type": "Bookmark",
@@ -74,19 +78,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "UserFavoriteCompany.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "ApplicationController.cs",
+              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\ApplicationController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\ApplicationController.cs",
+              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\ApplicationController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\ApplicationController.cs",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAuwHUAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T12:57:09.776Z"
+              "WhenOpened": "2025-06-25T10:50:49.112Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "User_Favorite_Jobs.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\User_Favorite_Jobs.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\User_Favorite_Jobs.cs",
@@ -98,7 +102,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "JobCreateDto.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\JobCreateDto.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\JobCreateDto.cs",
@@ -110,7 +114,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "JobController.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\JobController.cs",
@@ -122,7 +126,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "UserFavoriteJobController.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
@@ -134,32 +138,44 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Program.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Program.cs",
-              "ViewState": "AgIAAHsAAAAAAAAAAAAAAKQAAAAYAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T03:30:07.387Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\appsettings.json",
               "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
               "RelativeToolTip": "JOB_FINDER_API\\appsettings.json",
-              "ViewState": "AgIAABsAAAAAAAAAAADwvyYAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAUwBEAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2025-06-24T13:29:00.651Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
+              "Title": "UserFavoriteCompany.cs",
+              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\UserFavoriteCompany.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-24T12:57:09.776Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Program.cs",
+              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Program.cs",
+              "ViewState": "AgIAAFsAAAAAAAAAAAAuwGoAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-24T03:30:07.387Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "jobFinderDbContext.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Data\\jobFinderDbContext.cs",
@@ -171,7 +187,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "JobUpdateRequest.cs",
               "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\JobUpdateRequest.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\JobUpdateRequest.cs",

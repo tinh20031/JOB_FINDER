@@ -1,6 +1,7 @@
 ﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
+using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -19,16 +21,27 @@ namespace JOB_FINDER_API.Controllers
     {
         private readonly JobFinderDbContext _dbContext;
         private readonly IConfiguration _configuration;
+private readonly EmailService _emailService = new EmailService(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
-        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration)
+        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration, EmailService emailService)
         {
             _dbContext = dbContext;
             _configuration = configuration;
+            _emailService = emailService;
         }
 
+        // Helper method to validate email format
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
 
-        
-        [HttpPost("register")]
+            // RFC 5322 compliant email regex pattern
+            string pattern = @"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$";
+            return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+        }
+
+        /*[HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
@@ -66,9 +79,84 @@ namespace JOB_FINDER_API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok("User registered successfully.");
+        }*/
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            try
+            {
+                // Validate email format
+                if (!IsValidEmail(request.Email))
+                {
+                    return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
+                }
+
+                // Check if email already exists
+                if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
+                {
+                    return BadRequest("Email này đã được sử dụng.");
+                }
+
+                var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
+                if (userRole == null)
+                {
+                    return StatusCode(500, "Không tìm thấy vai trò mặc định.");
+                }
+
+                // Generate verification code
+                string verificationCode = GenerateVerificationCode();
+
+                var user = new User
+                {
+                    FullName = request.FullName,
+                    Email = request.Email,
+                    Phone = request.Phone,
+                    Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                    RoleId = userRole.RoleId,
+                    Image = request.Image,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsActive = true,
+                    IsEmailVerified = false,
+                    EmailVerificationCode = verificationCode,
+                    EmailVerificationCodeExpiry = DateTime.UtcNow.AddHours(24)
+                };
+
+                _dbContext.Users.Add(user);
+                await _dbContext.SaveChangesAsync(); // user.Id được cập nhật tự động
+
+                var candidateProfile = new CandidateProfile
+                {
+                    UserId = user.Id ?? 0
+                };
+                _dbContext.CandidateProfiles.Add(candidateProfile);
+                await _dbContext.SaveChangesAsync();
+
+                // Send verification email
+                try
+                {
+                    _emailService.SendVerificationEmail(user.Email, verificationCode);
+                }
+                catch (Exception ex)
+                {
+                    // Log email sending error but continue registration process
+                    Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
+                }
+
+                return Ok(new
+                {
+                    message = "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.",
+                    userId = user.Id,
+                    email = user.Email
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi đăng ký: {ex.Message}");
+            }
         }
 
-        [HttpPost("login")]
+        /*[HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var user = await _dbContext.Users   
@@ -119,7 +207,196 @@ namespace JOB_FINDER_API.Controllers
                     UrlCompanyLogo = urlCompanyLogo
                 }
             });
-        }                   
+        }    */
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            try
+            {
+                // Validate email format
+                if (!IsValidEmail(request.Email))
+                {
+                    return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
+                }
+
+                var user = await _dbContext.Users
+                    .Include(u => u.Role)
+                    .Include(u => u.CompanyProfile)
+                    .FirstOrDefaultAsync(u => u.Email == request.Email);
+
+                if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+                {
+                    return Unauthorized("Thông tin đăng nhập không hợp lệ.");
+                }
+
+                if (!user.IsActive)
+                {
+                    return Forbid("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+                }
+
+                // Email verification check
+                if (!user.IsEmailVerified)
+                {
+                    // Regenerate verification code if needed
+                    if (user.EmailVerificationCodeExpiry == null || user.EmailVerificationCodeExpiry < DateTime.UtcNow)
+                    {
+                        user.EmailVerificationCode = GenerateVerificationCode();
+                        user.EmailVerificationCodeExpiry = DateTime.UtcNow.AddHours(24);
+                        await _dbContext.SaveChangesAsync();
+
+                        // Send new verification code
+                        try
+                        {
+                            _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log but continue
+                            Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
+                        }
+                    }
+
+                    return BadRequest(new
+                    {
+                        message = "Email chưa được xác thực. Vui lòng kiểm tra hộp thư để xác thực tài khoản trước khi đăng nhập.",
+                        requiresVerification = true,
+                        userId = user.Id,
+                        email = user.Email
+                    });
+                }
+
+                if (user.Role == null)
+                {
+                    return StatusCode(500, "Không tìm thấy vai trò người dùng.");
+                }
+
+                var token = GenerateJwtToken(user);
+
+                // Lấy thông tin công ty nếu có
+                string? companyName = null;
+                string? urlCompanyLogo = null;
+                if (user.CompanyProfile != null)
+                {
+                    companyName = user.CompanyProfile.CompanyName;
+                    urlCompanyLogo = user.CompanyProfile.UrlCompanyLogo;
+                }
+
+                return Ok(new
+                {
+                    Token = token,
+                    Role = user.Role.RoleName,
+                    User = new
+                    {
+                        user.Id,
+                        user.FullName,
+                        user.Email,
+                        user.Phone,
+                        user.RoleId,
+                        user.Image,
+                        RoleName = user.Role.RoleName,
+                        CompanyName = companyName,
+                        UrlCompanyLogo = urlCompanyLogo
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi đăng nhập: {ex.Message}");
+            }
+        }
+
+        // Helper method to generate verification code
+        private string GenerateVerificationCode()
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
+        }
+        // Verify email endpoint
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.VerificationCode))
+                {
+                    return BadRequest("Email và mã xác thực không được để trống.");
+                }
+
+                var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+                if (user == null)
+                {
+                    return NotFound("Không tìm thấy người dùng.");
+                }
+
+                if (user.IsEmailVerified)
+                {
+                    return Ok("Email đã được xác thực trước đó.");
+                }
+
+                if (user.EmailVerificationCode != request.VerificationCode ||
+                    user.EmailVerificationCodeExpiry == null ||
+                    user.EmailVerificationCodeExpiry < DateTime.UtcNow)
+                {
+                    return BadRequest("Mã xác thực không hợp lệ hoặc đã hết hạn.");
+                }
+
+                // Mark email as verified
+                user.IsEmailVerified = true;
+                user.EmailVerificationCode = "VERIFIED"; // Use placeholder since we can't set null
+                user.EmailVerificationCodeExpiry = null;
+                user.UpdatedAt = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
+
+                return Ok("Xác thực email thành công. Bạn có thể đăng nhập ngay bây giờ.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi xác thực email: {ex.Message}");
+            }
+        }
+        // Resend verification email
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
+        {
+            try
+            {
+                if (!IsValidEmail(request.Email))
+                {
+                    return BadRequest("Định dạng email không hợp lệ.");
+                }
+
+                var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+                if (user == null)
+                {
+                    return NotFound("Không tìm thấy người dùng.");
+                }
+
+                if (user.IsEmailVerified)
+                {
+                    return Ok("Email đã được xác thực trước đó.");
+                }
+
+                // Generate new verification code
+                user.EmailVerificationCode = GenerateVerificationCode();
+                user.EmailVerificationCodeExpiry = DateTime.UtcNow.AddHours(24);
+                await _dbContext.SaveChangesAsync();
+
+                // Send verification email
+                try
+                {
+                    _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
+                    return Ok("Mã xác thực đã được gửi lại đến email của bạn. Vui lòng kiểm tra hộp thư.");
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Không thể gửi email xác thực: {ex.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi gửi lại mã xác thực: {ex.Message}");
+            }
+        }
 
         [HttpPost("logout")]
         public IActionResult Logout()
@@ -163,8 +440,9 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim("nameid", user.Id.ToString()),
-            new Claim(ClaimTypes.Role, user.Role.RoleName)
+                     //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                     new Claim("nameid", user.Id.ToString()),
+                     new Claim(ClaimTypes.Role, user.Role.RoleName)
         }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),

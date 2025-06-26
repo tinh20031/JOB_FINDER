@@ -14,6 +14,10 @@ namespace JOB_FINDER_API.Models
         public DateTime? MonthEnd { get; set; } 
         public DateTime? YearEnd { get; set; }  
         public string? ProjectDescription { get; set; } = string.Empty;
+        public string? Technologies { get; set; } = string.Empty;
+        public string? Responsibilities { get; set; } = string.Empty;
+        public string? TeamSize { get; set; } = string.Empty;
+        public string? Achievements { get; set; } = string.Empty;
         public string? ProjectLink { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

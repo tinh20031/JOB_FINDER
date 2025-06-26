@@ -139,6 +139,7 @@ namespace JOB_FINDER_API.Controllers
             if (!string.IsNullOrEmpty(model.FullName))
             {
                 profile.User.FullName = model.FullName;
+                profile.User.Phone = model.Phone;
             }
           
             if (imageFile != null)

@@ -30,5 +30,28 @@ namespace JOB_FINDER_API.Services
             };
             client.Send(mail);
         }
+        public void SendVerificationEmail(string to, string verificationCode)
+        {
+            string subject = "Verify Job Finder account email";
+
+            string body = $@"
+<html>
+  <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+      <h2 style='color: #2d8cf0;'>Verify your email</h2>
+      <p>Hello,</p>
+      <p>Thank you for registering an account on the Job Finder system. To complete the registration process, please use the verification code below:</p>
+      <div style='margin: 24px 0; text-align: center;'>
+        <h1 style='font-size: 32px; letter-spacing: 5px; color: #2d8cf0; border: 2px dashed #2d8cf0; display: inline-block; padding: 10px 20px; border-radius: 5px;'>{verificationCode}</h1>
+      </div>
+      <p>The verification code is valid for 24 hours. If you did not request this code, please ignore this email.</p>
+      <p>Best regards,<br>Job Finder Team</p>
+    </div>
+  </body>
+</html>
+";
+
+            SendEmail(to, subject, body, true);
+        }
     }
 }

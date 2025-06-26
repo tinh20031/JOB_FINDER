@@ -10,6 +10,7 @@
         public string? City { get; set; }
         public string? PersonalLink { get; set; }
         public string? FullName { get; set; } // Thêm trường này
+        public string? Phone { get; set; }
       
     }
 }

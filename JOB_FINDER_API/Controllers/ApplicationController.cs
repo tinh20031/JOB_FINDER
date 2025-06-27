@@ -286,7 +286,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applications")]
         public async Task<IActionResult> GetMyApplications()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             _logger.LogInformation("Fetching applications for User {UserId}", userId);
 
             var applications = await _context.Applications
@@ -330,7 +332,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applied-jobs-with-cvs")]
         public async Task<IActionResult> GetMyAppliedJobsWithCvs()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             _logger.LogInformation("Fetching applied jobs with CVs for User {UserId}", userId);
 
             var appliedJobIds = await _context.Applications
@@ -388,7 +392,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("favorite-company/{companyId}")]
         public async Task<IActionResult> FavoriteCompany(int companyId)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             if (await _context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
                 return BadRequest("Company is already favorited");
 
@@ -444,7 +450,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("favorite-company/{companyId}")]
         public async Task<IActionResult> UnfavoriteCompany(int companyId)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             var favorite = await _context.UserFavoriteCompanies
                 .FirstOrDefaultAsync(f => f.UserId == userId && f.CompanyId == companyId);
             if (favorite == null)

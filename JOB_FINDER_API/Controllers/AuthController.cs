@@ -21,7 +21,7 @@ namespace JOB_FINDER_API.Controllers
     {
         private readonly JobFinderDbContext _dbContext;
         private readonly IConfiguration _configuration;
-private readonly EmailService _emailService = new EmailService(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
+        private readonly EmailService _emailService = new EmailService(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
 
         public AuthController(JobFinderDbContext dbContext, IConfiguration configuration, EmailService emailService)
         {
@@ -543,3 +543,4 @@ private readonly EmailService _emailService = new EmailService(new Configuration
 
     }
 }
+

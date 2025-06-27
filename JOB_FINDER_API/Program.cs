@@ -94,6 +94,7 @@ builder.Services.AddCors(options =>
             builder.WithOrigins(
                     "https://job-finder-fe.vercel.app",
                     "http://localhost:3000",
+                    "https://job-finder-kjt2.onrender.com",
                     "http://localhost:5194"
                 )
                 .AllowAnyMethod()
@@ -161,7 +162,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.Cookie.Name = ".AspNetCore.External";
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Must be Always when SameSite=None
     options.Cookie.IsEssential = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
@@ -173,7 +174,7 @@ builder.Services.AddAuthentication(options =>
     options.CallbackPath = "/api/auth/google-response"; // Use lowercase consistently
     options.SignInScheme = "External";
     options.SaveTokens = true;
-    options.CorrelationCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     options.CorrelationCookie.HttpOnly = true;
     options.CorrelationCookie.IsEssential = true;
@@ -191,7 +192,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.EnableFilter());
 }
 
-app.UseHttpsRedirection();
+
 
 // CORS Middleware
 app.UseCors("AllowReactApp");
@@ -200,7 +201,8 @@ app.UseCors("AllowReactApp");
 app.Use(async (context, next) =>
 {
     var origin = context.Request.Headers["Origin"].ToString();
-    Console.WriteLine($"CORS applied for {context.Request.Path}, Origin: {(string.IsNullOrEmpty(origin) ? "null/empty" : origin)}");
+    var referer = context.Request.Headers["Referer"].ToString();
+    Console.WriteLine($"CORS applied for {context.Request.Path}, Origin: {origin}, Referer: {referer}");
     await next();
 });
 

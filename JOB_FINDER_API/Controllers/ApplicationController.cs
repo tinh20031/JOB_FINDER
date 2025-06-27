@@ -542,6 +542,47 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, "Unable to retrieve token from Google.");
             }
         }
+
+        [HttpGet("distinct-job-count-by-user-in-company")]
+        public async Task<IActionResult> GetDistinctJobCountByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var count = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Select(a => a.JobId)
+                .Distinct()
+                .CountAsync();
+
+            return Ok(new { userId, companyId, distinctJobCount = count });
+        }
+
+        [HttpGet("jobs-applied-by-user-in-company")]
+        public async Task<IActionResult> GetJobsAppliedByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var jobs = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Include(a => a.Job)
+                .Select(a => new {
+                    a.Job.JobId,
+                    a.Job.Title,
+                    a.Job.Description,
+                    a.Status,
+                    a.SubmittedAt
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(jobs);
+        }
     }
 }
 

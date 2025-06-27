@@ -543,5 +543,104 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, "Unable to retrieve token from Google.");
             }
         }
+
+        [HttpGet("jobs-applied-by-user-in-company")]
+        public async Task<IActionResult> GetJobsAppliedByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var jobs = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Include(a => a.Job)
+                .Select(a => new {
+                    a.Job.JobId,
+                    a.Job.Title,
+                    a.Job.Description,
+                    a.Status,
+                    a.SubmittedAt
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(jobs);
+        }
+
+        [HttpGet("company/{companyId}/unique-candidates")]
+        public async Task<IActionResult> GetUniqueCandidatesByCompany(int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var candidateIds = await _context.Applications
+                .Where(a => jobIds.Contains(a.JobId))
+                .Select(a => a.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(new { count = candidateIds.Count });
+        }
+
+        [HttpGet("company/{companyId}/recent-applicants")]
+        public async Task<IActionResult> GetRecentApplicantsByCompany(int companyId, int take = 10)
+        {
+            // Lấy danh sách jobId của công ty
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            // Lấy các application mới nhất (có thể phân trang/take)
+            var applications = await _context.Applications
+                .Where(a => jobIds.Contains(a.JobId))
+                .OrderByDescending(a => a.SubmittedAt)
+                .Take(take)
+                .Include(a => a.User)
+                    .ThenInclude(u => u.CandidateProfile)
+                .Include(a => a.Job)
+                .ToListAsync();
+
+            // Map dữ liệu trả về FE
+            var result = applications.Select(a => new
+            {
+                ApplicationId = a.Id,
+                UserId = a.UserId,
+                FullName = a.User?.FullName ?? "N/A",
+                Gender = a.User?.CandidateProfile?.Gender ?? "N/A",
+                Address = a.User?.CandidateProfile?.Address ?? "N/A",
+                SubmittedAt = a.SubmittedAt,
+                JobId = a.JobId,
+                JobTitle = a.Job?.Title ?? "N/A"
+            });
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("distinct-job-count-by-user-in-company")]
+        public async Task<IActionResult> GetDistinctJobCountByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var count = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Select(a => a.JobId)
+                .Distinct()
+                .CountAsync();
+
+            return Ok(new { userId, companyId, distinctJobCount = count });
+        }
+
+
+
+
     }
 }
+

@@ -28,7 +28,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(favorites);
         }
 
-        
+
         [HttpGet("{userId}/{jobId}")]
         public async Task<IActionResult> IsFavorited(int userId, int jobId)
         {

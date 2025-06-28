@@ -29,6 +29,20 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(works);
         }
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var candidateProfile = await _context.CandidateProfiles
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null)
+                return NotFound("Không tìm thấy CandidateProfile cho userId này.");
+
+            var works = await _context.WorkExperiences
+                .Where(w => w.CandidateProfileId == candidateProfile.CandidateProfileId)
+                .ToListAsync();
+
+            return Ok(works);
+        }
 
         [HttpPost("me")]
         public async Task<IActionResult> CreateForMe([FromBody] WorkExperience model)

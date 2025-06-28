@@ -1,3 +1,4 @@
+
 ﻿using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
@@ -309,3 +310,4 @@ app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
+

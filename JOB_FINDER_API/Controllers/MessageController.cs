@@ -37,7 +37,7 @@ namespace JOB_FINDER_API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state: {@ModelState}", ModelState);
+                _logger.LogWarning("Trạng thái mô hình không hợp lệ: {@ModelState}", ModelState);
                 return BadRequest(ModelState);
             }
 
@@ -50,8 +50,11 @@ namespace JOB_FINDER_API.Controllers
                     MessageId = m.Id,
                     SenderId = m.SenderId,
                     ReceiverId = m.ReceiverId,
-                    SentAt = m.SentAt,
                     MessageText = m.MessageText,
+                    FileUrl = m.FileUrl, // Bao gồm URL file
+                    FileType = m.FileType, // Bao gồm loại file
+                    FileName = m.FileName, // Bao gồm tên file
+                    SentAt = m.SentAt,
                     SenderFullName = _context.Users.Where(u => u.Id == m.SenderId).Select(u => u.FullName).FirstOrDefault(),
                     SenderImage = _context.Users.Where(u => u.Id == m.SenderId).Select(u => u.Image).FirstOrDefault(),
                     SenderRole = _context.Users
@@ -64,8 +67,8 @@ namespace JOB_FINDER_API.Controllers
                         .Where(u => u.Id == m.ReceiverId)
                         .Join(_context.Roles, u => u.RoleId, r => r.RoleId, (u, r) => r.RoleName)
                         .FirstOrDefault(),
-                    SenderIsOnline = Hubs.ChatHub.OnlineUsers.ContainsKey(m.SenderId.ToString()),
-                    ReceiverIsOnline = Hubs.ChatHub.OnlineUsers.ContainsKey(m.ReceiverId.ToString())
+                    SenderIsOnline = ChatHub.OnlineUsers.ContainsKey(m.SenderId.ToString()),
+                    ReceiverIsOnline = ChatHub.OnlineUsers.ContainsKey(m.ReceiverId.ToString())
                 })
                 .ToListAsync();
 
@@ -291,92 +294,141 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("send-file")]
         [Authorize]
         public async Task<IActionResult> SendFile(
-     [FromForm] int receiverId,
-     [FromForm] IFormFile file,
-     [FromForm] int? relatedJobId = null)
+            [FromForm] int receiverId,
+            [FromForm] IFormFile file,
+            [FromForm] int? relatedJobId = null)
         {
-            if (!ModelState.IsValid)
+            int senderId = 0; // Khai báo senderId ở phạm vi ngoài try-catch
+            try
             {
-                _logger.LogWarning("Invalid model state: {@ModelState}", ModelState);
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Trạng thái mô hình không hợp lệ: {@ModelState}", ModelState);
+                    return BadRequest(ModelState);
+                }
+
+                // Lấy senderId từ JWT Claims
+                var senderIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(senderIdClaim))
+                {
+                    _logger.LogWarning("Không tìm thấy UserId trong token JWT");
+                    return Unauthorized("Token không hợp lệ.");
+                }
+                senderId = int.Parse(senderIdClaim); // Gán giá trị cho senderId
+
+                // Kiểm tra người gửi và người nhận
+                var sender = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == senderId);
+                var receiver = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == receiverId);
+                if (sender == null || receiver == null)
+                {
+                    _logger.LogWarning("Người gửi hoặc người nhận không hợp lệ. SenderId: {SenderId}, ReceiverId: {ReceiverId}", senderId, receiverId);
+                    return BadRequest("Người gửi hoặc người nhận không hợp lệ.");
+                }
+
+                if (sender.Role.RoleName == "Candidate" && !await IsValidReceiverForCandidate(senderId, receiverId))
+                {
+                    _logger.LogWarning("Ứng viên {SenderId} cố gắng gửi tới người nhận không hợp lệ {ReceiverId}", senderId, receiverId);
+                    return Forbid("Ứng viên chỉ có thể gửi tin nhắn tới Công ty hoặc Quản trị viên.");
+                }
+
+                // Kiểm tra file
+                if (file == null || file.Length == 0)
+                {
+                    _logger.LogWarning("Không có file được tải lên cho SenderId: {SenderId}", senderId);
+                    return BadRequest("Không có file được tải lên.");
+                }
+
+                // Kiểm tra loại file
+                var allowedTypes = new[]
+                {
+            "image/jpeg", "image/png", "image/gif",
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        };
+                if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                {
+                    _logger.LogWarning("Loại file không hợp lệ: {FileType} cho SenderId: {SenderId}", file.ContentType, senderId);
+                    return BadRequest("Loại file không được phép. Các loại được hỗ trợ: ảnh (JPEG, PNG, GIF), PDF, DOC, DOCX.");
+                }
+
+                // Kiểm tra kích thước file (ví dụ: tối đa 10MB)
+                if (file.Length > 10 * 1024 * 1024)
+                {
+                    _logger.LogWarning("File quá lớn: {FileSize} bytes cho SenderId: {SenderId}", file.Length, senderId);
+                    return BadRequest("File quá lớn (tối đa 10MB).");
+                }
+
+                // Tải file lên Cloudinary
+                string? fileUrl = null;
+                string fileType = file.ContentType.ToLower();
+                if (fileType.StartsWith("image/"))
+                {
+                    fileUrl = await _cloudinaryService.UploadImageAsync(file);
+                }
+                else
+                {
+                    fileUrl = await _cloudinaryService.UploadCvAsync(file);
+                }
+
+                if (string.IsNullOrEmpty(fileUrl))
+                {
+                    _logger.LogError("Tải lên Cloudinary thất bại cho SenderId: {SenderId}", senderId);
+                    return StatusCode(500, "Tải file thất bại.");
+                }
+
+                // Tạo tin nhắn
+                var message = new Message
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    MessageText = string.Empty, // Không có nội dung văn bản cho tin nhắn chứa file
+                    FileUrl = fileUrl,
+                    FileType = file.ContentType,
+                    FileName = file.FileName,
+                    SentAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.Messages.Add(message);
+                await _context.SaveChangesAsync();
+
+                // Chuẩn bị dữ liệu tin nhắn cho SignalR
+                var messageData = new
+                {
+                    Id = message.Id,
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    MessageText = message.MessageText,
+                    FileUrl = message.FileUrl,
+                    FileType = message.FileType,
+                    FileName = message.FileName,
+                    SentAt = message.SentAt,
+                    RelatedJobId = relatedJobId,
+                    SenderFullName = sender?.FullName,
+                    SenderImage = sender?.Image,
+                    ReceiverFullName = receiver?.FullName,
+                    ReceiverImage = receiver?.Image,
+                    SenderIsOnline = ChatHub.OnlineUsers.ContainsKey(senderId.ToString()),
+                    ReceiverIsOnline = ChatHub.OnlineUsers.ContainsKey(receiverId.ToString())
+                };
+
+                // Gửi cập nhật thời gian thực qua SignalR
+                await _hubContext.Clients.Group(senderId.ToString()).SendAsync("ReceiveMessage", messageData);
+                await _hubContext.Clients.Group(receiverId.ToString()).SendAsync("ReceiveMessage", messageData);
+
+                await _hubContext.Clients.Group(senderId.ToString()).SendAsync("UpdateContactList");
+                await _hubContext.Clients.Group(receiverId.ToString()).SendAsync("UpdateContactList");
+
+                _logger.LogInformation("Tin nhắn chứa file được gửi thành công. MessageId: {MessageId}, FileUrl: {FileUrl}", message.Id, fileUrl);
+                return Ok(messageData);
             }
-
-            // Lấy senderId từ JWT Claims
-            var senderIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(senderIdClaim))
-                return Unauthorized("Invalid token.");
-            int senderId = int.Parse(senderIdClaim);
-
-            if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded.");
-
-            // Validate file type (ví dụ chỉ cho phép image/pdf/docx)
-            var allowedTypes = new[] { "image/", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
-            if (!allowedTypes.Any(type => file.ContentType.StartsWith(type)))
-                return BadRequest("File type not allowed.");
-
-            // Validate file size (ví dụ tối đa 10MB)
-            if (file.Length > 10 * 1024 * 1024)
-                return BadRequest("File too large (max 10MB).");
-
-            string? fileUrl = null;
-            string fileType = file.ContentType.ToLower();
-            if (fileType.StartsWith("image/"))
+            catch (Exception ex)
             {
-                fileUrl = await _cloudinaryService.UploadImageAsync(file);
+                _logger.LogError(ex, "Lỗi khi gửi tin nhắn chứa file. SenderId: {SenderId}, ReceiverId: {ReceiverId}", senderId, receiverId);
+                return StatusCode(500, "Đã xảy ra lỗi khi gửi tin nhắn chứa file.");
             }
-            else
-            {
-                fileUrl = await _cloudinaryService.UploadCvAsync(file);
-            }
-
-            if (string.IsNullOrEmpty(fileUrl))
-                return StatusCode(500, "Upload failed.");
-
-            var message = new Message
-            {
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                MessageText = fileUrl, // Nếu muốn chuẩn hơn, nên có trường FileUrl riêng
-                SentAt = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
-
-            _context.Messages.Add(message);
-            await _context.SaveChangesAsync();
-
-            var senderInfo = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == senderId);
-
-            var receiverInfo = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == receiverId);
-
-            var messageData = new
-            {
-                Id = message.Id,
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                MessageText = fileUrl,
-                SentAt = message.SentAt,
-                FileType = file.ContentType,
-                RelatedJobId = relatedJobId,
-                SenderFullName = senderInfo?.FullName,
-                SenderImage = senderInfo?.Image,
-                ReceiverFullName = receiverInfo?.FullName,
-                ReceiverImage = receiverInfo?.Image
-            };
-
-            // Gửi realtime qua SignalR
-            await _hubContext.Clients.Group(senderId.ToString()).SendAsync("ReceiveMessage", messageData);
-            await _hubContext.Clients.Group(receiverId.ToString()).SendAsync("ReceiveMessage", messageData);
-
-            await _hubContext.Clients.Group(senderId.ToString()).SendAsync("UpdateContactList");
-            await _hubContext.Clients.Group(receiverId.ToString()).SendAsync("UpdateContactList");
-
-            return Ok(messageData);
         }
 
         [HttpPost("join-group")]
@@ -422,4 +474,4 @@ namespace JOB_FINDER_API.Controllers
             return receiver.Role.RoleName == "Company" || receiver.Role.RoleName == "Admin";
         }
     }
-}       
+}

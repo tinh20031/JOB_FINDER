@@ -1,4 +1,4 @@
-﻿using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Services;

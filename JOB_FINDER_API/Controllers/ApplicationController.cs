@@ -87,14 +87,6 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest(new { Success = false, ErrorMessage = error });
             }
 
-            // Chụp snapshot CV
-            var snapshotUrls = await cvSnapshotService.CaptureCvAsImagesAsync(cv);
-            if (snapshotUrls == null || snapshotUrls.Count == 0)
-            {
-                _logger.LogError("Failed to create CV snapshots for User {UserId}", userId);
-                return BadRequest(new { Success = false, ErrorMessage = "Unable to create CV snapshots" });
-            }
-
             // Lấy Job và tóm tắt
             var job = await _context.Jobs.FindAsync(request.JobId);
             if (job == null)
@@ -106,7 +98,7 @@ namespace JOB_FINDER_API.Controllers
             string jobSummary = await SummarizeJobAsync(job);
 
             // Lưu application
-            var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, snapshotUrls.First());
+            var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl);
             _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
 
             // Tính similarity
@@ -126,7 +118,7 @@ namespace JOB_FINDER_API.Controllers
                             <h2>New application for {job.Title}</h2>
                             <p>Applicant: {userId}</p>
                             <p>Similarity score: {matchingResult.TotalSimilarity:F2}</p>
-                            <p><a href='https://job-finder-fe.vercel.app/application/{application.Id}'>View application</a></p>
+                            <p><a href='http://localhost:3000/application/{application.Id}'>View application</a></p>
                         </div>";
                         emailService.SendEmail(company.Email, "New Job Application", mailBody, true);
                         _logger.LogInformation("Email sent to company {CompanyEmail} for Application {ApplicationId}", company.Email, application.Id);
@@ -139,7 +131,6 @@ namespace JOB_FINDER_API.Controllers
                 Success = true,
                 Message = "Application submitted successfully",
                 ApplicationId = application.Id,
-                SnapshotUrls = snapshotUrls,
                 SimilarityScore = matchingResult.Success ? matchingResult.TotalSimilarity : (float?)null,
                 CvSummary = cvSummary,
                 JobSummary = jobSummary,
@@ -261,7 +252,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        private async Task<Application> SaveApplicationAsync(int userId, ApplyJobRequest request, CV cv, string resumeUrl, string snapshotCv)
+        private async Task<Application> SaveApplicationAsync(int userId, ApplyJobRequest request, CV cv, string resumeUrl)
         {
             var application = new Application
             {
@@ -270,7 +261,6 @@ namespace JOB_FINDER_API.Controllers
                 CvId = cv.Id,
                 CoverLetter = request.CoverLetter,
                 ResumeUrl = resumeUrl,
-                //SnapshotCv = snapshotCv,
                 Status = ApplicationStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
@@ -299,7 +289,7 @@ namespace JOB_FINDER_API.Controllers
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
                 return Unauthorized("Invalid user ID.");
-
+            _logger.LogInformation("Fetching applications for User {UserId}", userId);
 
             var applications = await _context.Applications
                 .Where(a => a.UserId == userId)
@@ -311,7 +301,6 @@ namespace JOB_FINDER_API.Controllers
                     a.SubmittedAt,
                     a.CoverLetter,
                     a.ResumeUrl,
-                    //a.SnapshotCv,
                     a.SimilarityScore,
                     Job = new
                     {
@@ -343,7 +332,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applied-jobs-with-cvs")]
         public async Task<IActionResult> GetMyAppliedJobsWithCvs()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             _logger.LogInformation("Fetching applied jobs with CVs for User {UserId}", userId);
 
             var appliedJobIds = await _context.Applications
@@ -382,7 +373,6 @@ namespace JOB_FINDER_API.Controllers
                         a.SubmittedAt,
                         a.CoverLetter,
                         a.ResumeUrl,
-                        //a.SnapshotCv,
                         a.SimilarityScore,
                         CvInfo = new
                         {
@@ -402,14 +392,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("favorite-company/{companyId}")]
         public async Task<IActionResult> FavoriteCompany(int companyId)
         {
-            // Fix: Use User.Identity?.Name instead of User.FindFirst(ClaimTypes.Name)
-            var userIdStr = User.Identity?.Name;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
-            {
-                _logger.LogWarning("User ID not found in the token");
-                return Unauthorized("User information missing in the authentication token");
-            }
-
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             if (await _context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
                 return BadRequest("Company is already favorited");
 
@@ -424,6 +409,8 @@ namespace JOB_FINDER_API.Controllers
             _logger.LogInformation("Company {CompanyId} favorited by User {UserId}", companyId, userId);
             return Ok("Company added to favorites successfully");
         }
+
+
 
         [Authorize]
         [HttpGet("my-favorite-companies")]
@@ -463,14 +450,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("favorite-company/{companyId}")]
         public async Task<IActionResult> UnfavoriteCompany(int companyId)
         {
-            // Update to use User.Identity?.Name for consistency
-            var userIdStr = User.Identity?.Name;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
-            {
-                _logger.LogWarning("User ID not found in the token");
-                return Unauthorized("User information missing in the authentication token");
-            }
-
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             var favorite = await _context.UserFavoriteCompanies
                 .FirstOrDefaultAsync(f => f.UserId == userId && f.CompanyId == companyId);
             if (favorite == null)
@@ -481,6 +463,10 @@ namespace JOB_FINDER_API.Controllers
             _logger.LogInformation("Company {CompanyId} removed from favorites by User {UserId}", companyId, userId);
             return Ok("Company removed from favorites successfully");
         }
+
+
+
+
 
         [HttpGet("job/{jobId}")]
         public async Task<IActionResult> GetApplicationsByJob(int jobId)
@@ -499,7 +485,6 @@ namespace JOB_FINDER_API.Controllers
                     a.SubmittedAt,
                     a.CoverLetter,
                     a.ResumeUrl,
-                    //a.SnapshotCv,
                     a.SimilarityScore,
                     User = new
                     {
@@ -533,7 +518,7 @@ namespace JOB_FINDER_API.Controllers
                 new KeyValuePair<string, string>("client_id", geminiConfig.Value.ClientId),
                 new KeyValuePair<string, string>("client_secret", geminiConfig.Value.ClientSecret),
                 new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("redirect_uri", geminiConfig.Value.RedirectUri ?? "https://job-finder-kjt2.onrender.com/auth/callback"),
+                new KeyValuePair<string, string>("redirect_uri", geminiConfig.Value.RedirectUri ?? "http://localhost:5194/auth/callback"),
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
             });
 
@@ -549,7 +534,7 @@ namespace JOB_FINDER_API.Controllers
                 HttpContext.Session.SetString("RefreshToken", refreshToken);
                 _logger.LogInformation("OAuth callback successful, tokens stored in session");
 
-                return Redirect("https://job-finder-kjt2.onrender.com/success");
+                return Redirect("http://localhost:5194/success");
             }
             else
             {
@@ -558,7 +543,103 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, "Unable to retrieve token from Google.");
             }
         }
+
+        [HttpGet("jobs-applied-by-user-in-company")]
+        public async Task<IActionResult> GetJobsAppliedByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var jobs = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Include(a => a.Job)
+                .Select(a => new {
+                    a.Job.JobId,
+                    a.Job.Title,
+                    a.Job.Description,
+                    a.Status,
+                    a.SubmittedAt
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(jobs);
+        }
+
+        [HttpGet("company/{companyId}/unique-candidates")]
+        public async Task<IActionResult> GetUniqueCandidatesByCompany(int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var candidateIds = await _context.Applications
+                .Where(a => jobIds.Contains(a.JobId))
+                .Select(a => a.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(new { count = candidateIds.Count });
+        }
+
+        [HttpGet("company/{companyId}/recent-applicants")]
+        public async Task<IActionResult> GetRecentApplicantsByCompany(int companyId, int take = 10)
+        {
+            // Lấy danh sách jobId của công ty
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            // Lấy các application mới nhất (có thể phân trang/take)
+            var applications = await _context.Applications
+                .Where(a => jobIds.Contains(a.JobId))
+                .OrderByDescending(a => a.SubmittedAt)
+                .Take(take)
+                .Include(a => a.User)
+                    .ThenInclude(u => u.CandidateProfile)
+                .Include(a => a.Job)
+                .ToListAsync();
+
+            // Map dữ liệu trả về FE
+            var result = applications.Select(a => new
+            {
+                ApplicationId = a.Id,
+                UserId = a.UserId,
+                FullName = a.User?.FullName ?? "N/A",
+                Gender = a.User?.CandidateProfile?.Gender ?? "N/A",
+                Address = a.User?.CandidateProfile?.Address ?? "N/A",
+                SubmittedAt = a.SubmittedAt,
+                JobId = a.JobId,
+                JobTitle = a.Job?.Title ?? "N/A"
+            });
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("distinct-job-count-by-user-in-company")]
+        public async Task<IActionResult> GetDistinctJobCountByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var count = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Select(a => a.JobId)
+                .Distinct()
+                .CountAsync();
+
+            return Ok(new { userId, companyId, distinctJobCount = count });
+        }
+
+
+
+
     }
 }
-
-

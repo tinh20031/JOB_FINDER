@@ -55,6 +55,7 @@ namespace JOB_FINDER_API.Controllers
             var subject = "Yêu cầu xác thực lên Company";
             var htmlBody = $@"
 <html>
+<<<<<<< HEAD
   <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
     <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
       <h2 style='color: #2d8cf0;'>Yêu cầu xác thực lên Company</h2>
@@ -70,8 +71,25 @@ namespace JOB_FINDER_API.Controllers
         <a href='https://job-finder-fe.vercel.app/admin-dashboard/user-manager/{user.Id}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Xác thực ngay</a>
       </div>
       <p style='font-size: 13px; color: #888;'>Vui lòng xác thực yêu cầu này nếu hợp lệ.</p>
+=======
+<body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+  <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+    <h2 style='color: #2d8cf0;'>Company Verification Request</h2>
+    <p><b>Applicant:</b> {user.FullName} ({user.Email})</p>
+    <p><b>Company Name:</b> {request.CompanyName}</p>
+    <p><b>Description:</b> {request.CompanyProfileDescription}</p>
+    <p><b>Address:</b> {request.Location}</p>
+    <p><b>Team Size:</b> {request.TeamSize}</p>
+    <p><b>Website:</b> {request.Website}</p>
+    <p><b>Contact:</b> {request.Contact}</p>
+    <p><b>Industry ID:</b> {request.IndustryId}</p>
+    <div style='margin: 24px 0;'>
+      <a href='https://job-finder-fe.vercel.app/admin-dashboard/user-manager/{user.Id}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
+>>>>>>> 428dc08fb797e63c288afdb91f4ef962da690435
     </div>
-  </body>
+    <p style='font-size: 13px; color: #888;'>Please verify this request if the information is valid.</p>
+  </div>
+</body>
 </html>
 ";
             SendEmail(adminEmail, subject, htmlBody, true);
@@ -126,6 +144,7 @@ namespace JOB_FINDER_API.Controllers
             // Gửi mail thông báo cho user với form HTML đẹp
             var htmlBody = $@"
 <html>
+<<<<<<< HEAD
   <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
     <div style='max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
       <h2 style='color: #2d8cf0; text-align: center;'>Chúc mừng {user.FullName}!</h2>
@@ -139,8 +158,23 @@ namespace JOB_FINDER_API.Controllers
         Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ bộ phận hỗ trợ của chúng tôi.<br>
         Cảm ơn bạn đã đồng hành cùng Job Finder!
       </p>
+=======
+<body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+  <div style='max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+    <h2 style='color: #2d8cf0; text-align: center;'>Congratulations, {user.FullName}!</h2>
+    <p style='font-size: 16px; color: #333;'>
+      Your account has been <b>successfully verified as a Company</b> on the <b>Job Finder</b> system.
+    </p>
+    <div style='margin: 24px 0; text-align: center;'>
+      <a href='https://job-finder-fe.vercel.app/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Log in now</a>
+>>>>>>> 428dc08fb797e63c288afdb91f4ef962da690435
     </div>
-  </body>
+    <p style='font-size: 14px; color: #888; text-align: center;'>
+      If you have any questions, please contact our support team.<br>
+      Thank you for being part of Job Finder!
+    </p>
+  </div>
+</body>
 </html>
 ";
             SendEmail(

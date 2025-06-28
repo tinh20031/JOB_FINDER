@@ -1,4 +1,8 @@
 using CloudinaryDotNet;
+using FirebaseAdmin;
+using FireSharp.Config;
+using FireSharp.Interfaces;
+using Google.Apis.Auth.OAuth2;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
@@ -6,15 +10,41 @@ using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Supabase;
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+string firebaseJsonPath = Path.Combine(builder.Environment.ContentRootPath, "Configs", "job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json");
+try
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(firebaseJsonPath)
+    });
+    Console.WriteLine("FirebaseApp initialized successfully.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error initializing FirebaseApp: {ex.Message}");
+    throw;
+}
+builder.Services.AddSingleton<IFirebaseClient>(sp =>
+{
+    IFirebaseConfig config = new FirebaseConfig
+    {
+        AuthSecret = "sdmhGaGzaKEdYsWdtAEqe5eCsKKUuMuhm7m4GnGz", 
+        BasePath = "https://job-32b5d-default-rtdb.firebaseio.com/"
+    };
+    return new FireSharp.FirebaseClient(config);
+});
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -31,6 +61,7 @@ builder.Services.AddScoped<SemanticMatchingService>();
 
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
+builder.Services.AddScoped<Client>(sp => new Client("https://your-supabase-url/supabase", "your-supabase-key"));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 var cloudinarySettings = builder.Configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();

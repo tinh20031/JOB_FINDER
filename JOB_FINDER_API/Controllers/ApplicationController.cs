@@ -126,7 +126,7 @@ namespace JOB_FINDER_API.Controllers
                             <h2>New application for {job.Title}</h2>
                             <p>Applicant: {userId}</p>
                             <p>Similarity score: {matchingResult.TotalSimilarity:F2}</p>
-                            <p><a href='http://localhost:3000/application/{application.Id}'>View application</a></p>
+                            <p><a href='https://job-finder-fe.vercel.app/application/{application.Id}'>View application</a></p>
                         </div>";
                         emailService.SendEmail(company.Email, "New Job Application", mailBody, true);
                         _logger.LogInformation("Email sent to company {CompanyEmail} for Application {ApplicationId}", company.Email, application.Id);
@@ -270,7 +270,7 @@ namespace JOB_FINDER_API.Controllers
                 CvId = cv.Id,
                 CoverLetter = request.CoverLetter,
                 ResumeUrl = resumeUrl,
-                SnapshotCv = snapshotCv,
+                //SnapshotCv = snapshotCv,
                 Status = ApplicationStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
@@ -311,7 +311,7 @@ namespace JOB_FINDER_API.Controllers
                     a.SubmittedAt,
                     a.CoverLetter,
                     a.ResumeUrl,
-                    a.SnapshotCv,
+                    //a.SnapshotCv,
                     a.SimilarityScore,
                     Job = new
                     {
@@ -382,7 +382,7 @@ namespace JOB_FINDER_API.Controllers
                         a.SubmittedAt,
                         a.CoverLetter,
                         a.ResumeUrl,
-                        a.SnapshotCv,
+                        //a.SnapshotCv,
                         a.SimilarityScore,
                         CvInfo = new
                         {
@@ -499,7 +499,7 @@ namespace JOB_FINDER_API.Controllers
                     a.SubmittedAt,
                     a.CoverLetter,
                     a.ResumeUrl,
-                    a.SnapshotCv,
+                    //a.SnapshotCv,
                     a.SimilarityScore,
                     User = new
                     {
@@ -533,7 +533,7 @@ namespace JOB_FINDER_API.Controllers
                 new KeyValuePair<string, string>("client_id", geminiConfig.Value.ClientId),
                 new KeyValuePair<string, string>("client_secret", geminiConfig.Value.ClientSecret),
                 new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("redirect_uri", geminiConfig.Value.RedirectUri ?? "http://localhost:5194/auth/callback"),
+                new KeyValuePair<string, string>("redirect_uri", geminiConfig.Value.RedirectUri ?? "https://job-finder-kjt2.onrender.com/auth/callback"),
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
             });
 
@@ -549,7 +549,7 @@ namespace JOB_FINDER_API.Controllers
                 HttpContext.Session.SetString("RefreshToken", refreshToken);
                 _logger.LogInformation("OAuth callback successful, tokens stored in session");
 
-                return Redirect("http://localhost:5194/success");
+                return Redirect("https://job-finder-kjt2.onrender.com/success");
             }
             else
             {

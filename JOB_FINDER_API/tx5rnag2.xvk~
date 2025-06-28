@@ -5,12 +5,10 @@ using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -120,7 +118,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
-
+               
         });
 });
 
@@ -137,7 +135,44 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Authentication & JWT
+/*builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = ClaimTypes.Role,
+        ClockSkew = TimeSpan.Zero
+    };
+
+    // Allow token via query string for SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+});*/
 
 // Authentication & JWT & Google
 builder.Services.AddAuthentication(options =>
@@ -177,75 +212,56 @@ builder.Services.AddAuthentication(options =>
         }
     };
 })
-
+// Update your cookie and Google authentication configuration
 .AddCookie("External", options =>
 {
     options.Cookie.Name = ".AspNetCore.External";
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.None; // Required for cross-site authentication
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Required for SameSite=None
+    /*options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;*/
+    options.Cookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = isProduction ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
     options.Cookie.IsEssential = true;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-
-    // Disable automatic redirects for API flow
-    options.Events = new CookieAuthenticationEvents
-    {
-        OnRedirectToLogin = context =>
-        {
-            context.Response.StatusCode = 401;
-            return Task.CompletedTask;
-        },
-        OnRedirectToAccessDenied = context =>
-        {
-            context.Response.StatusCode = 403;
-            return Task.CompletedTask;
-        }
-    };
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
 })
+/*.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.CallbackPath = "/api/auth/google-response"; // Use lowercase consistently
+    options.SignInScheme = "External";
+    options.SaveTokens = true;
+    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    //options.CorrelationCookie.HttpOnly = true;
+    options.CorrelationCookie.IsEssential = true;
+
+});*/
 .AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    options.CallbackPath = "/api/auth/google-response";
+    options.CallbackPath = "/api/auth/google-response"; // Must match exactly what's in Google Cloud Console
     options.SignInScheme = "External";
     options.SaveTokens = true;
 
-    // Configure scope
-    options.Scope.Clear();
-    options.Scope.Add("openid");
+    // Cookie settings for cross-site authentication
+    options.CorrelationCookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax;
+    options.CorrelationCookie.SecurePolicy = isProduction ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
+    options.CorrelationCookie.IsEssential = true;
+
+    // Important: manually set the auth endpoints to avoid any potential issues
+    options.AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+    options.TokenEndpoint = "https://oauth2.googleapis.com/token";
+    options.UserInformationEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+    // Add scope for profile picture
     options.Scope.Add("profile");
     options.Scope.Add("email");
 
-    // Configure cookie settings consistently
-    options.CorrelationCookie.SameSite = SameSiteMode.None;
-    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.CorrelationCookie.HttpOnly = true;
-    options.CorrelationCookie.IsEssential = true;
-
-    options.Events = new OAuthEvents
-    {
-        OnTicketReceived = context =>
-        {
-            Console.WriteLine("Google authentication ticket received successfully");
-            return Task.CompletedTask;
-        },
-        OnRemoteFailure = context =>
-        {
-            Console.WriteLine($"Google authentication failed: {context.Failure?.Message}");
-            context.Response.Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
-            context.HandleResponse();
-            return Task.CompletedTask;
-        },
-        // This is crucial - handle redirect to ensure state parameter is properly maintained
-        OnRedirectToAuthorizationEndpoint = context =>
-        {
-            Console.WriteLine($"Redirecting to authorization endpoint: {context.RedirectUri}");
-            context.Response.Redirect(context.RedirectUri);
-            return Task.CompletedTask;
-        }
-    };
+    // Add claims mapping for picture
+    options.ClaimActions.MapJsonKey("picture", "picture", "url");
 });
-
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -258,29 +274,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-/*app.Use(async (context, next) =>
-{
-    // Force HTTPS for OAuth endpoints on production
-    if (context.Request.Host.Host.Contains("onrender.com") &&
-        context.Request.Scheme != "https" &&
-        (context.Request.Path.StartsWithSegments("/api/auth")))
-    {
-        var httpsUrl = $"https://{context.Request.Host}{context.Request.Path}{context.Request.QueryString}";
-        context.Response.Redirect(httpsUrl, permanent: true);
-        return;
-    }
-
-    await next();
-});*/
-
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
-    // Nếu cần, có thể thêm:
-    // KnownNetworks = { }, // Để chấp nhận mọi proxy
-    // KnownProxies = { }
-});
-
 // Development tools
 if (app.Environment.IsDevelopment())
 {
@@ -289,6 +282,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.EnableFilter());
 }
 
+app.UseHttpsRedirection();
 
 // CORS Middleware
 app.UseCors("AllowReactApp");
@@ -309,3 +303,6 @@ app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
+
+
+

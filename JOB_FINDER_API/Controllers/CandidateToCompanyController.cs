@@ -67,7 +67,7 @@ namespace JOB_FINDER_API.Controllers
       <p><b>Contact:</b> {request.Contact}</p>
       <p><b>IndustryId:</b> {request.IndustryId}</p>
       <div style='margin: 24px 0;'>
-        <a href='http://localhost:3000/admin-dashboard/user-manager/{user.Id}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Xác thực ngay</a>
+        <a href='https://job-finder-fe.vercel.app/admin-dashboard/user-manager/{user.Id}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Xác thực ngay</a>
       </div>
       <p style='font-size: 13px; color: #888;'>Vui lòng xác thực yêu cầu này nếu hợp lệ.</p>
     </div>
@@ -133,7 +133,7 @@ namespace JOB_FINDER_API.Controllers
         Tài khoản của bạn đã được <b>xác thực lên Company</b> thành công trên hệ thống <b>Job Finder</b>.
       </p>
       <div style='margin: 24px 0; text-align: center;'>
-        <a href='http://localhost:3000/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Đăng nhập ngay</a>
+        <a href='https://job-finder-fe.vercel.app/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Đăng nhập ngay</a>
       </div>
       <p style='font-size: 14px; color: #888; text-align: center;'>
         Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ bộ phận hỗ trợ của chúng tôi.<br>

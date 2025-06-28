@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace JOB_FINDER_API.Controllers
@@ -22,13 +23,12 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly EmailService _emailService = new EmailService(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
-        private readonly IWebHostEnvironment _hostingEnvironment;
-        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration, EmailService emailService, IWebHostEnvironment hostingEnvironment)
+
+        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration, EmailService emailService)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
-            _hostingEnvironment = hostingEnvironment;
         }
 
         // Helper method to validate email format
@@ -42,45 +42,6 @@ namespace JOB_FINDER_API.Controllers
             return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
         }
 
-        /*[HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
-            {
-                return BadRequest("Email is already in use.");
-            }
-
-            var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
-            if (userRole == null)
-            {
-                return StatusCode(500, "Default role not found.");
-            }
-
-            var user = new User
-            {
-                FullName = request.FullName,
-                Email = request.Email,
-                Phone = request.Phone,
-                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                RoleId = userRole.RoleId,
-                Image = request.Image,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                
-            };
-
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync(); // user.Id sẽ được cập nhật tự động
-
-            var candidateProfile = new CandidateProfile
-            {
-                UserId = user.Id ?? 0 
-            };
-            _dbContext.CandidateProfiles.Add(candidateProfile);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok("User registered successfully.");
-        }*/
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -89,19 +50,19 @@ namespace JOB_FINDER_API.Controllers
                 // Validate email format
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Invalid email format. Please provide a valid email address.");
+                    return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
                 }
 
                 // Check if email already exists
                 if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
                 {
-                    return BadRequest("This email is already in use.");
+                    return BadRequest("Email này đã được sử dụng.");
                 }
 
                 var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (userRole == null)
                 {
-                    return StatusCode(500, "No default role found.");
+                    return StatusCode(500, "Không tìm thấy vai trò mặc định.");
                 }
 
                 // Generate verification code
@@ -141,74 +102,22 @@ namespace JOB_FINDER_API.Controllers
                 catch (Exception ex)
                 {
                     // Log email sending error but continue registration process
-                    Console.WriteLine($"Unable to send verification email: {ex.Message}");
+                    Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
                 }
 
                 return Ok(new
                 {
-                    message = "Registration successful. Please check your email to verify your account.",
+                    message = "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.",
                     userId = user.Id,
                     email = user.Email
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Registration error: {ex.Message}");
+                return StatusCode(500, $"Lỗi đăng ký: {ex.Message}");
             }
         }
 
-        /*[HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            var user = await _dbContext.Users   
-                .Include(u => u.Role)
-                .Include(u => u.CompanyProfile)
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
-            {
-                return Unauthorized("Invalid credentials.");
-            }
-
-            if (!user.IsActive)
-            {
-                return Forbid("Your account is locked. Please contact support.");
-            }
-
-            if (user.Role == null)
-            {
-                return StatusCode(500, "User role not found.");
-            }
-
-            var token = GenerateJwtToken(user);
-
-            // Lấy thông tin công ty nếu có
-            string? companyName = null;
-            string? urlCompanyLogo = null;
-            if (user.CompanyProfile != null)
-            {
-                companyName = user.CompanyProfile.CompanyName;
-                urlCompanyLogo = user.CompanyProfile.UrlCompanyLogo;
-            }
-
-            return Ok(new
-            {
-                Token = token,
-                Role = user.Role.RoleName,
-                User = new
-                {
-                    user.Id,
-                    user.FullName,
-                    user.Email,
-                    user.Phone,
-                    user.RoleId,
-                    user.Image,
-                    RoleName = user.Role.RoleName,
-                    CompanyName = companyName,
-                    UrlCompanyLogo = urlCompanyLogo
-                }
-            });
-        }    */
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -217,7 +126,7 @@ namespace JOB_FINDER_API.Controllers
                 // Validate email format
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Invalid email format. Please provide a valid email address.");
+                    return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
                 }
 
                 var user = await _dbContext.Users
@@ -227,12 +136,12 @@ namespace JOB_FINDER_API.Controllers
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
-                    return Unauthorized("Invalid login information.");
+                    return Unauthorized("Thông tin đăng nhập không hợp lệ.");
                 }
 
                 if (!user.IsActive)
                 {
-                    return Forbid("Your account has been locked. Please contact support.");
+                    return Forbid("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
                 }
 
                 // Email verification check
@@ -253,13 +162,13 @@ namespace JOB_FINDER_API.Controllers
                         catch (Exception ex)
                         {
                             // Log but continue
-                            Console.WriteLine($"Unable to send verification email: {ex.Message}");
+                            Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
                         }
                     }
 
                     return BadRequest(new
                     {
-                        message = "Email is not verified. Please check your inbox to verify your account before logging in.",
+                        message = "Email chưa được xác thực. Vui lòng kiểm tra hộp thư để xác thực tài khoản trước khi đăng nhập.",
                         requiresVerification = true,
                         userId = user.Id,
                         email = user.Email
@@ -268,7 +177,7 @@ namespace JOB_FINDER_API.Controllers
 
                 if (user.Role == null)
                 {
-                    return StatusCode(500, "User role not found.");
+                    return StatusCode(500, "Không tìm thấy vai trò người dùng.");
                 }
 
                 var token = GenerateJwtToken(user);
@@ -302,7 +211,7 @@ namespace JOB_FINDER_API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Login error: {ex.Message}");
+                return StatusCode(500, $"Lỗi đăng nhập: {ex.Message}");
             }
         }
 
@@ -312,6 +221,7 @@ namespace JOB_FINDER_API.Controllers
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
         }
+
         // Verify email endpoint
         [HttpPost("verify-email")]
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
@@ -320,25 +230,25 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.VerificationCode))
                 {
-                    return BadRequest("Email and verification code cannot be blank.");
+                    return BadRequest("Email và mã xác thực không được để trống.");
                 }
 
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (user == null)
                 {
-                    return NotFound("User not found.");
+                    return NotFound("Không tìm thấy người dùng.");
                 }
 
                 if (user.IsEmailVerified)
                 {
-                    return Ok("Email has been previously verified.");
+                    return Ok("Email đã được xác thực trước đó.");
                 }
 
                 if (user.EmailVerificationCode != request.VerificationCode ||
                     user.EmailVerificationCodeExpiry == null ||
                     user.EmailVerificationCodeExpiry < DateTime.UtcNow)
                 {
-                    return BadRequest("The verification code is invalid or has expired.");
+                    return BadRequest("Mã xác thực không hợp lệ hoặc đã hết hạn.");
                 }
 
                 // Mark email as verified
@@ -348,13 +258,14 @@ namespace JOB_FINDER_API.Controllers
                 user.UpdatedAt = DateTime.UtcNow;
                 await _dbContext.SaveChangesAsync();
 
-                return Ok("Email verification successful. You can log in now.");
+                return Ok("Xác thực email thành công. Bạn có thể đăng nhập ngay bây giờ.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Email authentication error: {ex.Message}");
+                return StatusCode(500, $"Lỗi xác thực email: {ex.Message}");
             }
         }
+
         // Resend verification email
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
@@ -363,18 +274,18 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Invalid email format.");
+                    return BadRequest("Định dạng email không hợp lệ.");
                 }
 
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (user == null)
                 {
-                    return NotFound("User not found.");
+                    return NotFound("Không tìm thấy người dùng.");
                 }
 
                 if (user.IsEmailVerified)
                 {
-                    return Ok("Email has been previously verified.");
+                    return Ok("Email đã được xác thực trước đó.");
                 }
 
                 // Generate new verification code
@@ -386,16 +297,16 @@ namespace JOB_FINDER_API.Controllers
                 try
                 {
                     _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
-                    return Ok("The verification code has been re-sent to your email. Please check your inbox.");
+                    return Ok("Mã xác thực đã được gửi lại đến email của bạn. Vui lòng kiểm tra hộp thư.");
                 }
                 catch (Exception ex)
                 {
-                    return StatusCode(500, $"Unable to send verification email: {ex.Message}");
+                    return StatusCode(500, $"Không thể gửi email xác thực: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error resending verification code: {ex.Message}");
+                return StatusCode(500, $"Lỗi gửi lại mã xác thực: {ex.Message}");
             }
         }
 
@@ -406,6 +317,7 @@ namespace JOB_FINDER_API.Controllers
             // Optionally, you can implement token blacklisting here if needed.
             return Ok(new { message = "Logged out successfully. Please remove the token on the client." });
         }
+
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -433,6 +345,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("Password changed successfully.");
         }
+
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -441,10 +354,9 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                     //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                      new Claim("nameid", user.Id.ToString()),
                      new Claim(ClaimTypes.Role, user.Role.RoleName)
-        }),
+                }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
                 Audience = _configuration["Jwt:Audience"],
@@ -453,110 +365,34 @@ namespace JOB_FINDER_API.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-        // Update the login-google endpoint to use consistent casing
+
+        // Update the login-google endpoint to use production URLs
         [HttpGet("login-google")]
         public IActionResult LoginWithGoogle()
         {
-            // Don't use Url.Action as it might not construct URLs correctly
-            // Instead, use an absolute URL:
-            //var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google-response/";
-            // Sử dụng URL tuyệt đối cho môi trường production
-            string callbackUrl;
-            if (_hostingEnvironment.IsProduction())
-            {
-                callbackUrl = "https://job-finder-kjt2.onrender.com/api/auth/google-response/";
-            }
-            else
-            {
-                callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google-response/";
-            }
+            // Use production URL for callback
+            var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google-response/";
 
             var properties = new AuthenticationProperties
             {
                 RedirectUri = callbackUrl,
                 Items =
-        {
-            { ".xsrf", Guid.NewGuid().ToString() }
-        }
+                {
+                    { ".xsrf", Guid.NewGuid().ToString() }
+                }
             };
 
             return Challenge(properties, "Google");
         }
 
         // Make sure Google response endpoint matches exactly
-        /*[HttpGet("google-response")]
-        public async Task<IActionResult> GoogleResponse()
-        {
-            var authenticateResult = await HttpContext.AuthenticateAsync("External");
-            if (!authenticateResult.Succeeded)
-            {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
-            }
-
-            var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
-            var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
-
-            if (string.IsNullOrEmpty(email))
-            {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
-            }
-
-            // Check if user exists
-            var user = await _dbContext.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user == null)
-            {
-                // Create new user with Candidate role
-                var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
-                if (candidateRole == null)
-                {
-                    return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
-                }
-
-                user = new User
-                {
-                    FullName = name,
-                    Email = email,
-                    RoleId = candidateRole.RoleId,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsActive = true
-                };
-                _dbContext.Users.Add(user);
-                await _dbContext.SaveChangesAsync();
-
-                // Create CandidateProfile for new user
-                var candidateProfile = new CandidateProfile
-                {
-                    UserId = user.Id ?? 0
-                };
-                _dbContext.CandidateProfiles.Add(candidateProfile);
-                await _dbContext.SaveChangesAsync();
-
-                // Refresh user to include the role
-                user = await _dbContext.Users
-                    .Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Email == email);
-            }
-
-            // Generate JWT token
-            var token = GenerateJwtToken(user);
-
-            // Sign out of the temporary External cookie
-            await HttpContext.SignOutAsync("External");
-
-            // Redirect to frontend with token and role
-            return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
-        }*/
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse()
         {
             var authenticateResult = await HttpContext.AuthenticateAsync("External");
             if (!authenticateResult.Succeeded)
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
+                return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
             }
 
             var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
@@ -564,7 +400,7 @@ namespace JOB_FINDER_API.Controllers
 
             if (string.IsNullOrEmpty(email))
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
+                return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Email not provided")}");
             }
 
             // Check if user exists
@@ -578,7 +414,7 @@ namespace JOB_FINDER_API.Controllers
                 var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (candidateRole == null)
                 {
-                    return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
+                    return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("User role not found")}");
                 }
 
                 user = new User
@@ -590,7 +426,8 @@ namespace JOB_FINDER_API.Controllers
                     UpdatedAt = DateTime.UtcNow,
                     IsActive = true,
                     IsEmailVerified = true,
-                    EmailVerificationCode = "VERIFIED_WITH_GOOGLE" // Khởi tạo trường này với một giá trị không phải null
+                    EmailVerificationCode = "VERIFIED", 
+                    EmailVerificationCodeExpiry = null 
                 };
                 _dbContext.Users.Add(user);
                 await _dbContext.SaveChangesAsync();
@@ -608,44 +445,6 @@ namespace JOB_FINDER_API.Controllers
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == email);
             }
-            else
-            {
-                // Xử lý trường hợp email đã đăng ký nhưng chưa xác nhận
-                if (!user.IsEmailVerified)
-                {
-                    // Tự động xác thực email vì người dùng đã đăng nhập qua Google
-                    user.IsEmailVerified = true;
-                    user.EmailVerificationCode = "VERIFIED_WITH_GOOGLE";
-                    user.EmailVerificationCodeExpiry = null;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    await _dbContext.SaveChangesAsync();
-
-                    // Tùy chọn: Gửi email thông báo cho người dùng
-                    try
-                    {
-                        string subject = "Your email has been verified via Google";
-                        string body = $@"
-<html>
-  <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
-    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
-      <h2 style='color: #2d8cf0;'>Xác thực email thành công</h2>
-      <p>Hello,</p>
-      <p>Your email has been automatically verified via Google login.</p>
-      <p>You can now use the full functionality of the Job Finder system.</p>
-      <p>Best regards,<br>Job Finder Team</p>
-    </div>
-  </body>
-</html>
-";
-                        _emailService.SendEmail(user.Email, subject, body, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Ghi log lỗi nhưng vẫn tiếp tục xử lý
-                        Console.WriteLine($"Unable to send notification email: {ex.Message}");
-                    }
-                }
-            }
 
             // Generate JWT token
             var token = GenerateJwtToken(user);
@@ -654,8 +453,7 @@ namespace JOB_FINDER_API.Controllers
             await HttpContext.SignOutAsync("External");
 
             // Redirect to frontend with token and role
-            return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
+            return Redirect($"https://job-finder-fe.vercel.app/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
         }
-
     }
 }

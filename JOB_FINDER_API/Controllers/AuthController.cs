@@ -529,14 +529,130 @@ namespace JOB_FINDER_API.Controllers
         //}
 
 
+        //final local 
+        //[HttpGet("google-response")]
+        //public async Task<IActionResult> GoogleResponse()
+        //{
+        //    var authenticateResult = await HttpContext.AuthenticateAsync("External");
+        //    if (!authenticateResult.Succeeded)
+        //    {
+        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Authentication failed: " + authenticateResult.Failure?.Message)}");
+        //    }
 
+        //    var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
+        //    var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
+        //    var googleIdToken = authenticateResult.Properties.GetTokenValue("id_token");
+
+        //    Console.WriteLine($"Debug - Email: {email}");
+        //    Console.WriteLine($"Debug - Name: {name}");
+        //    Console.WriteLine($"Debug - Google ID Token: {googleIdToken ?? "null"}");
+
+        //    if (string.IsNullOrEmpty(email))
+        //    {
+        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Email not provided")}");
+        //    }
+
+        //    var user = await _dbContext.Users
+        //        .Include(u => u.Role)
+        //        .FirstOrDefaultAsync(u => u.Email == email);
+
+        //    var firebaseAuth = FirebaseAuth.DefaultInstance; // Khai báo một lần duy nhất
+
+        //    if (user == null)
+        //    {
+        //        var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
+        //        if (candidateRole == null)
+        //        {
+        //            return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("User role not found")}");
+        //        }
+
+        //        // Thử lấy Firebase UID từ id_token nếu có
+        //        string firebaseUid = null;
+        //        if (!string.IsNullOrEmpty(googleIdToken))
+        //        {
+        //            try
+        //            {
+        //                var decodedToken = await firebaseAuth.VerifyIdTokenAsync(googleIdToken);
+        //                firebaseUid = decodedToken.Uid;
+        //                Console.WriteLine($"Debug - Firebase UID from id_token: {firebaseUid}");
+        //            }
+        //            catch (FirebaseAuthException ex)
+        //            {
+        //                Console.WriteLine($"Debug - Error verifying id_token: {ex.Message} (Error Code: {ex.ErrorCode})");
+        //                firebaseUid = Guid.NewGuid().ToString();
+        //                Console.WriteLine($"Debug - Fallback Firebase UID: {firebaseUid}");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            firebaseUid = Guid.NewGuid().ToString();
+        //            Console.WriteLine($"Debug - No id_token, generated Firebase UID: {firebaseUid}");
+        //        }
+
+        //        // Tạo người dùng với FirebaseUid đã gán
+        //        user = new User
+        //        {
+        //            FullName = name,
+        //            Email = email,
+        //            RoleId = candidateRole.RoleId,
+        //            FirebaseUid = firebaseUid, // Lưu FirebaseUid
+        //            CreatedAt = DateTime.UtcNow,
+        //            UpdatedAt = DateTime.UtcNow,
+        //            IsActive = true,
+        //            IsEmailVerified = true,
+        //            EmailVerificationCode = "VERIFIED",
+        //            EmailVerificationCodeExpiry = null
+        //        };
+        //        _dbContext.Users.Add(user);
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Tạo CandidateProfile cho người dùng mới
+        //        var candidateProfile = new CandidateProfile
+        //        {
+        //            UserId = user.Id ?? 0
+        //        };
+        //        _dbContext.CandidateProfiles.Add(candidateProfile);
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Refresh user to include the role
+        //        user = await _dbContext.Users
+        //            .Include(u => u.Role)
+        //            .FirstOrDefaultAsync(u => u.Email == email);
+        //        Console.WriteLine($"Debug - Reloaded Firebase UID: {user.FirebaseUid}");
+        //        Console.WriteLine($"Debug - Created User ID: {user.Id}");
+        //    }
+        //    else if (string.IsNullOrEmpty(user.FirebaseUid))
+        //    {
+        //        // Nếu user đã tồn tại nhưng FirebaseUid rỗng, gán giá trị mới
+        //        user.FirebaseUid = Guid.NewGuid().ToString();
+        //        await _dbContext.SaveChangesAsync();
+        //        await _dbContext.Entry(user).ReloadAsync(); // Đồng bộ lại từ DB
+        //        Console.WriteLine($"Debug - Updated Firebase UID for existing user: {user.FirebaseUid}");
+        //    }
+
+        //    // Kiểm tra và tạo custom token
+        //    if (string.IsNullOrEmpty(user.FirebaseUid))
+        //    {
+        //        Console.WriteLine("Debug - Critical Error: FirebaseUid is still null or empty after assignment.");
+        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Internal error: Unable to generate Firebase UID")}");
+        //    }
+
+        //    string customToken = await firebaseAuth.CreateCustomTokenAsync(user.FirebaseUid);
+
+        //    var token = GenerateJwtToken(user);
+        //    await HttpContext.SignOutAsync("External");
+
+        //    return Redirect($"https://job-finder-fe.vercel.app/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
+        //}
+
+        //final production
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse()
         {
             var authenticateResult = await HttpContext.AuthenticateAsync("External");
             if (!authenticateResult.Succeeded)
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed: " + authenticateResult.Failure?.Message)}");
+                return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Authentication failed: " + authenticateResult.Failure?.Message)}");
             }
 
             var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
@@ -549,7 +665,7 @@ namespace JOB_FINDER_API.Controllers
 
             if (string.IsNullOrEmpty(email))
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
+                return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Email not provided")}");
             }
 
             var user = await _dbContext.Users
@@ -563,7 +679,7 @@ namespace JOB_FINDER_API.Controllers
                 var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (candidateRole == null)
                 {
-                    return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
+                    return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("User role not found")}");
                 }
 
                 // Thử lấy Firebase UID từ id_token nếu có
@@ -595,7 +711,7 @@ namespace JOB_FINDER_API.Controllers
                     FullName = name,
                     Email = email,
                     RoleId = candidateRole.RoleId,
-                    FirebaseUid = firebaseUid, // Gán rõ ràng
+                    FirebaseUid = firebaseUid, // Lưu FirebaseUid
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsActive = true,
@@ -606,11 +722,20 @@ namespace JOB_FINDER_API.Controllers
                 _dbContext.Users.Add(user);
                 await _dbContext.SaveChangesAsync();
 
-                // Reload user từ cơ sở dữ liệu để đảm bảo đồng bộ
+                // Tạo CandidateProfile cho người dùng mới
+                var candidateProfile = new CandidateProfile
+                {
+                    UserId = user.Id ?? 0
+                };
+                _dbContext.CandidateProfiles.Add(candidateProfile);
+                await _dbContext.SaveChangesAsync();
+
+                // Refresh user to include the role
                 user = await _dbContext.Users
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == email);
                 Console.WriteLine($"Debug - Reloaded Firebase UID: {user.FirebaseUid}");
+                Console.WriteLine($"Debug - Created User ID: {user.Id}");
             }
             else if (string.IsNullOrEmpty(user.FirebaseUid))
             {
@@ -625,7 +750,7 @@ namespace JOB_FINDER_API.Controllers
             if (string.IsNullOrEmpty(user.FirebaseUid))
             {
                 Console.WriteLine("Debug - Critical Error: FirebaseUid is still null or empty after assignment.");
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Internal error: Unable to generate Firebase UID")}");
+                return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Internal error: Unable to generate Firebase UID")}");
             }
 
             string customToken = await firebaseAuth.CreateCustomTokenAsync(user.FirebaseUid);
@@ -633,7 +758,7 @@ namespace JOB_FINDER_API.Controllers
             var token = GenerateJwtToken(user);
             await HttpContext.SignOutAsync("External");
 
-            return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
+            return Redirect($"https://job-finder-fe.vercel.app/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
         }
 
 
@@ -641,144 +766,6 @@ namespace JOB_FINDER_API.Controllers
 
 
 
-
-
-        //production
-        //[HttpGet("google-response")]
-        //public async Task<IActionResult> GoogleResponse()
-        //{
-        //    var authenticateResult = await HttpContext.AuthenticateAsync("External");
-        //    if (!authenticateResult.Succeeded)
-        //    {
-        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
-        //    }
-
-        //    var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
-        //    var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
-
-        //    if (string.IsNullOrEmpty(email))
-        //    {
-        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Email not provided")}");
-        //    }
-
-        //    var user = await _dbContext.Users
-        //        .Include(u => u.Role)
-        //        .FirstOrDefaultAsync(u => u.Email == email);
-
-        //    if (user == null)
-        //    {
-        //        var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
-        //        if (candidateRole == null)
-        //        {
-        //            return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("User role not found")}");
-        //        }
-
-        //        // Tạo Firebase UID mới hoặc sử dụng email làm identifier tạm thời
-        //        string firebaseUid = Guid.NewGuid().ToString(); // Tạo UID tạm thời, sau này có thể đồng bộ với Firebase
-
-        //        user = new User
-        //        {
-        //            FullName = name,
-        //            Email = email,
-        //            RoleId = candidateRole.RoleId,
-        //            FirebaseUid = firebaseUid, // Gán UID tạm thời
-        //            CreatedAt = DateTime.UtcNow,
-        //            UpdatedAt = DateTime.UtcNow,
-        //            IsActive = true
-        //        };
-        //        _dbContext.Users.Add(user);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        var candidateProfile = new CandidateProfile
-        //        {
-        //            UserId = user.Id ?? 0
-        //        };
-        //        _dbContext.CandidateProfiles.Add(candidateProfile);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        user = await _dbContext.Users
-        //            .Include(u => u.Role)
-        //            .FirstOrDefaultAsync(u => u.Email == email);
-        //    }
-
-        //    // Tạo custom token mà không cần id_token
-        //    var firebaseAuth = FirebaseAuth.DefaultInstance;
-        //    string customToken = await firebaseAuth.CreateCustomTokenAsync(user.FirebaseUid); // Sử dụng UID đã gán
-
-        //    var token = GenerateJwtToken(user);
-        //    await HttpContext.SignOutAsync("External");
-
-        //    return Redirect($"https://job-finder-fe.vercel.app/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
-        //}
-
-
-        //local 
-        //[HttpGet("google-response")]
-        //public async Task<IActionResult> GoogleResponse()
-        //{
-        //    var authenticateResult = await HttpContext.AuthenticateAsync("External");
-        //    if (!authenticateResult.Succeeded)
-        //    {
-        //        return Redirect($"http://localhost:3000//auth/error?message={Uri.EscapeDataString("Authentication failed")}");
-        //    }
-
-        //    var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
-        //    var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
-
-        //    if (string.IsNullOrEmpty(email))
-        //    {
-        //        return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
-        //    }
-
-        //    var user = await _dbContext.Users
-        //        .Include(u => u.Role)
-        //        .FirstOrDefaultAsync(u => u.Email == email);
-
-        //    if (user == null)
-        //    {
-        //        var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
-        //        if (candidateRole == null)
-        //        {
-        //            return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
-        //        }
-
-        //        // Tạo Firebase UID mới hoặc sử dụng email làm identifier tạm thời
-        //        string firebaseUid = Guid.NewGuid().ToString(); // Tạo UID tạm thời, sau này có thể đồng bộ với Firebase
-
-        //        user = new User
-        //        {
-        //            FullName = name,
-        //            Email = email,
-        //            RoleId = candidateRole.RoleId,
-        //            FirebaseUid = firebaseUid, // Gán UID tạm thời
-        //            CreatedAt = DateTime.UtcNow,
-        //            UpdatedAt = DateTime.UtcNow,
-        //            IsActive = true
-        //        };
-        //        _dbContext.Users.Add(user);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        var candidateProfile = new CandidateProfile
-        //        {
-        //            UserId = user.Id ?? 0
-        //        };
-        //        _dbContext.CandidateProfiles.Add(candidateProfile);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        user = await _dbContext.Users
-        //            .Include(u => u.Role)
-        //            .FirstOrDefaultAsync(u => u.Email == email);
-        //    }
-
-        //    // Tạo custom token mà không cần id_token
-        //    var firebaseAuth = FirebaseAuth.DefaultInstance;
-        //    string customToken = await firebaseAuth.CreateCustomTokenAsync(user.FirebaseUid); // Sử dụng UID đã gán
-
-        //    var token = GenerateJwtToken(user);
-        //    await HttpContext.SignOutAsync("External");
-
-        //    return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
-        //}
 
 
     }

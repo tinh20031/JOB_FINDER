@@ -1,4 +1,4 @@
-﻿using CloudinaryDotNet;
+using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
@@ -286,7 +286,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applications")]
         public async Task<IActionResult> GetMyApplications()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             _logger.LogInformation("Fetching applications for User {UserId}", userId);
 
             var applications = await _context.Applications
@@ -330,7 +332,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet("my-applied-jobs-with-cvs")]
         public async Task<IActionResult> GetMyAppliedJobsWithCvs()
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             _logger.LogInformation("Fetching applied jobs with CVs for User {UserId}", userId);
 
             var appliedJobIds = await _context.Applications
@@ -388,7 +392,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("favorite-company/{companyId}")]
         public async Task<IActionResult> FavoriteCompany(int companyId)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             if (await _context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
                 return BadRequest("Company is already favorited");
 
@@ -444,7 +450,9 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("favorite-company/{companyId}")]
         public async Task<IActionResult> UnfavoriteCompany(int companyId)
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.Name)!.Value);
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
             var favorite = await _context.UserFavoriteCompanies
                 .FirstOrDefaultAsync(f => f.UserId == userId && f.CompanyId == companyId);
             if (favorite == null)
@@ -535,5 +543,103 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, "Unable to retrieve token from Google.");
             }
         }
+
+        [HttpGet("jobs-applied-by-user-in-company")]
+        public async Task<IActionResult> GetJobsAppliedByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var jobs = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Include(a => a.Job)
+                .Select(a => new {
+                    a.Job.JobId,
+                    a.Job.Title,
+                    a.Job.Description,
+                    a.Status,
+                    a.SubmittedAt
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(jobs);
+        }
+
+        [HttpGet("company/{companyId}/unique-candidates")]
+        public async Task<IActionResult> GetUniqueCandidatesByCompany(int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var candidateIds = await _context.Applications
+                .Where(a => jobIds.Contains(a.JobId))
+                .Select(a => a.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(new { count = candidateIds.Count });
+        }
+
+        [HttpGet("company/{companyId}/recent-applicants")]
+        public async Task<IActionResult> GetRecentApplicantsByCompany(int companyId, int take = 10)
+        {
+            // Lấy danh sách jobId của công ty
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            // Lấy các application mới nhất (có thể phân trang/take)
+            var applications = await _context.Applications
+                .Where(a => jobIds.Contains(a.JobId))
+                .OrderByDescending(a => a.SubmittedAt)
+                .Take(take)
+                .Include(a => a.User)
+                    .ThenInclude(u => u.CandidateProfile)
+                .Include(a => a.Job)
+                .ToListAsync();
+
+            // Map dữ liệu trả về FE
+            var result = applications.Select(a => new
+            {
+                ApplicationId = a.Id,
+                UserId = a.UserId,
+                FullName = a.User?.FullName ?? "N/A",
+                Gender = a.User?.CandidateProfile?.Gender ?? "N/A",
+                Address = a.User?.CandidateProfile?.Address ?? "N/A",
+                SubmittedAt = a.SubmittedAt,
+                JobId = a.JobId,
+                JobTitle = a.Job?.Title ?? "N/A"
+            });
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("distinct-job-count-by-user-in-company")]
+        public async Task<IActionResult> GetDistinctJobCountByUserInCompany(int userId, int companyId)
+        {
+            var jobIds = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .Select(j => j.JobId)
+                .ToListAsync();
+
+            var count = await _context.Applications
+                .Where(a => a.UserId == userId && jobIds.Contains(a.JobId))
+                .Select(a => a.JobId)
+                .Distinct()
+                .CountAsync();
+
+            return Ok(new { userId, companyId, distinctJobCount = count });
+        }
+
+
+
+
     }
 }

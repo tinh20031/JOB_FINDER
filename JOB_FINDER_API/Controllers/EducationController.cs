@@ -29,7 +29,20 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(educations);
         }
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var candidateProfile = await _context.CandidateProfiles
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null)
+                return NotFound("Không tìm thấy CandidateProfile cho userId này.");
 
+            var educations = await _context.Educations
+                .Where(e => e.CandidateProfileId == candidateProfile.CandidateProfileId)
+                .ToListAsync();
+
+            return Ok(educations);
+        }
         [HttpPost("me")]
         public async Task<IActionResult> CreateForMe([FromBody] Education model)
         {

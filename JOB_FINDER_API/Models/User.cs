@@ -15,6 +15,7 @@ namespace JOB_FINDER_API.Models
         public bool IsEmailVerified { get; set; } = false;
         public string EmailVerificationCode { get; set; }
         public DateTime? EmailVerificationCodeExpiry { get; set; }
+        public string? FirebaseUid { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

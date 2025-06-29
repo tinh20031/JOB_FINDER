@@ -24,7 +24,6 @@ namespace JOB_FINDER_API.Data
         public DbSet<Experience> Experiences { get; set; }
         public DbSet<Application> Applications { get; set; }
         public DbSet<UserFavoriteJob> UserFavoriteJobs { get; set; }
-        public DbSet<Message> Messages { get; set; }
         public DbSet<CV> CVs { get; set; }
         public DbSet<Embedding> Embeddings { get; set; }
         public DbSet<Education> Educations { get; set; }

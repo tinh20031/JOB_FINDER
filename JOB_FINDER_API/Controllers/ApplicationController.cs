@@ -1,4 +1,4 @@
-﻿using CloudinaryDotNet;
+using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
@@ -643,4 +643,3 @@ namespace JOB_FINDER_API.Controllers
 
     }
 }
-

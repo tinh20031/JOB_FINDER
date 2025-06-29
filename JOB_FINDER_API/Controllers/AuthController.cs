@@ -219,14 +219,16 @@ namespace JOB_FINDER_API.Controllers
         //    }
         //}
 
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
             {
+                // Validate email format
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Định dạng email không hợp lệ.");
+                    return BadRequest("Invalid email format. Please provide a valid email address.");
                 }
 
                 var user = await _dbContext.Users
@@ -236,54 +238,82 @@ namespace JOB_FINDER_API.Controllers
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
-                    return Unauthorized("Thông tin đăng nhập không hợp lệ.");
+                    return Unauthorized("Invalid login credentials.");
                 }
 
                 if (!user.IsActive)
                 {
-                    return Forbid("Tài khoản bị khóa.");
+                    return Forbid("Your account has been locked. Please contact support.");
                 }
 
+                // Email verification check
                 if (!user.IsEmailVerified)
                 {
+                    // Regenerate verification code if needed
                     if (user.EmailVerificationCodeExpiry == null || user.EmailVerificationCodeExpiry < DateTime.UtcNow)
                     {
                         user.EmailVerificationCode = GenerateVerificationCode();
                         user.EmailVerificationCodeExpiry = DateTime.UtcNow.AddHours(24);
                         await _dbContext.SaveChangesAsync();
-                        _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
+
+                        // Send new verification code
+                        try
+                        {
+                            _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log but continue
+                            Console.WriteLine($"Unable to send verification email: {ex.Message}");
+                        }
                     }
-                    return BadRequest(new { message = "Email chưa xác thực.", requiresVerification = true, userId = user.Id, email = user.Email });
+
+                    return BadRequest(new
+                    {
+                        message = "Email has not been verified. Please check your inbox to verify your account before logging in.",
+                        requiresVerification = true,
+                        userId = user.Id,
+                        email = user.Email
+                    });
                 }
 
                 if (user.Role == null)
                 {
-                    return StatusCode(500, "Vai trò không tìm thấy.");
+                    return StatusCode(500, "User role not found.");
                 }
 
-                if (string.IsNullOrEmpty(user.FirebaseUid))
-                {
-                    user.FirebaseUid = Guid.NewGuid().ToString(); 
-                    await _dbContext.SaveChangesAsync();
-                }
-
-                var customToken = await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(user.FirebaseUid);
                 var token = GenerateJwtToken(user);
 
-                string? companyName = user.CompanyProfile?.CompanyName;
-                string? urlCompanyLogo = user.CompanyProfile?.UrlCompanyLogo;
+                // Lấy thông tin công ty nếu có
+                string? companyName = null;
+                string? urlCompanyLogo = null;
+                if (user.CompanyProfile != null)
+                {
+                    companyName = user.CompanyProfile.CompanyName;
+                    urlCompanyLogo = user.CompanyProfile.UrlCompanyLogo;
+                }
 
                 return Ok(new
                 {
                     Token = token,
-                    FirebaseToken = customToken,
                     Role = user.Role.RoleName,
-                    User = new { user.Id, user.FullName, user.Email, user.Phone, user.RoleId, user.Image, RoleName = user.Role.RoleName, CompanyName = companyName, UrlCompanyLogo = urlCompanyLogo }
+                    User = new
+                    {
+                        user.Id,
+                        user.FullName,
+                        user.Email,
+                        user.Phone,
+                        user.RoleId,
+                        user.Image,
+                        RoleName = user.Role.RoleName,
+                        CompanyName = companyName,
+                        UrlCompanyLogo = urlCompanyLogo
+                    }
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi đăng nhập: {ex.Message}");
+                return StatusCode(500, $" Login error: {ex.Message}");
             }
         }
 
@@ -303,25 +333,25 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.VerificationCode))
                 {
-                    return BadRequest("Email và mã xác thực không được để trống.");
+                    return BadRequest("Email and verification code must not be empty.");
                 }
 
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (user == null)
                 {
-                    return NotFound("Không tìm thấy người dùng.");
+                    return NotFound("User not found.");
                 }
 
                 if (user.IsEmailVerified)
                 {
-                    return Ok("Email đã được xác thực trước đó.");
+                    return Ok("Email has already been verified.");
                 }
 
                 if (user.EmailVerificationCode != request.VerificationCode ||
                     user.EmailVerificationCodeExpiry == null ||
                     user.EmailVerificationCodeExpiry < DateTime.UtcNow)
                 {
-                    return BadRequest("Mã xác thực không hợp lệ hoặc đã hết hạn.");
+                    return BadRequest("Invalid or expired verification code.");
                 }
 
                 // Mark email as verified
@@ -331,11 +361,11 @@ namespace JOB_FINDER_API.Controllers
                 user.UpdatedAt = DateTime.UtcNow;
                 await _dbContext.SaveChangesAsync();
 
-                return Ok("Xác thực email thành công. Bạn có thể đăng nhập ngay bây giờ.");
+                return Ok("Email verification successful. You can log in now.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi xác thực email: {ex.Message}");
+                return StatusCode(500, $"Email verification error: {ex.Message}");
             }
         }
         // Resend verification email
@@ -346,18 +376,18 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Định dạng email không hợp lệ.");
+                    return BadRequest("Invalid email format.");
                 }
 
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (user == null)
                 {
-                    return NotFound("Không tìm thấy người dùng.");
+                    return NotFound("User not found.");
                 }
 
                 if (user.IsEmailVerified)
                 {
-                    return Ok("Email đã được xác thực trước đó.");
+                    return Ok("Email has already been verified.");
                 }
 
                 // Generate new verification code
@@ -369,16 +399,16 @@ namespace JOB_FINDER_API.Controllers
                 try
                 {
                     _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
-                    return Ok("Mã xác thực đã được gửi lại đến email của bạn. Vui lòng kiểm tra hộp thư.");
+                    return Ok("A new verification code has been sent to your email. Please check your inbox.");
                 }
                 catch (Exception ex)
                 {
-                    return StatusCode(500, $"Không thể gửi email xác thực: {ex.Message}");
+                    return StatusCode(500, $"Unable to send verification email: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi gửi lại mã xác thực: {ex.Message}");
+                return StatusCode(500, $"Error resending verification code: {ex.Message}");
             }
         }
 

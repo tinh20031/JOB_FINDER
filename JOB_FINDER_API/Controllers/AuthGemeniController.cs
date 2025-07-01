@@ -37,7 +37,7 @@ public class AuthGemeniController : ControllerBase
             Scopes = new[] { "https://www.googleapis.com/auth/cloud-platform" }
         });
 
-        var token = await flow.ExchangeCodeForTokenAsync("", code, geminiConfig.Value.RedirectUri ?? "https://job-finder-kjt2.onrender.com/auth/callback", CancellationToken.None);
+        var token = await flow.ExchangeCodeForTokenAsync("", code, geminiConfig.Value.RedirectUri ?? "http://localhost:5194/auth/callback", CancellationToken.None);
 
         Console.WriteLine($"Exchanged token - AccessToken: {token.AccessToken}");
 

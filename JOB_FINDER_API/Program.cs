@@ -233,7 +233,7 @@ builder.Services.AddAuthentication(options =>
         OnRemoteFailure = context =>
         {
             Console.WriteLine($"Google authentication failed: {context.Failure?.Message}");
-            context.Response.Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
+            context.Response.Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
             context.HandleResponse();
             return Task.CompletedTask;
         },

@@ -531,7 +531,7 @@ namespace JOB_FINDER_API.Controllers
                         .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
 
                     string companyName = companyProfile?.CompanyName ?? "Công ty";
-                    string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}"; // Thay bằng domain thật
+                    string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}"; // Thay bằng domain thật
 
                     string mailBody = $@"
                         <div style='font-family: Arial, sans-serif;'>

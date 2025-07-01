@@ -5,7 +5,7 @@ namespace JOB_FINDER_API.Models
 {
     public class CV
     {
-        public int Id { get; set; }
+        public int CVId { get; set; }
         public int UserId { get; set; }
         public string FileUrl { get; set; } = string.Empty;
         public string? FullCvJson { get; set; } = string.Empty;

@@ -63,7 +63,7 @@ namespace JOB_FINDER_API.Controllers
                 return Ok(new
                 {
                     CandidateProfileId = (int?)null,
-                    UserId = user.Id,
+                    UserId = user.UserId,
                     Gender = string.Empty,
                     Dob = (DateTime?)null,
                     JobTitle = string.Empty,

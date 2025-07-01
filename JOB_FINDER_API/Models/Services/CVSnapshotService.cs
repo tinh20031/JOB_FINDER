@@ -43,7 +43,7 @@ namespace JOB_FINDER_API.Models.Services
 
                         for (int i = 0; i < images.Count; i++)
                         {
-                            var destFileName = $"cv_snapshot_{cv.Id}_{DateTime.UtcNow.Ticks}_p{i + 1}.png";
+                            var destFileName = $"cv_snapshot_{cv.CVId}_{DateTime.UtcNow.Ticks}_p{i + 1}.png";
 
                             using (var image = (MagickImage)images[i].Clone())
                             {
@@ -78,7 +78,7 @@ namespace JOB_FINDER_API.Models.Services
                         };
                         images.Read(stream, settings);
 
-                        var destFileName = $"cv_snapshot_{cv.Id}_{DateTime.UtcNow.Ticks}{ext}";
+                        var destFileName = $"cv_snapshot_{cv.CVId}_{DateTime.UtcNow.Ticks}{ext}";
 
                         using (var image = (MagickImage)images[0].Clone())
                         {

@@ -50,7 +50,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, Application model)
         {
-            if (id != model.Id) return BadRequest();
+            if (id != model.ApplicationId) return BadRequest();
             _context.Entry(model).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return NoContent();
@@ -118,10 +118,10 @@ namespace JOB_FINDER_API.Controllers
                             <h2>New application for {job.Title}</h2>
                             <p>Applicant: {userId}</p>
                             <p>Similarity score: {matchingResult.TotalSimilarity:F2}</p>
-                            <p><a href='http://localhost:3000/application/{application.Id}'>View application</a></p>
+                            <p><a href='http://localhost:3000/application/{application.ApplicationId}'>View application</a></p>
                         </div>";
                         emailService.SendEmail(company.Email, "New Job Application", mailBody, true);
-                        _logger.LogInformation("Email sent to company {CompanyEmail} for Application {ApplicationId}", company.Email, application.Id);
+                        _logger.LogInformation("Email sent to company {CompanyEmail} for Application {ApplicationId}", company.Email, application.ApplicationId);
                     }
                 }
             }
@@ -130,7 +130,7 @@ namespace JOB_FINDER_API.Controllers
             {
                 Success = true,
                 Message = "Application submitted successfully",
-                ApplicationId = application.Id,
+                ApplicationId = application.ApplicationId,
                 SimilarityScore = matchingResult.Success ? matchingResult.TotalSimilarity : (float?)null,
                 CvSummary = cvSummary,
                 JobSummary = jobSummary,
@@ -258,7 +258,7 @@ namespace JOB_FINDER_API.Controllers
             {
                 UserId = userId,
                 JobId = request.JobId,
-                CvId = cv.Id,
+                CvId = cv.CVId,
                 CoverLetter = request.CoverLetter,
                 ResumeUrl = resumeUrl,
                 Status = ApplicationStatus.Pending,
@@ -296,7 +296,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(a => a.Job)
                 .Select(a => new
                 {
-                    ApplicationId = a.Id,
+                    ApplicationId = a.ApplicationId,
                     a.Status,
                     a.SubmittedAt,
                     a.CoverLetter,
@@ -366,7 +366,7 @@ namespace JOB_FINDER_API.Controllers
                     j.AddressDetail,
                     AppliedCvs = j.Applications.Select(a => new
                     {
-                        a.Id,
+                        a.ApplicationId,
                         a.UserId,
                         a.CvId,
                         a.Status,
@@ -376,7 +376,7 @@ namespace JOB_FINDER_API.Controllers
                         a.SimilarityScore,
                         CvInfo = new
                         {
-                            a.CV.Id,
+                            a.CV.CVId,
                             a.CV.FileUrl,
                             a.CV.CreatedAt,
                             a.CV.UpdatedAt
@@ -478,7 +478,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(a => a.Job)
                 .Select(a => new
                 {
-                    ApplicationId = a.Id,
+                    ApplicationId = a.ApplicationId,
                     a.UserId,
                     a.JobId,
                     a.Status,
@@ -488,7 +488,7 @@ namespace JOB_FINDER_API.Controllers
                     a.SimilarityScore,
                     User = new
                     {
-                        a.User.Id,
+                        a.User.UserId,
                         a.User.FullName
                     },
                     Job = new
@@ -607,7 +607,7 @@ namespace JOB_FINDER_API.Controllers
             // Map dữ liệu trả về FE
             var result = applications.Select(a => new
             {
-                ApplicationId = a.Id,
+                ApplicationId = a.ApplicationId,
                 UserId = a.UserId,
                 FullName = a.User?.FullName ?? "N/A",
                 Gender = a.User?.CandidateProfile?.Gender ?? "N/A",

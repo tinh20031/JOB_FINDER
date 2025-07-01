@@ -67,7 +67,7 @@ namespace JOB_FINDER_API.Controllers
       <p><b>Contact:</b> {request.Contact}</p>
       <p><b>Industry ID:</b> {request.IndustryId}</p>
       <div style='margin: 24px 0;'>
-        <a href='https://job-finder-fe.vercel.app/admin-dashboard/user-manager/{user.Id}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
+        <a href='http://localhost:3000/admin-dashboard/user-manager/{user.UserId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
       </div>
       <p style='font-size: 13px; color: #888;'>Please verify this request if the information is valid.</p>
     </div>
@@ -133,7 +133,7 @@ namespace JOB_FINDER_API.Controllers
         Your account has been <b>successfully verified as a Company</b> on the <b>Job Finder</b> system.
       </p>
       <div style='margin: 24px 0; text-align: center;'>
-        <a href='https://job-finder-fe.vercel.app/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Log in now</a>
+        <a href='http://localhost:3000/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Log in now</a>
       </div>
       <p style='font-size: 14px; color: #888; text-align: center;'>
         If you have any questions, please contact our support team.<br>

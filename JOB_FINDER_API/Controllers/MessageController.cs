@@ -72,8 +72,8 @@ namespace JOB_FINDER_API.Controllers
                 {
                     foreach (var msg in messages)
                     {
-                        var sender = await _context.Users.FirstOrDefaultAsync(u => u.Id == msg.Value.sender_id);
-                        var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == msg.Value.receiver_id);
+                        var sender = await _context.Users.FirstOrDefaultAsync(u => u.UserId == msg.Value.sender_id);
+                        var receiver = await _context.Users.FirstOrDefaultAsync(u => u.UserId == msg.Value.receiver_id);
                         result.Add(new
                         {
                             MessageId = msg.Key,
@@ -127,7 +127,7 @@ namespace JOB_FINDER_API.Controllers
                             if (msg.Value.sender_id == companyId || msg.Value.receiver_id == companyId)
                             {
                                 var otherId = msg.Value.sender_id == companyId ? msg.Value.receiver_id : msg.Value.sender_id;
-                                if (await _context.Users.AnyAsync(u => u.Id == otherId && u.Role.RoleName == "Candidate"))
+                                if (await _context.Users.AnyAsync(u => u.UserId == otherId && u.Role.RoleName == "Candidate"))
                                 {
                                     candidateIds.Add(otherId);
                                 }
@@ -153,7 +153,7 @@ namespace JOB_FINDER_API.Controllers
 
                     if (lastMessage.Value != null)
                     {
-                        var candidateUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == candidateId);
+                        var candidateUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == candidateId);
                         result.Add(new
                         {
                             CandidateId = candidateId,
@@ -203,7 +203,7 @@ namespace JOB_FINDER_API.Controllers
                             if (msg.Value.sender_id == candidateId || msg.Value.receiver_id == candidateId)
                             {
                                 var otherId = msg.Value.sender_id == candidateId ? msg.Value.receiver_id : msg.Value.sender_id;
-                                if (await _context.Users.AnyAsync(u => u.Id == otherId && u.Role.RoleName == "Company"))
+                                if (await _context.Users.AnyAsync(u => u.UserId == otherId && u.Role.RoleName == "Company"))
                                 {
                                     companyIds.Add(otherId);
                                 }
@@ -228,8 +228,8 @@ namespace JOB_FINDER_API.Controllers
 
                     if (lastMessage.Value != null)
                     {
-                        var sender = await _context.Users.FirstOrDefaultAsync(u => u.Id == lastMessage.Value.sender_id);
-                        var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == lastMessage.Value.receiver_id);
+                        var sender = await _context.Users.FirstOrDefaultAsync(u => u.UserId == lastMessage.Value.sender_id);
+                        var receiver = await _context.Users.FirstOrDefaultAsync(u => u.UserId == lastMessage.Value.receiver_id);
                         var companyProfile = await _context.CompanyProfile.FirstOrDefaultAsync(c => c.UserId == companyId);
                         result.Add(new
                         {
@@ -272,15 +272,24 @@ namespace JOB_FINDER_API.Controllers
 
                 var sender = await _context.Users
                     .Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Id == dto.SenderId);
+                    .FirstOrDefaultAsync(u => u.UserId == dto.SenderId);
                 var receiver = await _context.Users
                     .Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Id == dto.ReceiverId);
+                    .FirstOrDefaultAsync(u => u.UserId == dto.ReceiverId);
 
-                if (sender == null || receiver == null || string.IsNullOrEmpty(sender.FirebaseUid) || string.IsNullOrEmpty(receiver.FirebaseUid))
+                _logger.LogInformation("Sender: {SenderId}, FirebaseUid: {SenderFirebaseUid}", sender?.UserId, sender?.FirebaseUid);
+                _logger.LogInformation("Receiver: {ReceiverId}, FirebaseUid: {ReceiverFirebaseUid}", receiver?.UserId, receiver?.FirebaseUid);
+
+                if (sender == null || receiver == null)
                 {
-                    _logger.LogWarning("Invalid sender or receiver. SenderId: {SenderId}, ReceiverId: {ReceiverId}", dto.SenderId, dto.ReceiverId);
-                    return BadRequest("Invalid sender or receiver");
+                    _logger.LogWarning("Sender or receiver not found. SenderId: {SenderId}, ReceiverId: {ReceiverId}", dto.SenderId, dto.ReceiverId);
+                    return BadRequest("Sender or receiver not found in database");
+                }
+
+                if (string.IsNullOrEmpty(sender.FirebaseUid) || string.IsNullOrEmpty(receiver.FirebaseUid))
+                {
+                    _logger.LogWarning("FirebaseUid missing for SenderId: {SenderId} or ReceiverId: {ReceiverId}", dto.SenderId, dto.ReceiverId);
+                    return BadRequest("FirebaseUid is missing for sender or receiver. Please re-register.");
                 }
 
                 var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -333,7 +342,6 @@ namespace JOB_FINDER_API.Controllers
 
                 FirebaseResponse response = await _firebaseClient.PushAsync("messages/" + roomId, message);
 
-                // Thông báo tin nhắn qua SignalR
                 var messageData = new
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -371,7 +379,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var receiver = await _context.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == receiverId);
+                .FirstOrDefaultAsync(u => u.UserId == receiverId);
             return receiver != null && (receiver.Role.RoleName == "Company" || receiver.Role.RoleName == "Admin");
         }
     }

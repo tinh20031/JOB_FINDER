@@ -57,13 +57,13 @@ namespace JOB_FINDER_API.Controllers
 
             _context.CVs.Add(cv);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = cv.Id }, cv);
+            return CreatedAtAction(nameof(Get), new { id = cv.CVId }, cv);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, CV model)
         {
-            if (id != model.Id) return BadRequest();
+            if (id != model.CVId) return BadRequest();
             _context.Entry(model).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return NoContent();

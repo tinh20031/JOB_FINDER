@@ -63,24 +63,25 @@ namespace JOB_FINDER_API.Data
 
 
             modelBuilder.Entity<JobType>().HasData(
-                new JobType { Id = 1, JobTypeName = "Full-time", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new JobType { Id = 2, JobTypeName = "Part-time", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new JobType { Id = 3, JobTypeName = "Remote", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+                new JobType { JobTypeId = 1, JobTypeName = "Full-time", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new JobType { JobTypeId = 2, JobTypeName = "Part-time", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new JobType { JobTypeId = 3, JobTypeName = "Remote", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
             );
 
             modelBuilder.Entity<Level>().HasData(
-                new Level { Id = 1, LevelName = "Intern", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new Level { Id = 2, LevelName = "Junior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new Level { Id = 3, LevelName = "Senior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+                new Level { LevelId = 1, LevelName = "Intern", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new Level { LevelId = 2, LevelName = "Junior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new Level { LevelId = 3, LevelName = "Senior", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
             );
 
             modelBuilder.Entity<ExperienceLevel>().HasData(
-                new ExperienceLevel { id = 1, name = "Fresher" },
-                new ExperienceLevel { id = 2, name = "Junior" },
-                new ExperienceLevel { id = 3, name = "Middle" },
-                new ExperienceLevel { id = 4, name = "Senior" }
+                new ExperienceLevel { ExperienceLevelid = 1, name = "Fresher" },
+                new ExperienceLevel { ExperienceLevelid = 2, name = "Junior" },
+                new ExperienceLevel { ExperienceLevelid = 3, name = "Middle" },
+                new ExperienceLevel { ExperienceLevelid = 4, name = "Senior" }
 
             );
+
 
         
             modelBuilder.Entity<CompanyProfile>()
@@ -176,16 +177,22 @@ namespace JOB_FINDER_API.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<UserFavoriteCompany>()
+         .HasKey(ufc => new { ufc.UserId, ufc.CompanyId }); 
+
+            modelBuilder.Entity<UserFavoriteCompany>()
                 .HasOne(ufc => ufc.User)
-                .WithMany(u => u.FavoriteCompanies)
+                .WithMany(u => u.FavoriteCompanies) 
                 .HasForeignKey(ufc => ufc.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired();
 
             modelBuilder.Entity<UserFavoriteCompany>()
                 .HasOne(ufc => ufc.Company)
                 .WithMany()
                 .HasForeignKey(ufc => ufc.CompanyId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired();
+
 
             modelBuilder.Entity<CandidateProfile>()
                 .HasOne(cp => cp.User)

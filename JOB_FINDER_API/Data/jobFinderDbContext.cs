@@ -255,6 +255,12 @@ namespace JOB_FINDER_API.Data
                     v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
                     v => JsonSerializer.Deserialize<float[]>(v, new JsonSerializerOptions()) ?? new float[0]
                 );
+            modelBuilder.Entity<User>()
+    .HasOne(u => u.CandidateToCompanyRequest)
+    .WithOne(r => r.User)
+    .HasForeignKey<CandidateToCompanyRequest>(r => r.UserId);
+
+
 
         }
     }

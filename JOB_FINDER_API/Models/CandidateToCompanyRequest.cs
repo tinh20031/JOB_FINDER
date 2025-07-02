@@ -4,7 +4,7 @@ namespace JOB_FINDER_API.Models
 {
     public class CandidateToCompanyRequest
     {
-        public int Id { get; set; }
+        public int CandidateToCompanyRequestId { get; set; }
         public int UserId { get; set; }
         public string CompanyName { get; set; } = string.Empty;
         public string? CompanyProfileDescription { get; set; }
@@ -14,5 +14,7 @@ namespace JOB_FINDER_API.Models
         public string? Contact { get; set; }
         public int IndustryId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public Industry? Industry { get; set; }
     }
 }

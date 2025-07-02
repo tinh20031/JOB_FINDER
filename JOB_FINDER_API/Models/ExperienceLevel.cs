@@ -4,7 +4,7 @@ namespace JOB_FINDER_API.Models
 {
     public class ExperienceLevel
     {
-        public int id { get; set; }
+        public int ExperienceLevelid { get; set; }
         public string name { get; set; }
         [JsonIgnore]
         public ICollection<Job> Jobs { get; set; } = new List<Job>();

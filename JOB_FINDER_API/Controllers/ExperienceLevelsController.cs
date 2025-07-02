@@ -41,7 +41,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExperienceLevel(int id, ExperienceLevel experienceLevel)
         {
-            if (id != experienceLevel.id)
+            if (id != experienceLevel.ExperienceLevelid)
             {
                 return BadRequest();
             }
@@ -74,7 +74,7 @@ namespace JOB_FINDER_API.Controllers
             _context.ExperienceLevel.Add(experienceLevel);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetExperienceLevel), new { id = experienceLevel.id }, experienceLevel);
+            return CreatedAtAction(nameof(GetExperienceLevel), new { id = experienceLevel.ExperienceLevelid }, experienceLevel);
         }
 
         // DELETE: api/ExperienceLevels/5
@@ -95,7 +95,7 @@ namespace JOB_FINDER_API.Controllers
 
         private bool ExperienceLevelExists(int id)
         {
-            return _context.ExperienceLevel.Any(e => e.id == id);
+            return _context.ExperienceLevel.Any(e => e.ExperienceLevelid == id);
         }
     }
 }

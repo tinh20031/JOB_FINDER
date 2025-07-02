@@ -6,3 +6,4 @@ public class CreateCVRequest
     public string? FullCvJson { get; set; }
     public IFormFile File { get; set; }
 }
+

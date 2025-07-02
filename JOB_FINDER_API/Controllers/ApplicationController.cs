@@ -196,7 +196,8 @@ namespace JOB_FINDER_API.Controllers
                             CVData = cvData
                         }, jsonOptions),
                         CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        UpdatedAt = DateTime.UtcNow,
+                        Type = CvType.Apply
                     };
                     _context.CVs.Add(cv);
                     await _context.SaveChangesAsync();

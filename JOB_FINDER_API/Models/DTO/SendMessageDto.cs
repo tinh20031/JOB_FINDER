@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace JOB_FINDER_API.Models.DTO
 {
@@ -14,8 +15,11 @@ namespace JOB_FINDER_API.Models.DTO
 
         public int? RelatedJobId { get; set; }
 
-        [Required(ErrorMessage = "Message text is required")]
         [MaxLength(1000, ErrorMessage = "Message text cannot exceed 1000 characters")]
-        public string MessageText { get; set; }
+        public string MessageText { get; set; } = string.Empty;
+
+        public IFormFile? File { get; set; }
+
+        public bool IsSticker { get; set; }
     }
 }

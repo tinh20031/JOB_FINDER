@@ -4,7 +4,7 @@ namespace JOB_FINDER_API.Models
 {
     public class Level
     {
-        public int Id { get; set; }
+        public int LevelId { get; set; }
         public string LevelName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

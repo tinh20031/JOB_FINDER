@@ -12,7 +12,7 @@ namespace JOB_FINDER_API.Models
 
     public class Application
     {
-        public int Id { get; set; }
+        public int ApplicationId { get; set; }
         public int UserId { get; set; }
         public int JobId { get; set; }
         public string? ResumeUrl { get; set; }

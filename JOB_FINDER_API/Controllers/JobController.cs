@@ -49,7 +49,7 @@ namespace JOB_FINDER_API.Controllers
                 job.CompanyId,
                 Company = job.Company == null ? null : new
                 {
-                    job.Company.Id,
+                    job.Company.UserId,
                     job.Company.FullName,
                     job.Company.Email,
                     job.Company.CompanyProfile?.CompanyName,
@@ -66,19 +66,19 @@ namespace JOB_FINDER_API.Controllers
                 job.LevelId,
                 Level = job.Level == null ? null : new
                 {
-                    job.Level.Id,
+                    job.Level.LevelId,
                     job.Level.LevelName
                 },
                 job.JobTypeId,
                 JobType = job.JobType == null ? null : new
                 {
-                    job.JobType.Id,
+                    job.JobType.JobTypeId,
                     job.JobType.JobTypeName
                 },
                 job.ExperienceLevelId,
                 ExperienceLevel = job.ExperienceLevel == null ? null : new
                 {
-                    job.ExperienceLevel.id,
+                    job.ExperienceLevel.ExperienceLevelid,
                     job.ExperienceLevel.name
                 },
                 job.TimeStart,
@@ -157,7 +157,7 @@ namespace JOB_FINDER_API.Controllers
                 job.CompanyId,
                 Company = job.Company == null ? null : new
                 {
-                    job.Company.Id,
+                    job.Company.UserId,
                     job.Company.FullName,
                     job.Company.Email,
                     job.Company.CompanyProfile?.CompanyName,
@@ -174,19 +174,19 @@ namespace JOB_FINDER_API.Controllers
                 job.LevelId,
                 Level = job.Level == null ? null : new
                 {
-                    job.Level.Id,
+                    job.Level.LevelId,
                     job.Level.LevelName
                 },
                 job.JobTypeId,
                 JobType = job.JobType == null ? null : new
                 {
-                    job.JobType.Id,
+                    job.JobType.JobTypeId,
                     job.JobType.JobTypeName
                 },
                 job.ExperienceLevelId,
                 ExperienceLevel = job.ExperienceLevel == null ? null : new
                 {
-                    job.ExperienceLevel.id,
+                    job.ExperienceLevel.ExperienceLevelid,
                     job.ExperienceLevel.name
                 },
                 job.TimeStart,
@@ -531,7 +531,7 @@ namespace JOB_FINDER_API.Controllers
                         .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
 
                     string companyName = companyProfile?.CompanyName ?? "Công ty";
-                    string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}"; // Thay bằng domain thật
+                    string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}"; // Thay bằng domain thật
 
                     string mailBody = $@"
                         <div style='font-family: Arial, sans-serif;'>

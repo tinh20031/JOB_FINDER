@@ -27,13 +27,13 @@ namespace JOB_FINDER_API.Controllers
         {
             _context.Contacts.Add(model);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+            return CreatedAtAction(nameof(Get), new { id = model.ContactId }, model);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, Contact model)
         {
-            if (id != model.Id) return BadRequest();
+            if (id != model.ContactId) return BadRequest();
             _context.Entry(model).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return NoContent();

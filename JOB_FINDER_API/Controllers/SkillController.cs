@@ -18,6 +18,20 @@ namespace JOB_FINDER_API.Controllers
             var skills = await _context.Skills.Where(s => s.CandidateProfileId == candidateProfileId).ToListAsync();
             return Ok(skills);
         }
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var candidateProfile = await _context.CandidateProfiles
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null)
+                return NotFound("Không tìm thấy CandidateProfile cho userId này.");
+
+            var skills = await _context.Skills
+                .Where(s => s.CandidateProfileId == candidateProfile.CandidateProfileId)
+                .ToListAsync();
+
+            return Ok(skills);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Skill model)

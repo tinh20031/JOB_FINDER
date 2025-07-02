@@ -4,7 +4,7 @@ namespace JOB_FINDER_API.Models
 {
     public class Message
     {
-        public int Id { get; set; }
+        public int MessageId { get; set; }
         public string MessageText { get; set; } = null;
         public string? FileUrl { get; set; }
         public string? FileType { get; set; } 

@@ -6,5 +6,8 @@
         public string? CoverLetter { get; set; }
 
         public IFormFile? CvFile { get; set; }
+
+        public int? CvId { get; set; }
+
     }
 }

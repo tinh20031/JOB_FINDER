@@ -78,6 +78,9 @@ builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
+// Add this line to your service registrations
+builder.Services.AddSingleton<ApplyPercentageCalculator>();
+builder.Services.AddMemoryCache();
 
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));

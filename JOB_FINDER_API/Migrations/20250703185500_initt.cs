@@ -8,32 +8,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JOB_FINDER_API.Migrations
 {
     /// <inheritdoc />
-    public partial class inittt : Migration
+    public partial class initt : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "CandidateToCompanyRequests",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CompanyProfileDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TeamSize = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IndustryId = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CandidateToCompanyRequests", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Embeddings",
                 columns: table => new
@@ -55,13 +34,13 @@ namespace JOB_FINDER_API.Migrations
                 name: "ExperienceLevel",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
+                    ExperienceLevelid = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ExperienceLevel", x => x.id);
+                    table.PrimaryKey("PK_ExperienceLevel", x => x.ExperienceLevelid);
                 });
 
             migrationBuilder.CreateTable(
@@ -83,7 +62,7 @@ namespace JOB_FINDER_API.Migrations
                 name: "JobTypes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    JobTypeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     JobTypeName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -91,14 +70,14 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobTypes", x => x.Id);
+                    table.PrimaryKey("PK_JobTypes", x => x.JobTypeId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Levels",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    LevelId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     LevelName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -106,7 +85,7 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Levels", x => x.Id);
+                    table.PrimaryKey("PK_Levels", x => x.LevelId);
                 });
 
             migrationBuilder.CreateTable(
@@ -125,10 +104,37 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CandidateToCompanyRequests",
+                columns: table => new
+                {
+                    CandidateToCompanyRequestId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CompanyProfileDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TeamSize = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IndustryId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CandidateToCompanyRequests", x => x.CandidateToCompanyRequestId);
+                    table.ForeignKey(
+                        name: "FK_CandidateToCompanyRequests_Industries_IndustryId",
+                        column: x => x.IndustryId,
+                        principalTable: "Industries",
+                        principalColumn: "IndustryId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -146,7 +152,7 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.UserId);
                     table.ForeignKey(
                         name: "FK_Users_Roles_RoleId",
                         column: x => x.RoleId,
@@ -176,7 +182,7 @@ namespace JOB_FINDER_API.Migrations
                         name: "FK_CandidateProfiles_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -185,6 +191,7 @@ namespace JOB_FINDER_API.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
+                    CompanyProfileId = table.Column<int>(type: "int", nullable: false),
                     CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CompanyProfileDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -210,14 +217,14 @@ namespace JOB_FINDER_API.Migrations
                         name: "FK_CompanyProfile_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Contacts",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ContactId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
@@ -228,12 +235,12 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Contacts", x => x.Id);
+                    table.PrimaryKey("PK_Contacts", x => x.ContactId);
                     table.ForeignKey(
                         name: "FK_Contacts_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -241,7 +248,7 @@ namespace JOB_FINDER_API.Migrations
                 name: "CVs",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    CVId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -251,12 +258,12 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CVs", x => x.Id);
+                    table.PrimaryKey("PK_CVs", x => x.CVId);
                     table.ForeignKey(
                         name: "FK_CVs_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -264,7 +271,7 @@ namespace JOB_FINDER_API.Migrations
                 name: "Experiences",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    ExperienceId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ExperienceName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
@@ -273,12 +280,12 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Experiences", x => x.Id);
+                    table.PrimaryKey("PK_Experiences", x => x.ExperienceId);
                     table.ForeignKey(
                         name: "FK_Experiences_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -322,7 +329,7 @@ namespace JOB_FINDER_API.Migrations
                         name: "FK_Jobs_ExperienceLevel_ExperienceLevelId",
                         column: x => x.ExperienceLevelId,
                         principalTable: "ExperienceLevel",
-                        principalColumn: "id");
+                        principalColumn: "ExperienceLevelid");
                     table.ForeignKey(
                         name: "FK_Jobs_Industries_IndustryId",
                         column: x => x.IndustryId,
@@ -333,26 +340,26 @@ namespace JOB_FINDER_API.Migrations
                         name: "FK_Jobs_JobTypes_JobTypeId",
                         column: x => x.JobTypeId,
                         principalTable: "JobTypes",
-                        principalColumn: "Id",
+                        principalColumn: "JobTypeId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Jobs_Levels_LevelId",
                         column: x => x.LevelId,
                         principalTable: "Levels",
-                        principalColumn: "Id",
+                        principalColumn: "LevelId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Jobs_Users_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Message",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    MessageId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     MessageText = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -366,42 +373,40 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Message", x => x.Id);
+                    table.PrimaryKey("PK_Message", x => x.MessageId);
                     table.ForeignKey(
                         name: "FK_Message_Users_ReceiverId",
                         column: x => x.ReceiverId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
                     table.ForeignKey(
                         name: "FK_Message_Users_SenderId",
                         column: x => x.SenderId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
                 name: "UserFavoriteCompanies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserFavoriteCompanies", x => x.Id);
+                    table.PrimaryKey("PK_UserFavoriteCompanies", x => new { x.UserId, x.CompanyId });
                     table.ForeignKey(
                         name: "FK_UserFavoriteCompanies_Users_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
                     table.ForeignKey(
                         name: "FK_UserFavoriteCompanies_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -627,7 +632,7 @@ namespace JOB_FINDER_API.Migrations
                 name: "Applications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    ApplicationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     JobId = table.Column<int>(type: "int", nullable: false),
@@ -642,12 +647,12 @@ namespace JOB_FINDER_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Applications", x => x.Id);
+                    table.PrimaryKey("PK_Applications", x => x.ApplicationId);
                     table.ForeignKey(
                         name: "FK_Applications_CVs_UniqueCvId",
                         column: x => x.CvId,
                         principalTable: "CVs",
-                        principalColumn: "Id");
+                        principalColumn: "CVId");
                     table.ForeignKey(
                         name: "FK_Applications_Jobs_JobId",
                         column: x => x.JobId,
@@ -657,7 +662,35 @@ namespace JOB_FINDER_API.Migrations
                         name: "FK_Applications_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "JobViews",
+                columns: table => new
+                {
+                    JobViewId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    JobId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ViewedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobViews", x => x.JobViewId);
+                    table.ForeignKey(
+                        name: "FK_JobViews_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "JobId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_JobViews_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -681,7 +714,7 @@ namespace JOB_FINDER_API.Migrations
                         name: "FK_UserFavoriteJobs_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -708,7 +741,7 @@ namespace JOB_FINDER_API.Migrations
 
             migrationBuilder.InsertData(
                 table: "ExperienceLevel",
-                columns: new[] { "id", "name" },
+                columns: new[] { "ExperienceLevelid", "name" },
                 values: new object[,]
                 {
                     { 1, "Fresher" },
@@ -722,33 +755,33 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "IndustryId", "CreatedAt", "IndustryName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 3, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6651), "Software Development", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6652) },
-                    { 4, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6654), "Cybersecurity", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6655) },
-                    { 5, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6656), "Data Science", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6656) },
-                    { 6, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6658), "Cloud Computing", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6658) },
-                    { 7, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6659), "UI/UX Design", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6659) },
-                    { 8, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6661), "Artificial Intelligence", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6661) },
-                    { 9, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6662), "DevOps", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6663) }
+                    { 3, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4441), "Software Development", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4442) },
+                    { 4, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4444), "Cybersecurity", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4444) },
+                    { 5, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4446), "Data Science", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4446) },
+                    { 6, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4448), "Cloud Computing", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4448) },
+                    { 7, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4449), "UI/UX Design", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4450) },
+                    { 8, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4451), "Artificial Intelligence", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4451) },
+                    { 9, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4453), "DevOps", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4453) }
                 });
 
             migrationBuilder.InsertData(
                 table: "JobTypes",
-                columns: new[] { "Id", "CreatedAt", "JobTypeName", "UpdatedAt" },
+                columns: new[] { "JobTypeId", "CreatedAt", "JobTypeName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6707), "Full-time", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6707) },
-                    { 2, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6710), "Part-time", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6710) },
-                    { 3, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6712), "Remote", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6713) }
+                    { 1, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4498), "Full-time", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4499) },
+                    { 2, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4501), "Part-time", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4501) },
+                    { 3, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4503), "Remote", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4503) }
                 });
 
             migrationBuilder.InsertData(
                 table: "Levels",
-                columns: new[] { "Id", "CreatedAt", "LevelName", "UpdatedAt" },
+                columns: new[] { "LevelId", "CreatedAt", "LevelName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6747), "Intern", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6747) },
-                    { 2, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6749), "Junior", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6749) },
-                    { 3, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6751), "Senior", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6751) }
+                    { 1, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4535), "Intern", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4536) },
+                    { 2, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4538), "Junior", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4539) },
+                    { 3, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4540), "Senior", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4541) }
                 });
 
             migrationBuilder.InsertData(
@@ -756,9 +789,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "RoleId", "CreatedAt", "RoleName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6485), "Candidate", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6488) },
-                    { 2, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6496), "Company", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6496) },
-                    { 3, new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6498), "Admin", new DateTime(2025, 7, 1, 4, 14, 32, 303, DateTimeKind.Utc).AddTicks(6498) }
+                    { 1, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4284), "Candidate", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4288) },
+                    { 2, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4293), "Company", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4293) },
+                    { 3, new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4294), "Admin", new DateTime(2025, 7, 3, 18, 54, 59, 600, DateTimeKind.Utc).AddTicks(4295) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -791,6 +824,11 @@ namespace JOB_FINDER_API.Migrations
                 table: "CandidateProfiles",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateToCompanyRequests_IndustryId",
+                table: "CandidateToCompanyRequests",
+                column: "IndustryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Certificates_CandidateProfileId",
@@ -868,6 +906,16 @@ namespace JOB_FINDER_API.Migrations
                 column: "SkillId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_JobViews_JobId",
+                table: "JobViews",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobViews_UserId",
+                table: "JobViews",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Message_ReceiverId",
                 table: "Message",
                 column: "ReceiverId");
@@ -891,11 +939,6 @@ namespace JOB_FINDER_API.Migrations
                 name: "IX_UserFavoriteCompanies_CompanyId",
                 table: "UserFavoriteCompanies",
                 column: "CompanyId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserFavoriteCompanies_UserId",
-                table: "UserFavoriteCompanies",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFavoriteJobs_JobId",
@@ -961,6 +1004,9 @@ namespace JOB_FINDER_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "JobSkills");
+
+            migrationBuilder.DropTable(
+                name: "JobViews");
 
             migrationBuilder.DropTable(
                 name: "Message");

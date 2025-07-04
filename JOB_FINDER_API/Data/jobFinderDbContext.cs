@@ -37,6 +37,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<Award> Awards { get; set; }
         public DbSet<ForeignLanguage> ForeignLanguages { get; set; }
         public DbSet<AboutMe> AboutMes { get; set; }
+        public DbSet<JobView> JobViews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

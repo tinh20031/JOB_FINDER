@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -23,13 +24,22 @@ namespace JOB_FINDER_API.Controllers
     {
         private readonly JobFinderDbContext _dbContext;
         private readonly IConfiguration _configuration;
-        private readonly EmailService _emailService = new EmailService(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
+        private readonly EmailService _emailService;
+        private readonly IUserService _userService;
+        private readonly IMemoryCache _cache;
 
-        public AuthController(JobFinderDbContext dbContext, IConfiguration configuration, EmailService emailService)
+        public AuthController(
+            JobFinderDbContext dbContext,
+            IConfiguration configuration,
+            EmailService emailService,
+            IUserService userService,
+            IMemoryCache cache)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
+            _userService = userService;
+            _cache = cache;
         }
 
         // Helper method to validate email format
@@ -43,7 +53,7 @@ namespace JOB_FINDER_API.Controllers
             return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
         }
 
-        //  bản gốc dùng dc 
+        // bản gốc dùng dc 
         //[HttpPost("register")]
         //public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         //{
@@ -52,19 +62,19 @@ namespace JOB_FINDER_API.Controllers
         //        // Validate email format
         //        if (!IsValidEmail(request.Email))
         //        {
-        //            return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
+        //            return BadRequest("Invalid email format. Please provide a valid email address.");
         //        }
 
         //        // Check if email already exists
         //        if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
         //        {
-        //            return BadRequest("Email này đã được sử dụng.");
+        //            return BadRequest("This email has already been used.");
         //        }
 
         //        var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
         //        if (userRole == null)
         //        {
-        //            return StatusCode(500, "Không tìm thấy vai trò mặc định.");
+        //            return StatusCode(500, "Default role not found.");
         //        }
 
         //        // Generate verification code
@@ -104,19 +114,19 @@ namespace JOB_FINDER_API.Controllers
         //        catch (Exception ex)
         //        {
         //            // Log email sending error but continue registration process
-        //            Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
+        //            Console.WriteLine($"Unable to send verification email: {ex.Message}");
         //        }
 
         //        return Ok(new
         //        {
-        //            message = "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.",
+        //            message = "Registration successful. Please check your email to verify your account.",
         //            userId = user.UserId,
         //            email = user.Email
         //        });
         //    }
         //    catch (Exception ex)
         //    {
-        //        return StatusCode(500, $"Lỗi đăng ký: {ex.Message}");
+        //        return StatusCode(500, $"Registration error: {ex.Message}");
         //    }
         //}
         [HttpPost("register")]
@@ -137,7 +147,7 @@ namespace JOB_FINDER_API.Controllers
                 var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (userRole == null)
                 {
-                    return StatusCode(500, "Không tìm thấy vai trò mặc định.");
+                    return StatusCode(500, "Default role not found.");
                 }
 
                 string verificationCode = GenerateVerificationCode();
@@ -158,7 +168,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 catch (FirebaseAuthException ex)
                 {
-                    return StatusCode(500, $"Không thể tạo người dùng trong Firebase: {ex.Message}");
+                    return StatusCode(500, $"Failed to create user in Firebase: {ex.Message}");
                 }
 
                 var user = new User
@@ -207,7 +217,7 @@ namespace JOB_FINDER_API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi đăng ký: {ex.Message}");
+                return StatusCode(500, $"Registration error: {ex.Message}");
             }
         }
 
@@ -219,7 +229,7 @@ namespace JOB_FINDER_API.Controllers
         //        // Validate email format
         //        if (!IsValidEmail(request.Email))
         //        {
-        //            return BadRequest("Định dạng email không hợp lệ. Vui lòng cung cấp địa chỉ email chính xác.");
+        //            return BadRequest("Invalid email format. Please provide a valid email address.");
         //        }
 
         //        var user = await _dbContext.Users
@@ -229,12 +239,12 @@ namespace JOB_FINDER_API.Controllers
 
         //        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
         //        {
-        //            return Unauthorized("Thông tin đăng nhập không hợp lệ.");
+        //            return Unauthorized("Invalid login credentials.");
         //        }
 
         //        if (!user.IsActive)
         //        {
-        //            return Forbid("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+        //            return Forbid("Your account has been locked. Please contact support.");
         //        }
 
         //        // Email verification check
@@ -255,13 +265,13 @@ namespace JOB_FINDER_API.Controllers
         //                catch (Exception ex)
         //                {
         //                    // Log but continue
-        //                    Console.WriteLine($"Không thể gửi email xác thực: {ex.Message}");
+        //                    Console.WriteLine($"Unable to send verification email: {ex.Message}");
         //                }
         //            }
 
         //            return BadRequest(new
         //            {
-        //                message = "Email chưa được xác thực. Vui lòng kiểm tra hộp thư để xác thực tài khoản trước khi đăng nhập.",
+        //                message = "Email has not been verified. Please check your inbox to verify your account before logging in.",
         //                requiresVerification = true,
         //                userId = user.Id,
         //                email = user.Email
@@ -270,7 +280,7 @@ namespace JOB_FINDER_API.Controllers
 
         //        if (user.Role == null)
         //        {
-        //            return StatusCode(500, "Không tìm thấy vai trò người dùng.");
+        //            return StatusCode(500, "User role not found.");
         //        }
 
         //        var token = GenerateJwtToken(user);
@@ -304,7 +314,7 @@ namespace JOB_FINDER_API.Controllers
         //    }
         //    catch (Exception ex)
         //    {
-        //        return StatusCode(500, $"Lỗi đăng nhập: {ex.Message}");
+        //        return StatusCode(500, $"Login error: {ex.Message}");
         //    }
         //}
 
@@ -402,7 +412,7 @@ namespace JOB_FINDER_API.Controllers
         //    }
         //    catch (Exception ex)
         //    {
-        //        return StatusCode(500, $" Login error: {ex.Message}");
+        //        return StatusCode(500, $"Login error: {ex.Message}");
         //    }
         //}
 
@@ -494,7 +504,7 @@ namespace JOB_FINDER_API.Controllers
                         RoleName = user.Role.RoleName,
                         CompanyName = companyName,
                         UrlCompanyLogo = urlCompanyLogo,
-                        FirebaseUid = user.FirebaseUid 
+                        FirebaseUid = user.FirebaseUid
                     }
                 });
             }
@@ -510,6 +520,7 @@ namespace JOB_FINDER_API.Controllers
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
         }
+
         // Verify email endpoint
         [HttpPost("verify-email")]
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
@@ -553,6 +564,7 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, $"Email verification error: {ex.Message}");
             }
         }
+
         // Resend verification email
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
@@ -604,6 +616,7 @@ namespace JOB_FINDER_API.Controllers
             // Optionally, you can implement token blacklisting here if needed.
             return Ok(new { message = "Logged out successfully. Please remove the token on the client." });
         }
+
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -631,6 +644,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("Password changed successfully.");
         }
+
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -639,10 +653,10 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                     //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                     new Claim("nameid", user.UserId.ToString()),
-                     new Claim(ClaimTypes.Role, user.Role.RoleName)
-        }),
+                 //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                 new Claim("nameid", user.UserId.ToString()),
+                 new Claim(ClaimTypes.Role, user.Role.RoleName)
+            }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
                 Audience = _configuration["Jwt:Audience"],
@@ -651,6 +665,7 @@ namespace JOB_FINDER_API.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
         // Update the login-google endpoint to use consistent casing
         [HttpGet("login-google")]
         public IActionResult LoginWithGoogle()
@@ -663,9 +678,9 @@ namespace JOB_FINDER_API.Controllers
             {
                 RedirectUri = callbackUrl,
                 Items =
-        {
-            { ".xsrf", Guid.NewGuid().ToString() }
-        }
+            {
+                { ".xsrf", Guid.NewGuid().ToString() }
+            }
             };
 
             return Challenge(properties, "Google");
@@ -742,7 +757,6 @@ namespace JOB_FINDER_API.Controllers
         //    // Redirect to frontend with token and role
         //    return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
         //}
-
 
         //final local
         [HttpGet("google-response")]
@@ -976,6 +990,83 @@ namespace JOB_FINDER_API.Controllers
         //    return Redirect($"https://job-finder-fe.vercel.app/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
         //}
 
+        [HttpPost("forgot-password/request")]
+        public async Task<IActionResult> RequestForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+        {
+            var user = await _userService.GetByEmailAsync(dto.Email);
+            if (user == null)
+                return BadRequest("Email does not exist.");
+
+            var code = GenerateVerificationCode();
+            _cache.Set($"fp_{dto.Email}", code, TimeSpan.FromMinutes(10));
+            _emailService.SendEmail(dto.Email, "Password reset verification code", $"Your verification code i   s: {code}", false);
+            return Ok("The verification code has been sent to your email.");
+        }
+
+        [HttpPost("forgot-password/verify")]
+        public IActionResult VerifyForgotPassword([FromBody] ForgotPasswordVerifyDto dto)
+        {
+            if (_cache.TryGetValue($"fp_{dto.Email}", out string code) && code == dto.Code)
+                return Ok("The verification code is valid.");
+            return BadRequest("The verification code is incorrect or has expired.");
+        }
+
+        [HttpPost("forgot-password/reset")]
+        public async Task<IActionResult> ResetForgotPassword([FromBody] ForgotPasswordResetDto dto)
+        {
+            if (_cache.TryGetValue($"fp_{dto.Email}", out string code) && code == dto.Code)
+            {
+                var user = await _userService.GetByEmailAsync(dto.Email);
+                if (user == null)
+                    return BadRequest("Email does not exist.");
+
+                await _userService.UpdatePasswordAsync(user, dto.NewPassword);
+                _cache.Remove($"fp_{dto.Email}");
+                return Ok("Password reset successful.");
+            }
+            return BadRequest("The verification code is incorrect or has expired.");
+        }
+
+        [HttpPost("forgot-password/resend-verification")]
+        public async Task<IActionResult> ResendForgotPasswordVerification([FromBody] ForgotPasswordResendVerificationDto dto)
+        {
+            if (!IsValidEmail(dto.Email))
+                return BadRequest("Invalid email address.");
+
+            var user = await _userService.GetByEmailAsync(dto.Email);
+            if (user == null)
+                return BadRequest("Email does not exist.");
+
+            string throttleKey = $"fp_throttle_{dto.Email}";
+            if (_cache.TryGetValue(throttleKey, out _))
+            {
+                return BadRequest("You have recently requested a verification code. Please wait 60 seconds before requesting again.");
+            }
+
+            var code = GenerateVerificationCode();
+            _cache.Set($"fp_{dto.Email}", code, TimeSpan.FromMinutes(10));
+
+            _cache.Set(throttleKey, true, TimeSpan.FromSeconds(60));
+
+            try
+            {
+                _emailService.SendEmail(
+                    dto.Email,
+                    "Password Reset Verification Code (Resend)",
+                    $"Your new verification code is: {code}",
+                    false
+                );
+                return Ok("The verification code has been resent to your email.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to send email: {ex.Message}");
+            }
+        }
     }
 }
+
+
+
+
 

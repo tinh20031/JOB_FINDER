@@ -531,7 +531,7 @@ namespace JOB_FINDER_API.Controllers
                         .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
 
                     string companyName = companyProfile?.CompanyName ?? "Công ty";
-                    string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}"; // Thay bằng domain thật
+                    string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}"; // Thay bằng domain thật
 
                     string mailBody = $@"
                         <div style='font-family: Arial, sans-serif;'>
@@ -641,6 +641,120 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(isLock ? "Job đã bị admin khóa." : "Job đã được admin mở khóa.");
+        }
+
+        // Add this method to your JobController
+        [AllowAnonymous]
+        [HttpGet("{id}/view")]
+        public async Task<IActionResult> ViewJob(int id)
+        {
+            var job = await _context.Jobs
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .Include(j => j.ExperienceLevel)
+                .FirstOrDefaultAsync(j => j.JobId == id);
+
+            if (job == null)
+                return NotFound();
+
+            // Get current user ID if authenticated
+            int? userId = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdClaim, out int parsedUserId))
+                {
+                    userId = parsedUserId;
+                }
+            }
+
+            // Get IP address
+            string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            // Get User Agent
+            string? userAgent = Request.Headers["User-Agent"].ToString();
+
+            // Create new job view record
+            var jobView = new JobView
+            {
+                JobId = id,
+                UserId = userId,
+                IpAddress = ipAddress,
+                UserAgent = userAgent,
+                ViewedAt = DateTime.UtcNow
+            };
+
+            _context.JobViews.Add(jobView);
+            await _context.SaveChangesAsync();
+
+            // Return the job data same as GetJob method
+            return Ok(new
+            {
+                job.JobId,
+                job.Title,
+                job.Description,
+                job.YourSkill,
+                job.YourExperience,
+                job.Education,
+                job.CompanyId,
+                Company = job.Company == null ? null : new
+                {
+                    job.Company.UserId,
+                    job.Company.FullName,
+                    job.Company.Email,
+                    job.Company.CompanyProfile?.CompanyName,
+                    job.Company.CompanyProfile?.Location,
+                    job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                job.IndustryId,
+                Industry = job.Industry == null ? null : new
+                {
+                    job.Industry.IndustryId,
+                    job.Industry.IndustryName
+                },
+                job.ExpiryDate,
+                job.LevelId,
+                Level = job.Level == null ? null : new
+                {
+                    job.Level.LevelId,
+                    job.Level.LevelName
+                },
+                job.JobTypeId,
+                JobType = job.JobType == null ? null : new
+                {
+                    job.JobType.JobTypeId,
+                    job.JobType.JobTypeName
+                },
+                job.ExperienceLevelId,
+                ExperienceLevel = job.ExperienceLevel == null ? null : new
+                {
+                    job.ExperienceLevel.ExperienceLevelid,
+                    job.ExperienceLevel.name
+                },
+                job.TimeStart,
+                job.TimeEnd,
+                job.Status,
+                job.ProvinceName,
+                job.AddressDetail,
+                job.IsSalaryNegotiable,
+                job.MinSalary,
+                job.MaxSalary,
+                job.CreatedAt,
+                job.UpdatedAt,
+                Skills = job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList(),
+                job.DescriptionWeight,
+                job.SkillsWeight,
+                job.ExperienceWeight,
+                job.EducationWeight,
+                ViewTracked = true
+            });
         }
 
     }

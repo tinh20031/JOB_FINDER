@@ -31,13 +31,17 @@ namespace JOB_FINDER_API.Services
         public async Task<string?> UploadCvAsync(IFormFile file)
         {
             if (file.Length <= 0) return null;
+            string safeFileName = Path.GetFileNameWithoutExtension(file.FileName)
+                                   .Replace(" ", "_")
+                                   .Replace(".", "_");
 
             await using var stream = file.OpenReadStream();
             var uploadParams = new RawUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
                 Folder = "cv_user",
-                AccessMode = "public"
+                AccessMode = "public",
+                PublicId = safeFileName
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);

@@ -71,7 +71,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
-builder.Services.AddMemoryCache();
 
 // Custom services
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
@@ -80,8 +79,13 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
 builder.Services.AddScoped<IUserService, UserService>();
+// Add this line to your service registrations
+builder.Services.AddSingleton<ApplyPercentageCalculator>();
+builder.Services.AddMemoryCache();
+
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
+builder.Services.AddScoped<Client>(sp => new Client("https://your-supabase-url/supabase", "your-supabase-key"));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 var cloudinarySettings = builder.Configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
@@ -212,12 +216,12 @@ builder.Services.AddAuthentication(options =>
 {
     options.Cookie.Name = ".AspNetCore.External";
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax; 
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+    options.Cookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.IsEssential = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
 
-  
+
     options.Events = new CookieAuthenticationEvents
     {
         OnRedirectToLogin = context =>
@@ -262,7 +266,7 @@ builder.Services.AddAuthentication(options =>
         OnRemoteFailure = context =>
         {
             Console.WriteLine($"Google authentication failed: {context.Failure?.Message}");
-            context.Response.Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
+            context.Response.Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
             context.HandleResponse();
             return Task.CompletedTask;
         },
@@ -320,3 +324,5 @@ app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
+
+

@@ -61,7 +61,11 @@ namespace JOB_FINDER_API.Hubs
 
             await base.OnConnectedAsync();
         }
-
+        public async Task JoinRoom(string roomId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
+            _logger.LogInformation("Connection {ConnectionId} joined room {RoomId}", Context.ConnectionId, roomId);
+        }
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             try

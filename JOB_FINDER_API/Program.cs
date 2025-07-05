@@ -71,6 +71,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
+builder.Services.AddMemoryCache();
 
 // Custom services
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
@@ -78,7 +79,7 @@ builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
-
+builder.Services.AddScoped<IUserService, UserService>();
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));

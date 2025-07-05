@@ -81,7 +81,7 @@ namespace JOB_FINDER_API.Controllers
                 .FirstOrDefaultAsync(a => a.CandidateProfileId == candidateProfile.CandidateProfileId);
 
             if (aboutMe == null)
-                return NotFound("Không tìm thấy AboutMe cho userId này.");
+                return NotFound("Không tìm thấy AboutMe cho userId này.");  
 
             return Ok(aboutMe);
         }

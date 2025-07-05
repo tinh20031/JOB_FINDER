@@ -39,7 +39,7 @@ namespace JOB_FINDER_API.Controllers
 
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
-
+          
             model.CandidateProfileId = candidateProfile.CandidateProfileId;
             _context.Certificates.Add(model);
             await _context.SaveChangesAsync();

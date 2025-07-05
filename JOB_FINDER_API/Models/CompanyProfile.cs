@@ -5,6 +5,7 @@ namespace JOB_FINDER_API.Models
 {
     public class CompanyProfile
     {
+        public int CompanyProfileId { get; set; }
         public int UserId { get; set; }
         public string CompanyName { get; set; } = string.Empty;
         public string? CompanyProfileDescription { get; set; }

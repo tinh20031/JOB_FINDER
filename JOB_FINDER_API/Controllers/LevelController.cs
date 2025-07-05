@@ -27,13 +27,13 @@ namespace JOB_FINDER_API.Controllers
         {
             _context.Levels.Add(model);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+            return CreatedAtAction(nameof(Get), new { id = model.LevelId }, model);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, Level model)
         {
-            if (id != model.Id) return BadRequest();
+            if (id != model.LevelId) return BadRequest();
             _context.Entry(model).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return NoContent();

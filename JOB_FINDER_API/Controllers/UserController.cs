@@ -24,7 +24,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user == null)
             {
@@ -33,7 +33,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                Id = user.Id,
+                Id = user.UserId,
                 user.FullName,
                 user.Email,
                 user.Phone,
@@ -52,7 +52,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .Select(u => new
                 {
-                    Id = u.Id,
+                    Id = u.UserId,
 
                     u.FullName,
                     u.Email,
@@ -72,14 +72,14 @@ namespace JOB_FINDER_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromForm] UpdateUserRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == id);
             if (user == null)
                 return NotFound("User not found.");
 
             // Kiểm tra và cập nhật email nếu thay đổi
             if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != user.Email)
             {
-                var emailInUse = await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
+                var emailInUse = await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.UserId != id);
                 if (emailInUse)
                     return BadRequest("Email is already in use by another user.");
                 user.Email = request.Email;
@@ -116,7 +116,7 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new
             {
-                user.Id,
+                user.UserId,
                 user.FullName,
                 user.Email,
                 user.Phone,
@@ -129,7 +129,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user == null)
             {
@@ -147,7 +147,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user == null)
                 return NotFound("User not found.");
@@ -167,7 +167,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user == null)
                 return NotFound("User not found.");
@@ -186,7 +186,7 @@ namespace JOB_FINDER_API.Controllers
         [HttpPut("full/{id}")]
         public async Task<IActionResult> PutUserFull(int id, [FromForm] UpdateUserFullRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == id);
             if (user == null)
                 return NotFound("User not found.");
 
@@ -204,7 +204,7 @@ namespace JOB_FINDER_API.Controllers
 
             if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != "string")
             {
-                var emailInUse = await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
+                var emailInUse = await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.UserId != id);
                 if (emailInUse)
                     return BadRequest("Email is already in use by another user.");
                 user.Email = request.Email;
@@ -263,9 +263,9 @@ namespace JOB_FINDER_API.Controllers
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new
+            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, new
             {
-                user.Id,
+                user.UserId,
                 user.FullName,
                 user.Email,
                 user.Phone,

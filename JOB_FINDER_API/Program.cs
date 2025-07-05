@@ -1,26 +1,77 @@
-﻿using CloudinaryDotNet;
+using CloudinaryDotNet;
+using FirebaseAdmin;
+using FireSharp.Config;
+using FireSharp.Interfaces;
+using Google.Apis.Auth.OAuth2;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder.Extensions;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Supabase;
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var isProduction = builder.Environment.IsProduction();
+
+// Create keys directory if it doesn't exist
+var keysDirectory = new DirectoryInfo("/app/keys");
+if (!keysDirectory.Exists)
+{
+    keysDirectory.Create();
+}
+
+// Configure data protection with key encryption
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(keysDirectory)
+    .SetApplicationName("JobFinderApp")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90)); // Optional: set key lifetime
+
+string firebaseJsonPath = Path.Combine(builder.Environment.ContentRootPath, "Configs", "job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json");
+try
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(firebaseJsonPath)
+    });
+    Console.WriteLine("FirebaseApp initialized successfully.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error initializing FirebaseApp: {ex.Message}");
+    throw;
+}
+builder.Services.AddSingleton<IFirebaseClient>(sp =>
+{
+    IFirebaseConfig config = new FirebaseConfig
+    {
+        AuthSecret = "sdmhGaGzaKEdYsWdtAEqe5eCsKKUuMuhm7m4GnGz",
+        BasePath = "https://job-32b5d-default-rtdb.firebaseio.com/"
+    };
+    return new FireSharp.FirebaseClient(config);
+});
 
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
+builder.Services.AddMemoryCache();
 
 // Custom services
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
@@ -28,7 +79,7 @@ builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
-
+builder.Services.AddScoped<IUserService, UserService>();
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
@@ -37,6 +88,7 @@ var cloudinarySettings = builder.Configuration.GetSection("CloudinarySettings").
 var account = new Account(cloudinarySettings.CloudName, cloudinarySettings.ApiKey, cloudinarySettings.ApiSecret);
 var cloudinary = new Cloudinary(account);
 builder.Services.AddSingleton(cloudinary);
+
 // Swagger
 builder.Services.AddSwaggerGen(c =>
 {
@@ -78,6 +130,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 // Add this to your services configuration
 builder.Services.AddRouting(options =>
 {
@@ -94,12 +147,13 @@ builder.Services.AddCors(options =>
             builder.WithOrigins(
                     "https://job-finder-fe.vercel.app",
                     "http://localhost:3000",
+                    "https://job-finder-kjt2.onrender.com",
+                    "http://job-finder-kjt2.onrender.com",
                     "http://localhost:5194"
                 )
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
-               
         });
 });
 
@@ -115,45 +169,6 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
-// Authentication & JWT
-/*builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-        NameClaimType = ClaimTypes.NameIdentifier,
-        RoleClaimType = ClaimTypes.Role,
-        ClockSkew = TimeSpan.Zero
-    };
-
-    // Allow token via query string for SignalR
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            var accessToken = context.Request.Query["access_token"];
-            var path = context.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
-            {
-                context.Token = accessToken;
-            }
-            return Task.CompletedTask;
-        }
-    };
-});*/
 
 // Authentication & JWT & Google
 builder.Services.AddAuthentication(options =>
@@ -193,32 +208,90 @@ builder.Services.AddAuthentication(options =>
         }
     };
 })
-// Update your cookie and Google authentication configuration
 .AddCookie("External", options =>
 {
     options.Cookie.Name = ".AspNetCore.External";
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Must be Always when SameSite=None
+    options.Cookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax; 
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
     options.Cookie.IsEssential = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+
+  
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = 401;
+            return Task.CompletedTask;
+        },
+        OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = 403;
+            return Task.CompletedTask;
+        }
+    };
 })
 .AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    options.CallbackPath = "/api/auth/google-response"; // Use lowercase consistently
+    options.CallbackPath = "/api/auth/google-response";
     options.SignInScheme = "External";
     options.SaveTokens = true;
-    options.CorrelationCookie.SameSite = SameSiteMode.None;
+
+    // Configure scope
+    options.Scope.Clear();
+    options.Scope.Add("openid");
+    options.Scope.Add("profile");
+    options.Scope.Add("email");
+
+    // Configure cookie settings consistently
+    options.CorrelationCookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax;
     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     options.CorrelationCookie.HttpOnly = true;
     options.CorrelationCookie.IsEssential = true;
+
+    options.Events = new OAuthEvents
+    {
+        OnTicketReceived = context =>
+        {
+            Console.WriteLine("Google authentication ticket received successfully");
+            return Task.CompletedTask;
+        },
+        OnRemoteFailure = context =>
+        {
+            Console.WriteLine($"Google authentication failed: {context.Failure?.Message}");
+            context.Response.Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        },
+        OnRedirectToAuthorizationEndpoint = context =>
+        {
+            Console.WriteLine($"Redirecting to authorization endpoint: {context.RedirectUri}");
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        }
+    };
 });
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // Authorization
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+
+});
 
 // Development tools
 if (app.Environment.IsDevelopment())
@@ -227,8 +300,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.EnableFilter());
 }
-
-app.UseHttpsRedirection();
 
 // CORS Middleware
 app.UseCors("AllowReactApp");
@@ -249,6 +320,3 @@ app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
-
-
-

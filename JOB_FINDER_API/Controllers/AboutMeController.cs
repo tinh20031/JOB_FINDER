@@ -95,5 +95,28 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
+
+
+        //[HttpGet("{userId}")]
+        //public async Task<IActionResult> GetByUserId(int userId)
+        //{
+        //    // Tìm CandidateProfile theo userId
+        //    var candidateProfile = await _context.CandidateProfiles
+        //        .FirstOrDefaultAsync(p => p.UserId == userId);
+        //    if (candidateProfile == null)
+        //        return NotFound("Không tìm thấy CandidateProfile cho userId này.");
+
+        //    // Tìm AboutMe theo CandidateProfileId
+        //    var aboutMe = await _context.AboutMes
+        //        .FirstOrDefaultAsync(a => a.CandidateProfileId == candidateProfile.CandidateProfileId);
+
+        //    if (aboutMe == null)
+        //        return NotFound("Không tìm thấy AboutMe cho userId này.");
+
+        //    return Ok(aboutMe);
+        //}
+
+
+
     }
 }

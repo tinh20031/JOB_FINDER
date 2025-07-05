@@ -4,7 +4,7 @@ namespace JOB_FINDER_API.Models
 {
     public class User
     {
-        public int? Id { get; set; }
+        public int? UserId { get; set; }
         public string? FullName { get; set; } = string.Empty;
         public string? Email { get; set; } = string.Empty;
         public string? Image { get; set; }
@@ -15,6 +15,7 @@ namespace JOB_FINDER_API.Models
         public bool IsEmailVerified { get; set; } = false;
         public string EmailVerificationCode { get; set; }
         public DateTime? EmailVerificationCodeExpiry { get; set; }
+        public string? FirebaseUid { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

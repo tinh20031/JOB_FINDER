@@ -152,7 +152,7 @@ namespace JOB_FINDER_API.Controllers
             if (request.UserId == 0)
                 return BadRequest("UserId is required.");
 
-            var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId);
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == request.UserId);
             if (!userExists)
                 return BadRequest("User does not exist.");
 

@@ -28,15 +28,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Services\IUserService.cs" />
+    <Compile Include="Services\UserService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Aspose.Words" Version="25.6.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="CloudinaryDotNet" Version="1.27.5" />
+    <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
+    <PackageReference Include="FireSharp" Version="2.0.4" />
     <PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
     <PackageReference Include="Google.Cloud.Translation.V2" Version="3.4.0" />
     <PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.7.4" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -44,9 +52,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="OpenAI" Version="1.12.0" />
     <PackageReference Include="Polly" Version="8.6.1" />
     <PackageReference Include="pythonnet" Version="3.0.5" />
+    <PackageReference Include="Supabase" Version="1.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.0" />
     <PackageReference Include="Tesseract" Version="5.2.0" />

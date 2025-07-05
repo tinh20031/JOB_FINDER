@@ -4,8 +4,8 @@ namespace JOB_FINDER_API.Models
 {
     public class CandidateProfile
     {
-        public int CandidateProfileId { get; set; } // Khóa chính
-        public int UserId { get; set; } // Khóa chính và khóa ngoại tham chiếu đến User.Id
+        public int CandidateProfileId { get; set; } 
+        public int UserId { get; set; } 
         public string? Gender { get; set; } = string.Empty;
         public DateTime? Dob { get; set; }
         public string? JobTitle { get; set; }

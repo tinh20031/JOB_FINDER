@@ -640,7 +640,208 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
+        [Authorize]
+        [HttpPost("try-match")]
+        public async Task<IActionResult> TryMatch(
+            [FromForm] TryMatchRequest request,
+            [FromServices] ICvSnapshotService cvSnapshotService,
+            [FromServices] CloudinaryService cloudinaryService)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("ID người dùng không hợp lệ.");
+            _logger.LogInformation("Người dùng {UserId} bắt đầu thử khớp cho Công việc {JobId}", userId, request.JobId);
 
+            // Xử lý CV
+            var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvForTryMatchAsync(request, userId, cloudinaryService);
+            if (cv == null)
+            {
+                _logger.LogError("Không thể xử lý CV cho Người dùng {UserId}: {Error}", userId, error);
+                return BadRequest(new { Success = false, ErrorMessage = error });
+            }
+
+            // Lấy công việc và tóm tắt
+            var job = await _context.Jobs.FindAsync(request.JobId);
+            if (job == null)
+            {
+                _logger.LogWarning("Công việc {JobId} không được tìm thấy cho Người dùng {UserId}", request.JobId, userId);
+                return NotFound(new { Success = false, ErrorMessage = "Công việc không được tìm thấy" });
+            }
+
+            string jobSummary = await SummarizeJobAsync(job);
+
+            // Tính độ tương đồng
+            float similarityThreshold = _configuration.GetValue<float>("Matching:SimilarityThreshold", 0.7f);
+            var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
+            if (!matchingResult.Success)
+            {
+                return BadRequest(new { Success = false, ErrorMessage = matchingResult.ErrorMessage });
+            }
+
+            // Tạo đề xuất cải thiện
+            var suggestions = GenerateImprovementSuggestions(matchingResult, cvData, job);
+
+            // Lưu kết quả vào TryMatchRecords
+            var tryMatchRecord = new TryMatchRecord
+            {
+                UserId = userId,
+                JobId = request.JobId,
+                CvId = cv.CVId,
+                SimilarityScore = matchingResult.TotalSimilarity,
+                ITRelevance = cvData.ITRelevance,
+                Suggestions = JsonSerializer.Serialize(suggestions),
+                CreatedAt = DateTime.UtcNow,
+                CvSummary = cvSummary,
+                JobSummary = jobSummary
+            };
+            _context.TryMatchRecords.Add(tryMatchRecord);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "Thử khớp thành công",
+                SimilarityScore = matchingResult.TotalSimilarity,
+                CvSummary = cvSummary,
+                JobSummary = jobSummary,
+                ITRelevance = cvData.ITRelevance,
+                Suggestions = suggestions
+            });
+        }
+
+        private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvForTryMatchAsync(
+            TryMatchRequest request, int userId, CloudinaryService cloudinaryService)
+        {
+            CV cv = null;
+            string uploadedCvUrl = null;
+            CVData cvData = new CVData();
+            string cvSummary = string.Empty;
+            string error = string.Empty;
+
+            var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+
+            if (request.CvFile != null && request.CvFile.Length > 0)
+            {
+                // Upload CV mới
+                uploadedCvUrl = await cloudinaryService.UploadCvAsync(request.CvFile);
+                if (string.IsNullOrEmpty(uploadedCvUrl))
+                {
+                    return (null, null, null, null, "Không thể tải CV lên Cloudinary");
+                }
+
+                string extractedText = string.Empty;
+                try
+                {
+                    using (var stream = request.CvFile.OpenReadStream())
+                    using (var pdfDocument = PdfDocument.Open(stream))
+                    {
+                        foreach (var page in pdfDocument.GetPages())
+                        {
+                            extractedText += page.Text + "\n";
+                        }
+                    }
+                    extractedText = CleanExtractedText(extractedText);
+
+                    if (string.IsNullOrWhiteSpace(extractedText))
+                    {
+                        return (null, null, null, null, "Nội dung CV trống hoặc không thể đọc");
+                    }
+
+                    var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
+                    if (!success)
+                    {
+                        return (null, null, null, null, extractError);
+                    }
+
+                    cvData = extractedCvData;
+                    cvSummary = extractedSummary;
+
+                    cv = new CV
+                    {
+                        UserId = userId,
+                        FileUrl = uploadedCvUrl,
+                        FullCvJson = JsonSerializer.Serialize(new
+                        {
+                            Text = extractedText,
+                            TranslatedText = string.Empty,
+                            Summary = cvSummary,
+                            CVData = cvData
+                        }, jsonOptions),
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        Type = CvType.Apply
+                    };
+                    _context.CVs.Add(cv);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    return (null, null, null, null, $"Lỗi trích xuất PDF: {ex.Message}");
+                }
+            }
+            else if (request.CvId.HasValue)
+            {
+                // Chọn CV hiện có
+                cv = await _context.CVs.FindAsync(request.CvId.Value);
+                if (cv == null || cv.UserId != userId)
+                {
+                    return (null, null, null, null, "CV không tồn tại hoặc không thuộc về người dùng");
+                }
+                uploadedCvUrl = cv.FileUrl;
+
+                var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
+                if (!success)
+                {
+                    return (null, null, null, null, extractError);
+                }
+
+                cvData = extractedCvData;
+                cvSummary = extractedSummary;
+            }
+            else
+            {
+                // Lấy CV mặc định nếu có
+                cv = await _context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
+                if (cv == null)
+                {
+                    return (null, null, null, null, "Không tìm thấy CV và không có tệp được tải lên");
+                }
+                uploadedCvUrl = cv.FileUrl;
+
+                var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
+                if (!success)
+                {
+                    return (null, null, null, null, extractError);
+                }
+
+                cvData = extractedCvData;
+                cvSummary = extractedSummary;
+            }
+
+            return (cv, uploadedCvUrl, cvData, cvSummary, error);
+        }
+
+        private List<string> GenerateImprovementSuggestions((bool Success, string ErrorMessage, float TotalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation) matchingResult, CVData cvData, Job job)
+        {
+            var suggestions = new List<string>();
+
+            if (matchingResult.SimilarityDescription < 0.3)
+                suggestions.Add("Cải thiện phần mô tả CV của bạn để phù hợp hơn với yêu cầu công việc. Tập trung vào việc bao gồm các trách nhiệm chính được đề cập trong mô tả công việc.");
+
+            if (matchingResult.SimilaritySkills < 0.3)
+                suggestions.Add($"Thêm nhiều kỹ năng liên quan đến {job.YourSkill ?? "yêu cầu công việc"}. Hãy cân nhắc bao gồm {string.Join(", ", job.YourSkill?.Split(',').Take(3) ?? new[] { "kỹ năng kỹ thuật" })}.");
+
+            if (matchingResult.SimilarityExperience < 0.3)
+                suggestions.Add("Mở rộng phần kinh nghiệm với các vai trò và năm chi tiết phù hợp với cấp độ kinh nghiệm của công việc (ví dụ: Mới tốt nghiệp, Thực tập).");
+
+            if (matchingResult.SimilarityEducation < 0.3)
+                suggestions.Add("Nổi bật các bằng cấp hoặc chứng chỉ liên quan đến CNTT (ví dụ: Java, RESTful API) phù hợp với yêu cầu giáo dục của công việc.");
+
+            if (matchingResult.TotalSimilarity < 0.5)
+                suggestions.Add("Nhìn chung, CV của bạn có độ tương thích thấp. Hãy tùy chỉnh nó sát hơn với công việc bằng cách giải quyết các điểm trên và tìm kiếm thêm đào tạo nếu cần.");
+
+            return suggestions.Any() ? suggestions : new List<string> { "CV của bạn đã phù hợp với công việc. Không có đề xuất cải thiện lớn!" };
+        }
 
     }
 }

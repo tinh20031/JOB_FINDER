@@ -38,6 +38,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<ForeignLanguage> ForeignLanguages { get; set; }
         public DbSet<AboutMe> AboutMes { get; set; }
         public DbSet<JobView> JobViews { get; set; }
+        public DbSet<TryMatchRecord> TryMatchRecords { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -260,6 +261,23 @@ namespace JOB_FINDER_API.Data
     .HasOne(u => u.CandidateToCompanyRequest)
     .WithOne(r => r.User)
     .HasForeignKey<CandidateToCompanyRequest>(r => r.UserId);
+            modelBuilder.Entity<TryMatchRecord>().ToTable("TryMatchRecords");
+            modelBuilder.Entity<TryMatchRecord>().HasKey(t => t.TryMatchId);
+            modelBuilder.Entity<TryMatchRecord>()
+                .HasOne(t => t.User)
+                .WithMany(u => u.TryMatchRecords)
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<TryMatchRecord>()
+                .HasOne(t => t.Job)
+                .WithMany(j => j.TryMatchRecords) 
+                .HasForeignKey(t => t.JobId)
+                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<TryMatchRecord>()
+                .HasOne(t => t.CV)
+                .WithMany(cv => cv.TryMatchRecords) 
+                .HasForeignKey(t => t.CvId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
 

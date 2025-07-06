@@ -47,6 +47,8 @@ namespace JOB_FINDER_API.Models
 
         [JsonIgnore]
         public CandidateToCompanyRequest? CandidateToCompanyRequest { get; set; }
+        [JsonIgnore]
+        public ICollection<TryMatchRecord> TryMatchRecords { get; set; } = new List<TryMatchRecord>();
 
     }
 }

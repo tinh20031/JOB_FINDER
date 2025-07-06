@@ -17,6 +17,8 @@ namespace JOB_FINDER_API.Models
         public User? User { get; set; }
         [JsonIgnore]
         public ICollection<Application> Applications { get; set; } = new List<Application>();
+        [JsonIgnore]
+        public ICollection<TryMatchRecord> TryMatchRecords { get; set; } = new List<TryMatchRecord>();
 
         public (string VietnameseText, string EnglishText) GetCvText()
         {

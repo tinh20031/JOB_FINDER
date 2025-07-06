@@ -55,6 +55,8 @@ namespace JOB_FINDER_API.Models
         public ICollection<UserFavoriteJob> FavoritedByUsers { get; set; } = new List<UserFavoriteJob>();
         [JsonIgnore]
         public ICollection<JobView> JobViews { get; set; } = new List<JobView>();
+        [JsonIgnore]
+        public ICollection<TryMatchRecord> TryMatchRecords { get; set; } = new List<TryMatchRecord>();
 
         public bool IsExpired()
         {

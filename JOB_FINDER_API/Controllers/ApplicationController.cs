@@ -1,4 +1,5 @@
 using CloudinaryDotNet;
+using CloudinaryDotNet.Core;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
@@ -78,6 +79,27 @@ namespace JOB_FINDER_API.Controllers
             if (!int.TryParse(userIdStr, out var userId))
                 return Unauthorized("Invalid user ID.");
             _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
+
+            // --- KIỂM TRA THÔNG TIN CÁ NHÂN Ở ĐÂY ---
+            var user = await _context.Users
+        .Include(u => u.CandidateProfile)
+        .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return Unauthorized("User not found.");
+
+            var profile = user.CandidateProfile;
+
+            // Kiểm tra các trường bắt buộc
+            if (string.IsNullOrWhiteSpace(user.FullName) ||
+                string.IsNullOrWhiteSpace(profile?.JobTitle) ||
+                string.IsNullOrWhiteSpace(user?.Phone) ||
+                profile?.Dob == null ||
+                string.IsNullOrWhiteSpace(profile?.Province) ||
+                string.IsNullOrWhiteSpace(profile?.City))
+            {
+                return BadRequest(new { Success = false, ErrorMessage = "Vui lòng cập nhật đầy đủ thông tin cá nhân (họ tên, chức danh, số điện thoại, ngày sinh, tỉnh/thành, quận/huyện) trước khi nộp đơn." });
+            }
 
             // Xử lý CV
             var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService);

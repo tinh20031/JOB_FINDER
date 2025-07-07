@@ -1,4 +1,5 @@
 using CloudinaryDotNet;
+using CloudinaryDotNet.Core;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
@@ -79,6 +80,27 @@ namespace JOB_FINDER_API.Controllers
                 return Unauthorized("Invalid user ID.");
             _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
 
+            // --- KIỂM TRA THÔNG TIN CÁ NHÂN Ở ĐÂY ---
+            var user = await _context.Users
+        .Include(u => u.CandidateProfile)
+        .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return Unauthorized("User not found.");
+
+            var profile = user.CandidateProfile;
+
+            // Kiểm tra các trường bắt buộc
+            if (string.IsNullOrWhiteSpace(user.FullName) ||
+                string.IsNullOrWhiteSpace(profile?.JobTitle) ||
+                string.IsNullOrWhiteSpace(user?.Phone) ||
+                profile?.Dob == null ||
+                string.IsNullOrWhiteSpace(profile?.Province) ||
+                string.IsNullOrWhiteSpace(profile?.City))
+            {
+                return BadRequest(new { Success = false, ErrorMessage = "Vui lòng cập nhật đầy đủ thông tin cá nhân (họ tên, chức danh, số điện thoại, ngày sinh, tỉnh/thành, quận/huyện) trước khi nộp đơn." });
+            }
+
             // Xử lý CV
             var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService);
             if (cv == null)
@@ -139,7 +161,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
         private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvAsync(
-            ApplyJobRequest request, int userId, CloudinaryService cloudinaryService)
+    ApplyJobRequest request, int userId, CloudinaryService cloudinaryService)
         {
             CV cv = null;
             string uploadedCvUrl = null;
@@ -149,7 +171,26 @@ namespace JOB_FINDER_API.Controllers
 
             var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
-            if (request.CvFile != null && request.CvFile.Length > 0)
+            // 1. Nếu chọn CV đã upload
+            if (request.CvId.HasValue)
+            {
+                cv = await _context.CVs.FirstOrDefaultAsync(c => c.CVId == request.CvId && c.UserId == userId);
+                if (cv == null)
+                {
+                    return (null, null, null, null, "Selected CV not found");
+                }
+                uploadedCvUrl = cv.FileUrl;
+
+                var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
+                if (!success)
+                {
+                    return (null, null, null, null, extractError);
+                }
+                cvData = extractedCvData;
+                cvSummary = extractedSummary;
+            }
+            // 2. Nếu upload file mới
+            else if (request.CvFile != null && request.CvFile.Length > 0)
             {
                 uploadedCvUrl = await cloudinaryService.UploadCvAsync(request.CvFile);
                 if (string.IsNullOrEmpty(uploadedCvUrl))
@@ -196,7 +237,8 @@ namespace JOB_FINDER_API.Controllers
                             CVData = cvData
                         }, jsonOptions),
                         CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        UpdatedAt = DateTime.UtcNow,
+                        Type = CvType.Apply
                     };
                     _context.CVs.Add(cv);
                     await _context.SaveChangesAsync();
@@ -208,30 +250,7 @@ namespace JOB_FINDER_API.Controllers
             }
             else
             {
-                cv = await _context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
-                if (cv == null)
-                {
-                    return (null, null, null, null, "No CV found and no file uploaded");
-                }
-                uploadedCvUrl = cv.FileUrl;
-
-                var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
-                if (!success)
-                {
-                    return (null, null, null, null, extractError);
-                }
-
-                cvData = extractedCvData;
-                cvSummary = extractedSummary;
-
-                cv.FullCvJson = JsonSerializer.Serialize(new
-                {
-                    Text = JsonSerializer.Deserialize<Dictionary<string, object>>(cv.FullCvJson ?? "{}")?.GetValueOrDefault("Text")?.ToString() ?? string.Empty,
-                    TranslatedText = string.Empty,
-                    Summary = cvSummary,
-                    CVData = cvData
-                }, jsonOptions);
-                await _context.SaveChangesAsync();
+                return (null, null, null, null, "No CV selected or uploaded");
             }
 
             return (cv, uploadedCvUrl, cvData, cvSummary, error);
@@ -637,9 +656,5 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok(new { userId, companyId, distinctJobCount = count });
         }
-
-
-
-
     }
 }

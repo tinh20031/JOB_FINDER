@@ -35,7 +35,7 @@ namespace JOB_FINDER_API.Services
                                    .Replace(" ", "_")
                                    .Replace(".", "_");
 
-            await using var stream = file.OpenReadStream();
+            await using var stream = file.OpenReadStream(); 
             var uploadParams = new RawUploadParams
             {
                 File = new FileDescription(file.FileName, stream),

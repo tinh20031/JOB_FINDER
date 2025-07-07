@@ -78,6 +78,7 @@ builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
+builder.Services.AddHostedService<JobStatusService>();
 
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));

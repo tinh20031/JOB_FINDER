@@ -26,16 +26,44 @@ namespace JOB_FINDER_API.Controllers
 
         // GET: api/Job
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetJobs()
+        public async Task<ActionResult<IEnumerable<object>>> GetJobs(
+    [FromQuery] string role = "candidate",
+    [FromQuery] int? companyId = null)
         {
-            var jobs = await _context.Jobs
+            var now = DateTime.UtcNow;
+            var query = _context.Jobs
                 .Include(j => j.Industry)
                 .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
                 .Include(j => j.ExperienceLevel)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (role == "candidate")
+            {
+                // Ứng viên chỉ thấy job active, đã tới ngày start, chưa hết hạn, không bị admin lock
+                query = query.Where(j => j.Status == Job.JobStatus.active
+                                         && !j.DeactivatedByAdmin
+                                         && j.TimeStart.Date <= now.Date
+                                         && j.TimeEnd.Date >= now.Date);
+            }
+            else if (role == "company" && companyId.HasValue)
+            {
+                // Company chỉ thấy job của mình
+                query = query.Where(j => j.CompanyId == companyId);
+            }
+            else if (role == "admin")
+            {
+                // Admin thấy tất cả job, không filter gì thêm
+            }
+            else
+            {
+                // Nếu truyền role không hợp lệ, trả về rỗng hoặc lỗi
+                return BadRequest("Invalid role parameter.");
+            }
+
+            var jobs = await query.ToListAsync();
 
             var result = jobs.Select(job => new
             {
@@ -45,8 +73,8 @@ namespace JOB_FINDER_API.Controllers
                 job.Education,
                 job.YourSkill,
                 job.YourExperience,
-
                 job.CompanyId,
+                deactivatedByAdmin = job.DeactivatedByAdmin,
                 Company = job.Company == null ? null : new
                 {
                     job.Company.UserId,
@@ -504,6 +532,7 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (job.Status == newStatus)
                     return BadRequest("Job already in specified status.");
+
                 // Chỉ gửi mail khi duyệt từ pending sang active
                 bool shouldSendMail = job.Status == Job.JobStatus.pending && newStatus == Job.JobStatus.active;
 
@@ -520,47 +549,10 @@ namespace JOB_FINDER_API.Controllers
 
                 if (shouldSendMail)
                 {
-                    // Lấy danh sách user đã yêu thích công ty này
-                    var favoriteUsers = await _context.UserFavoriteCompanies
-                        .Where(f => f.CompanyId == job.CompanyId)
-                        .Select(f => f.User)
-                        .ToListAsync();
-
-                    // Lấy thông tin company profile
-                    var companyProfile = await _context.CompanyProfile
-                        .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
-
-                    string companyName = companyProfile?.CompanyName ?? "Công ty";
-                    string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}"; // Thay bằng domain thật
-
-                    string mailBody = $@"
-                        <div style='font-family: Arial, sans-serif;'>
-                            <h2 style='color:#2d8cf0;'>Công ty {companyName} vừa đăng việc mới!</h2>
-                            <p><b>Title Job:</b> {job.Title}</p>
-                            <p><b>Địa điểm:</b> {job.ProvinceName}</p>
-                            <p><b>Hạn nộp:</b> {job.ExpiryDate:dd/MM/yyyy}</p>
-                            <p><b>Mô tả:</b> {job.Description}</p>
-                            <div style='margin:20px 0;'>
-                                <a href='{jobUrl}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>Xem chi tiết & Ứng tuyển</a>
-                            </div>
-                        </div>
-                    ";
-
-                    foreach (var user in favoriteUsers)
-                    {
-                        if (!string.IsNullOrEmpty(user.Email))
-                        {
-                            _emailService.SendEmail(
-                                user.Email,
-                                $"[{companyName}] vừa đăng việc mới: {job.Title}",
-                                mailBody,
-                                true
-                            );
-                        }
-                    }
+                    await SendJobApprovalEmail(job);
                 }
 
-                return Ok($"Admin updated job #{id} status to {newStatus}.");
+                return Ok($"Admin updated job #{id} status to {newStatus}. Background service will manage timing automatically.");
             }
 
             if (role == "company")
@@ -584,6 +576,9 @@ namespace JOB_FINDER_API.Controllers
                 {
                     if (job.DeactivatedByAdmin)
                         return Forbid("Job was deactivated by admin. Company cannot reactivate it.");
+
+                    if (job.TimeStart > DateTime.UtcNow)
+                        return BadRequest("Cannot activate job before its start date.");
 
                     job.Status = Job.JobStatus.active;
                     job.UpdatedAt = DateTime.UtcNow;
@@ -641,6 +636,49 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(isLock ? "Job đã bị admin khóa." : "Job đã được admin mở khóa.");
+        }
+
+        private async Task SendJobApprovalEmail(Job job)
+        {
+            // Lấy danh sách user đã yêu thích công ty này
+            var favoriteUsers = await _context.UserFavoriteCompanies
+                .Where(f => f.CompanyId == job.CompanyId)
+                .Select(f => f.User)
+                .ToListAsync();
+
+            // Lấy thông tin company profile
+            var companyProfile = await _context.CompanyProfile
+                .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
+
+            string companyName = companyProfile?.CompanyName ?? "Công ty";
+            string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}"; // Thay bằng domain thật
+
+            string mailBody = $@"
+        <div style='font-family: Arial, sans-serif;'>
+            <h2 style='color:#2d8cf0;'>Công ty {companyName} vừa đăng việc mới!</h2>
+            <p><b>Title Job:</b> {job.Title}</p>
+            <p><b>Địa điểm:</b> {job.ProvinceName}</p>
+            <p><b>Ngày bắt đầu:</b> {job.TimeStart:dd/MM/yyyy}</p>
+            <p><b>Hạn nộp:</b> {job.ExpiryDate:dd/MM/yyyy}</p>
+            <p><b>Mô tả:</b> {job.Description}</p>
+            <div style='margin:20px 0;'>
+                <a href='{jobUrl}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>Xem chi tiết & Ứng tuyển</a>
+            </div>
+        </div>
+    ";
+
+            foreach (var user in favoriteUsers)
+            {
+                if (!string.IsNullOrEmpty(user.Email))
+                {
+                    _emailService.SendEmail(
+                        user.Email,
+                        $"[{companyName}] vừa đăng việc mới: {job.Title}",
+                        mailBody,
+                        true
+                    );
+                }
+            }
         }
 
     }

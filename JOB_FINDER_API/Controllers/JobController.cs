@@ -379,7 +379,7 @@ namespace JOB_FINDER_API.Controllers
             job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
             job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
             job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
-     
+
             //// Cập nhật lại JobSkill
             //if (dto.skillInputs != null)
             //{
@@ -487,9 +487,9 @@ namespace JOB_FINDER_API.Controllers
             var job = await _context.Jobs.FindAsync(id);
             if (job == null) return NotFound("Job not found.");
 
-           
+
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-           
+
             if (!int.TryParse(userIdClaim, out var userId))
                 return Unauthorized("Invalid user ID.");
 

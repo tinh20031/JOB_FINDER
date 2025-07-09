@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +20,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Polly;
+using Polly.Extensions.Http;
 using Supabase;
 using System.Security.Claims;
 using System.Text;
@@ -40,8 +41,9 @@ if (!keysDirectory.Exists)
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(keysDirectory)
     .SetApplicationName("JobFinderApp")
-    .SetDefaultKeyLifetime(TimeSpan.FromDays(90)); // Optional: set key lifetime
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
+// Initialize Firebase
 string firebaseJsonPath = Path.Combine(builder.Environment.ContentRootPath, "Configs", "job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json");
 try
 {
@@ -56,6 +58,8 @@ catch (Exception ex)
     Console.WriteLine($"Error initializing FirebaseApp: {ex.Message}");
     throw;
 }
+
+// Register Firebase Client
 builder.Services.AddSingleton<IFirebaseClient>(sp =>
 {
     IFirebaseConfig config = new FirebaseConfig
@@ -66,10 +70,16 @@ builder.Services.AddSingleton<IFirebaseClient>(sp =>
     return new FireSharp.FirebaseClient(config);
 });
 
+// Register Polly Retry Policy
+builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(GetRetryPolicy());
+
+// Configure HttpClient for SemanticMatchingService with Polly
+builder.Services.AddHttpClient<SemanticMatchingService>()
+    .AddPolicyHandler(GetRetryPolicy());
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 
 // Custom services
@@ -79,7 +89,6 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
 builder.Services.AddScoped<IUserService, UserService>();
-// Add this line to your service registrations
 builder.Services.AddSingleton<ApplyPercentageCalculator>();
 builder.Services.AddMemoryCache();
 
@@ -135,11 +144,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Add this to your services configuration
+// Routing
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
-    //options.LowercaseQueryStrings = true;
 });
 
 // CORS
@@ -197,7 +205,6 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 
-    // Allow token via query string for SignalR
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -221,7 +228,6 @@ builder.Services.AddAuthentication(options =>
     options.Cookie.IsEssential = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
 
-
     options.Events = new CookieAuthenticationEvents
     {
         OnRedirectToLogin = context =>
@@ -244,13 +250,11 @@ builder.Services.AddAuthentication(options =>
     options.SignInScheme = "External";
     options.SaveTokens = true;
 
-    // Configure scope
     options.Scope.Clear();
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
 
-    // Configure cookie settings consistently
     options.CorrelationCookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax;
     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     options.CorrelationCookie.HttpOnly = true;
@@ -294,10 +298,8 @@ var app = builder.Build();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
-
 });
 
-// Development tools
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -305,10 +307,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.EnableFilter());
 }
 
-// CORS Middleware
 app.UseCors("AllowReactApp");
 
-// Log applied CORS origins
 app.Use(async (context, next) =>
 {
     var origin = context.Request.Headers["Origin"].ToString();
@@ -325,4 +325,16 @@ app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
 
-
+// Define Retry Policy
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .WaitAndRetryAsync(
+            3,
+            retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+            onRetry: (outcome, timespan, retryAttempt, context) =>
+            {
+                Console.WriteLine($"Retry {retryAttempt} after {timespan.TotalSeconds} seconds due to: {outcome.Exception?.Message}");
+            });
+}

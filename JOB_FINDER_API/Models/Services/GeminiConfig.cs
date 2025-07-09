@@ -11,5 +11,7 @@
         public string EmbeddingEndpoint { get; set; }
         public string RedirectUri { get; set; }
         public string ServiceAccountKeyPath { get; set; }
+
+       
     }
 }

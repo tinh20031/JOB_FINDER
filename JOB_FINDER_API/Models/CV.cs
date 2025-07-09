@@ -58,7 +58,7 @@ namespace JOB_FINDER_API.Models
         public string Field { get; set; } = "Unknown";
         public float ITRelevance { get; set; } = 1.0f;
         public string Description { get; set; } = string.Empty;
-        public string Skills { get; set; } = string.Empty;
+        public List<string> Skills { get; set; } = new List<string>();
         public string Experience { get; set; } = string.Empty;
         public string Education { get; set; } = string.Empty;
         public string Summary { get; set; } = string.Empty;

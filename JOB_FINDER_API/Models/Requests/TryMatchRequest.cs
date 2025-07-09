@@ -3,7 +3,7 @@
     public class TryMatchRequest
     {
         public int JobId { get; set; }
-        public int? CvId { get; set; } // Chọn CV hiện có
-        public IFormFile CvFile { get; set; } // Upload CV mới
+        public int? CvId { get; set; } 
+        public IFormFile CvFile { get; set; } 
     }
 }

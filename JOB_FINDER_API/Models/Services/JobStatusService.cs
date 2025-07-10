@@ -16,6 +16,13 @@ namespace JOB_FINDER_API.Models.Services
             _logger = logger;
         }
 
+        // Hàm lấy giờ Việt Nam
+        private static DateTime NowVN()
+        {
+            var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Job Status Service started");
@@ -40,7 +47,7 @@ namespace JOB_FINDER_API.Models.Services
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
 
-            var now = DateTime.UtcNow;
+            var now = NowVN();
             var updatedCount = 0;
 
             // 1. Inactive jobs đã active nhưng chưa tới ngày start

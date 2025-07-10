@@ -54,6 +54,17 @@ namespace JOB_FINDER_API.Models
         [JsonIgnore]
         public ICollection<UserFavoriteJob> FavoritedByUsers { get; set; } = new List<UserFavoriteJob>();
 
+        private static DateTime NowVN()
+        {
+            // Nếu chạy trên Windows
+            var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+
+            // Nếu deploy trên Linux, dùng:
+            // var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            // return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+        }
+
         public bool IsExpired()
         {
             return DateTime.UtcNow > TimeEnd;

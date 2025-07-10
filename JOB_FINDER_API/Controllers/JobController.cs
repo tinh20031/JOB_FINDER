@@ -23,6 +23,13 @@ namespace JOB_FINDER_API.Controllers
             _emailService = emailService;
         }
 
+        // Hàm lấy giờ Việt Nam
+        private static DateTime NowVN()
+        {
+            var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+        }
+
 
         // GET: api/Job
         [HttpGet]
@@ -30,7 +37,7 @@ namespace JOB_FINDER_API.Controllers
     [FromQuery] string role = "candidate",
     [FromQuery] int? companyId = null)
         {
-            var now = DateTime.UtcNow;
+            var now = NowVN();
             var query = _context.Jobs
                 .Include(j => j.Industry)
                 .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
@@ -163,7 +170,7 @@ namespace JOB_FINDER_API.Controllers
             if (isAnonymous || role == "candidate")
             {
                 bool isActive = job.Status == Job.JobStatus.active;
-                bool isExpired = job.TimeEnd < DateTime.UtcNow;
+                bool isExpired = job.TimeEnd < NowVN();
 
                 // Chỉ cho xem nếu job active hoặc expired
                 if (!isActive && !isExpired)
@@ -256,7 +263,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Minimum and maximum salary must be entered if 'negotiable salary' is not selected.");
             if (dto.TimeEnd <= dto.TimeStart)
                 return BadRequest("TimeEnd must be after TimeStart.");
-            if (dto.ExpiryDate <= DateTime.UtcNow)
+            if (dto.ExpiryDate <= NowVN())
                 return BadRequest("ExpiryDate must be in the future.");
 
             var job = new Job
@@ -276,8 +283,8 @@ namespace JOB_FINDER_API.Controllers
                 TimeEnd = dto.TimeEnd,
                 ProvinceName = dto.ProvinceName,
                 AddressDetail = dto.AddressDetail,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = NowVN(),
+                UpdatedAt = NowVN(),
                 Status = Job.JobStatus.pending,
                 IsSalaryNegotiable = dto.IsSalaryNegotiable,
                 MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
@@ -340,7 +347,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Minimum and maximum salary must be entered if 'negotiable salary' is not selected.");
             if (dto.TimeEnd <= dto.TimeStart)
                 return BadRequest("TimeEnd must be after TimeStart.");
-            if (dto.ExpiryDate <= DateTime.UtcNow)
+            if (dto.ExpiryDate <= NowVN())
                 return BadRequest("ExpiryDate must be in the future.");
 
             var job = await _context.Jobs
@@ -403,7 +410,7 @@ namespace JOB_FINDER_API.Controllers
             job.TimeEnd = dto.TimeEnd;
             job.ProvinceName = dto.ProvinceName;
             job.AddressDetail = dto.AddressDetail;
-            job.UpdatedAt = DateTime.UtcNow;
+            job.UpdatedAt = NowVN();
             job.IsSalaryNegotiable = dto.IsSalaryNegotiable;
             job.MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary;
             job.MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary;
@@ -524,9 +531,8 @@ namespace JOB_FINDER_API.Controllers
 
             var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
 
-            if (job.TimeEnd < DateTime.UtcNow)
-                return BadRequest("Cannot change status of expired job.");
-
+            if (job.TimeEnd < NowVN())
+                return BadRequest(new { message = "Cannot change status of expired job." });
 
             if (role == "admin")
             {
@@ -537,7 +543,7 @@ namespace JOB_FINDER_API.Controllers
                 bool shouldSendMail = job.Status == Job.JobStatus.pending && newStatus == Job.JobStatus.active;
 
                 job.Status = newStatus;
-                job.UpdatedAt = DateTime.UtcNow;
+                job.UpdatedAt = NowVN();
 
                 // Nếu admin inactive job thì set flag DeactivatedByAdmin = true, ngược lại false
                 if (newStatus == Job.JobStatus.inactive)
@@ -567,7 +573,7 @@ namespace JOB_FINDER_API.Controllers
                 {
                     job.Status = Job.JobStatus.inactive;
                     job.DeactivatedByAdmin = false;
-                    job.UpdatedAt = DateTime.UtcNow;
+                    job.UpdatedAt = NowVN();
                     await _context.SaveChangesAsync();
                     return Ok("Company deactivated the job successfully.");
                 }
@@ -577,11 +583,11 @@ namespace JOB_FINDER_API.Controllers
                     if (job.DeactivatedByAdmin)
                         return Forbid("Job was deactivated by admin. Company cannot reactivate it.");
 
-                    if (job.TimeStart > DateTime.UtcNow)
+                    if (job.TimeStart > NowVN())
                         return BadRequest("Cannot activate job before its start date.");
 
                     job.Status = Job.JobStatus.active;
-                    job.UpdatedAt = DateTime.UtcNow;
+                    job.UpdatedAt = NowVN();
                     await _context.SaveChangesAsync();
                     return Ok("Company reactivated the job successfully.");
                 }
@@ -596,7 +602,7 @@ namespace JOB_FINDER_API.Controllers
 
         private async Task AutoDeactivateExpiredJobs()
         {
-            var now = DateTime.UtcNow;
+            var now = NowVN();
             var expiredJobs = await _context.Jobs
                 .Where(j => j.Status == Job.JobStatus.active && j.TimeEnd < now)
                 .ToListAsync();
@@ -632,7 +638,7 @@ namespace JOB_FINDER_API.Controllers
                 // Admin có thể dùng API đổi status nếu muốn
             }
 
-            job.UpdatedAt = DateTime.UtcNow;
+            job.UpdatedAt = NowVN();
             await _context.SaveChangesAsync();
 
             return Ok(isLock ? "Job đã bị admin khóa." : "Job đã được admin mở khóa.");

@@ -1,4 +1,4 @@
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using FirebaseAdmin;
 using FireSharp.Config;
 using FireSharp.Interfaces;
@@ -15,9 +15,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Polly;
@@ -91,6 +89,7 @@ builder.Services.AddScoped<SemanticMatchingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<ApplyPercentageCalculator>();
 builder.Services.AddMemoryCache();
+builder.Services.AddHostedService<JobStatusService>();
 
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
@@ -105,7 +104,7 @@ builder.Services.AddSingleton(cloudinary);
 // Swagger
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "JobFinder API", Version = "v1" });
     c.OperationFilter<UploadFileOperationFilter>();
 
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -139,34 +138,29 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
 // Routing
-builder.Services.AddRouting(options =>
-{
-    options.LowercaseUrls = true;
-});
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
-        builder =>
-        {
-            builder.WithOrigins(
-                    "https://job-finder-fe.vercel.app",
-                    "http://localhost:3000",
-                    "https://job-finder-kjt2.onrender.com",
-                    "http://job-finder-kjt2.onrender.com",
-                    "http://localhost:5194"
-                )
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
+    options.AddPolicy("AllowReactApp", builder =>
+    {
+        builder.WithOrigins(
+                "https://job-finder-fe.vercel.app",
+                "http://localhost:3000",
+                "https://job-finder-kjt2.onrender.com",
+                "http://job-finder-kjt2.onrender.com",
+                "http://localhost:5194")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
 });
 
 // DbContext

@@ -1,4 +1,5 @@
 using CloudinaryDotNet;
+using CloudinaryDotNet.Core;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
@@ -88,6 +89,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
+        // POST: api/Application/apply
         [Authorize]
         [HttpPost("apply")]
         public async Task<IActionResult> Apply(
@@ -98,88 +100,105 @@ namespace JOB_FINDER_API.Controllers
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
                 return Unauthorized("Invalid user ID.");
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
+            if (role != "candidate")
+                return Forbid("Only candidates can apply for jobs.");
+
             _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var user = await context.Users
-                    .Include(u => u.CandidateProfile)
-                    .FirstOrDefaultAsync(u => u.UserId == userId);
-
-                if (user == null)
-                    return Unauthorized("User not found.");
-
-                var profile = user.CandidateProfile;
-
-                if (string.IsNullOrWhiteSpace(user.FullName) ||
-                    string.IsNullOrWhiteSpace(profile?.JobTitle) ||
-                    string.IsNullOrWhiteSpace(user?.Phone) ||
-                    profile?.Dob == null ||
-                    string.IsNullOrWhiteSpace(profile?.Province) ||
-                    string.IsNullOrWhiteSpace(profile?.City))
+                try
                 {
-                    return BadRequest(new { Success = false, ErrorMessage = "Vui lòng cập nhật đầy đủ thông tin cá nhân (họ tên, chức danh, số điện thoại, ngày sinh, tỉnh/thành, quận/huyện) trước khi nộp đơn." });
-                }
+                    // Check user profile completeness
+                    var user = await context.Users
+                        .Include(u => u.CandidateProfile)
+                        .FirstOrDefaultAsync(u => u.UserId == userId);
 
-                var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService, context);
-                if (cv == null)
-                {
-                    _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
-                    return BadRequest(new { Success = false, ErrorMessage = error });
-                }
+                    if (user == null)
+                        return Unauthorized("User not found.");
 
-                var job = await context.Jobs.FindAsync(request.JobId);
-                if (job == null)
-                {
-                    _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
-                    return NotFound(new { Success = false, ErrorMessage = "Job not found" });
-                }
-
-                var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
-                _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
-
-                string jobSummary = await SummarizeJobAsync(job, context);
-
-                var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
-                if (matchingResult.Success)
-                {
-                    using (var innerScope = _serviceScopeFactory.CreateScope())
+                    var profile = user.CandidateProfile;
+                    if (string.IsNullOrWhiteSpace(user.FullName) ||
+                        string.IsNullOrWhiteSpace(profile?.JobTitle) ||
+                        string.IsNullOrWhiteSpace(user.Phone) ||
+                        profile?.Dob == null ||
+                        string.IsNullOrWhiteSpace(profile?.Province) ||
+                        string.IsNullOrWhiteSpace(profile?.City))
                     {
-                        var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                        var loadedApplication = await innerContext.Applications.FindAsync(application.ApplicationId);
-                        if (loadedApplication != null)
-                        {
-                            loadedApplication.SimilarityScore = matchingResult.FinalSimilarity;
-                            loadedApplication.SimilarityDescription = matchingResult.SimilarityDescription;
-                            loadedApplication.SimilaritySkills = matchingResult.SimilaritySkills;
-                            loadedApplication.SimilarityExperience = matchingResult.SimilarityExperience;
-                            loadedApplication.SimilarityEducation = matchingResult.SimilarityEducation;
-                            await innerContext.SaveChangesAsync();
-                            _logger.LogInformation("Saved similarity scores for Application {ApplicationId}: Total={Total:F2}, Description={Desc:F2}, Skills={Skills:F2}, Experience={Exp:F2}, Education={Edu:F2}",
-                                application.ApplicationId, matchingResult.FinalSimilarity, matchingResult.SimilarityDescription, matchingResult.SimilaritySkills, matchingResult.SimilarityExperience, matchingResult.SimilarityEducation);
-                        }
+                        _logger.LogWarning("User {UserId} has incomplete profile for job application", userId);
+                        return BadRequest(new { Success = false, ErrorMessage = "Please update your personal information (full name, job title, phone, date of birth, province, city) before applying." });
                     }
-                }
-                else
-                {
-                    _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
-                }
 
-                return Ok(new
+                    // Process CV
+                    var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService, context);
+                    if (cv == null)
+                    {
+                        _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
+                        return BadRequest(new { Success = false, ErrorMessage = error });
+                    }
+
+                    // Check job existence and validity
+                    var job = await context.Jobs.FindAsync(request.JobId);
+                    if (job == null)
+                    {
+                        _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
+                        return NotFound(new { Success = false, ErrorMessage = "Job not found" });
+                    }
+
+                    if (job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
+                    {
+                        _logger.LogWarning("Job {JobId} is not active or deactivated for User {UserId}", request.JobId, userId);
+                        return BadRequest(new { Success = false, ErrorMessage = "Cannot apply to an inactive or deactivated job." });
+                    }
+
+                    // Save application
+                    var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
+                    _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
+
+                    // Summarize job
+                    string jobSummary = await SummarizeJobAsync(job, context);
+
+                    // Calculate similarity scores
+                    var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
+                    if (matchingResult.Success)
+                    {
+                        application.SimilarityScore = matchingResult.FinalSimilarity;
+                        application.SimilarityDescription = matchingResult.SimilarityDescription;
+                        application.SimilaritySkills = matchingResult.SimilaritySkills;
+                        application.SimilarityExperience = matchingResult.SimilarityExperience;
+                        application.SimilarityEducation = matchingResult.SimilarityEducation;
+                        await context.SaveChangesAsync();
+                        _logger.LogInformation("Saved similarity scores for Application {ApplicationId}: Total={Total:F2}, Description={Desc:F2}, Skills={Skills:F2}, Experience={Exp:F2}, Education={Edu:F2}",
+                            application.ApplicationId, matchingResult.FinalSimilarity, matchingResult.SimilarityDescription, matchingResult.SimilaritySkills, matchingResult.SimilarityExperience, matchingResult.SimilarityEducation);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
+                    }
+
+                    return Ok(new
+                    {
+                        Success = true,
+                        Message = "Application submitted successfully",
+                        ApplicationId = application.ApplicationId,
+                        SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : (float?)null,
+                        SimilarityDescription = matchingResult.Success ? matchingResult.SimilarityDescription : (float?)null,
+                        SimilaritySkills = matchingResult.Success ? matchingResult.SimilaritySkills : (float?)null,
+                        SimilarityExperience = matchingResult.Success ? matchingResult.SimilarityExperience : (float?)null,
+                        SimilarityEducation = matchingResult.Success ? matchingResult.SimilarityEducation : (float?)null,
+                        CvSummary = cvSummary,
+                        JobSummary = jobSummary,
+                        GeminiReasoning = matchingResult.Success ? matchingResult.GeminiReasoning : null
+                    });
+                }
+                catch (Exception ex)
                 {
-                    Success = true,
-                    Message = "Application submitted successfully",
-                    ApplicationId = application.ApplicationId,
-                    SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : (float?)null,
-                    SimilarityDescription = matchingResult.Success ? matchingResult.SimilarityDescription : (float?)null,
-                    SimilaritySkills = matchingResult.Success ? matchingResult.SimilaritySkills : (float?)null,
-                    SimilarityExperience = matchingResult.Success ? matchingResult.SimilarityExperience : (float?)null,
-                    SimilarityEducation = matchingResult.Success ? matchingResult.SimilarityEducation : (float?)null,
-                    CvSummary = cvSummary,
-                    JobSummary = jobSummary,
-                    GeminiReasoning = matchingResult.Success ? matchingResult.GeminiReasoning : null
-                });
+                    _logger.LogError(ex, "Error processing job application for User {UserId}, Job {JobId}", userId, request.JobId);
+                    return StatusCode(500, new { Success = false, ErrorMessage = "An error occurred while processing your application." });
+                }
             }
         }
 

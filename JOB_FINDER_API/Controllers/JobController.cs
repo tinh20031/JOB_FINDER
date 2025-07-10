@@ -629,8 +629,6 @@ namespace JOB_FINDER_API.Controllers
             return Forbid("You do not have permission to update job status.");
         }
 
-
-
         private async Task AutoDeactivateExpiredJobs()
         {
             var now = DateTime.UtcNow;

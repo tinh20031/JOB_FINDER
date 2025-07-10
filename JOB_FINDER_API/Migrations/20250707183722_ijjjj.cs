@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JOB_FINDER_API.Migrations
 {
     /// <inheritdoc />
-    public partial class intttt : Migration
+    public partial class ijjjj : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -104,33 +104,6 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CandidateToCompanyRequests",
-                columns: table => new
-                {
-                    CandidateToCompanyRequestId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CompanyProfileDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TeamSize = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IndustryId = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CandidateToCompanyRequests", x => x.CandidateToCompanyRequestId);
-                    table.ForeignKey(
-                        name: "FK_CandidateToCompanyRequests_Industries_IndustryId",
-                        column: x => x.IndustryId,
-                        principalTable: "Industries",
-                        principalColumn: "IndustryId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -180,6 +153,39 @@ namespace JOB_FINDER_API.Migrations
                     table.PrimaryKey("PK_CandidateProfiles", x => x.CandidateProfileId);
                     table.ForeignKey(
                         name: "FK_CandidateProfiles_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CandidateToCompanyRequests",
+                columns: table => new
+                {
+                    CandidateToCompanyRequestId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CompanyProfileDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TeamSize = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IndustryId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CandidateToCompanyRequests", x => x.CandidateToCompanyRequestId);
+                    table.ForeignKey(
+                        name: "FK_CandidateToCompanyRequests_Industries_IndustryId",
+                        column: x => x.IndustryId,
+                        principalTable: "Industries",
+                        principalColumn: "IndustryId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CandidateToCompanyRequests_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
@@ -254,7 +260,8 @@ namespace JOB_FINDER_API.Migrations
                     FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullCvJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -384,32 +391,6 @@ namespace JOB_FINDER_API.Migrations
                         column: x => x.SenderId,
                         principalTable: "Users",
                         principalColumn: "UserId");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    NotificationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Link = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    RelatedId = table.Column<int>(type: "int", nullable: true),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.NotificationId);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -720,6 +701,42 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TryMatchRecords",
+                columns: table => new
+                {
+                    TryMatchId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    JobId = table.Column<int>(type: "int", nullable: false),
+                    CvId = table.Column<int>(type: "int", nullable: false),
+                    SimilarityScore = table.Column<float>(type: "real", nullable: false),
+                    ITRelevance = table.Column<float>(type: "real", nullable: false),
+                    Suggestions = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CvSummary = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    JobSummary = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TryMatchRecords", x => x.TryMatchId);
+                    table.ForeignKey(
+                        name: "FK_TryMatchRecords_CVs_CvId",
+                        column: x => x.CvId,
+                        principalTable: "CVs",
+                        principalColumn: "CVId");
+                    table.ForeignKey(
+                        name: "FK_TryMatchRecords_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "JobId");
+                    table.ForeignKey(
+                        name: "FK_TryMatchRecords_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserFavoriteJobs",
                 columns: table => new
                 {
@@ -781,13 +798,13 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "IndustryId", "CreatedAt", "IndustryName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 3, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2415), "Software Development", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2419) },
-                    { 4, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2421), "Cybersecurity", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2421) },
-                    { 5, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2423), "Data Science", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2423) },
-                    { 6, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2424), "Cloud Computing", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2424) },
-                    { 7, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2426), "UI/UX Design", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2426) },
-                    { 8, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2428), "Artificial Intelligence", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2428) },
-                    { 9, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2429), "DevOps", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2429) }
+                    { 3, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5327), "Software Development", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5328) },
+                    { 4, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5330), "Cybersecurity", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5330) },
+                    { 5, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5332), "Data Science", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5332) },
+                    { 6, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5333), "Cloud Computing", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5334) },
+                    { 7, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5335), "UI/UX Design", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5335) },
+                    { 8, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5337), "Artificial Intelligence", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5337) },
+                    { 9, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5338), "DevOps", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5339) }
                 });
 
             migrationBuilder.InsertData(
@@ -795,9 +812,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "JobTypeId", "CreatedAt", "JobTypeName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2469), "Full-time", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2470) },
-                    { 2, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2473), "Part-time", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2473) },
-                    { 3, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2475), "Remote", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2476) }
+                    { 1, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5380), "Full-time", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5382) },
+                    { 2, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5384), "Part-time", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5385) },
+                    { 3, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5386), "Remote", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5387) }
                 });
 
             migrationBuilder.InsertData(
@@ -805,9 +822,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "LevelId", "CreatedAt", "LevelName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2512), "Intern", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2513) },
-                    { 2, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2515), "Junior", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2515) },
-                    { 3, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2517), "Senior", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2517) }
+                    { 1, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5425), "Intern", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5426) },
+                    { 2, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5428), "Junior", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5428) },
+                    { 3, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5430), "Senior", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5430) }
                 });
 
             migrationBuilder.InsertData(
@@ -815,9 +832,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "RoleId", "CreatedAt", "RoleName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2177), "Candidate", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2180) },
-                    { 2, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2188), "Company", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2188) },
-                    { 3, new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2189), "Admin", new DateTime(2025, 7, 7, 4, 38, 59, 228, DateTimeKind.Utc).AddTicks(2189) }
+                    { 1, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5128), "Candidate", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5132) },
+                    { 2, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5138), "Company", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5139) },
+                    { 3, new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5140), "Admin", new DateTime(2025, 7, 7, 18, 37, 22, 204, DateTimeKind.Utc).AddTicks(5140) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -855,6 +872,12 @@ namespace JOB_FINDER_API.Migrations
                 name: "IX_CandidateToCompanyRequests_IndustryId",
                 table: "CandidateToCompanyRequests",
                 column: "IndustryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateToCompanyRequests_UserId",
+                table: "CandidateToCompanyRequests",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Certificates_CandidateProfileId",
@@ -957,14 +980,24 @@ namespace JOB_FINDER_API.Migrations
                 column: "SentAt");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId",
-                table: "Notifications",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Skills_CandidateProfileId",
                 table: "Skills",
                 column: "CandidateProfileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TryMatchRecords_CvId",
+                table: "TryMatchRecords",
+                column: "CvId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TryMatchRecords_JobId",
+                table: "TryMatchRecords",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TryMatchRecords_UserId",
+                table: "TryMatchRecords",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFavoriteCompanies_CompanyId",
@@ -1043,7 +1076,7 @@ namespace JOB_FINDER_API.Migrations
                 name: "Message");
 
             migrationBuilder.DropTable(
-                name: "Notifications");
+                name: "TryMatchRecords");
 
             migrationBuilder.DropTable(
                 name: "UserFavoriteCompanies");
@@ -1055,10 +1088,10 @@ namespace JOB_FINDER_API.Migrations
                 name: "WorkExperiences");
 
             migrationBuilder.DropTable(
-                name: "CVs");
+                name: "Skills");
 
             migrationBuilder.DropTable(
-                name: "Skills");
+                name: "CVs");
 
             migrationBuilder.DropTable(
                 name: "Jobs");

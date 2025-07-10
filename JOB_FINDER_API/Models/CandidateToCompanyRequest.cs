@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace JOB_FINDER_API.Models
 {
@@ -16,5 +17,8 @@ namespace JOB_FINDER_API.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public Industry? Industry { get; set; }
+        [JsonIgnore]
+        public User User { get; set; } = null!;
+
     }
 }

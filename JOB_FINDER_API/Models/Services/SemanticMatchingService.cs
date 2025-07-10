@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using JOB_FINDER_API.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JOB_FINDER_API.Models.Services
 {
@@ -21,15 +22,16 @@ namespace JOB_FINDER_API.Models.Services
         private readonly ILogger<SemanticMatchingService> _logger;
         private HttpClient _authenticatedClient;
         private string _accessToken;
-        private readonly JobFinderDbContext _context;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public SemanticMatchingService(IOptions<GeminiConfig> geminiConfig, IHttpClientFactory httpClientFactory,
-            ILogger<SemanticMatchingService> logger, JobFinderDbContext context)
+            ILogger<SemanticMatchingService> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _geminiConfig = geminiConfig.Value ?? throw new ArgumentNullException(nameof(geminiConfig));
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _logger = logger;
-            _context = context;
+            _serviceScopeFactory = serviceScopeFactory;
+
             _retryPolicy = Policy
                 .Handle<Exception>()
                 .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
@@ -132,7 +134,7 @@ namespace JOB_FINDER_API.Models.Services
                     {
                         parts = new[]
                         {
-                            new { text = $"Analyze the following text and determine its primary field (e.g., software development, content marketing). Assign an IT-relevance score (0 to 1) indicating how closely it relates to Information Technology (1 = fully IT-related, 0 = not IT-related). Extract into fields: 'Description:', 'Skills:', 'Experience:' (detailed work experience, e.g., years and roles), 'Education:' focusing ONLY on IT-specific keywords (e.g., Java, RESTful API, software engineering) and minimizing non-IT terms (e.g., marketing, design) unless contextually relevant to IT (e.g., UI/UX). Summarize in {targetLanguage}. Respond ONLY in the format:\nField: [domain]\nIT-Relevance: [score]\nDescription: [content]\nSkills: [content]\nExperience: [content]\nEducation: [content]\nSummary: [content]\n\n{text}" }
+                            new { text = $"Analyze the following text and determine its primary field (e.g., software development, content marketing). Extract into fields: 'Description:', 'Skills:', 'Experience:' (detailed work experience, e.g., years and roles), 'Education:' focusing ONLY on IT-specific keywords (e.g., Java, RESTful API, software engineering) and minimizing non-IT terms (e.g., marketing, design) unless contextually relevant to IT (e.g., UI/UX). Summarize in {targetLanguage}. Respond ONLY in the format:\nField: [domain]\nDescription: [content]\nSkills: [content]\nExperience: [content]\nEducation: [content]\nSummary: [content]\n\n{text}" }
                         }
                     }
                 }
@@ -182,10 +184,6 @@ namespace JOB_FINDER_API.Models.Services
                 {
                     cvData.Field = trimmedLine.Substring("Field:".Length).Trim();
                 }
-                else if (trimmedLine.StartsWith("IT-Relevance:", StringComparison.OrdinalIgnoreCase))
-                {
-                    cvData.ITRelevance = float.TryParse(trimmedLine.Substring("IT-Relevance:".Length).Trim(), out float score) ? score : 1.0f;
-                }
                 else if (trimmedLine.StartsWith("Description:", StringComparison.OrdinalIgnoreCase))
                 {
                     currentField = "Description";
@@ -225,7 +223,6 @@ namespace JOB_FINDER_API.Models.Services
             }
 
             cvData.Field = string.IsNullOrEmpty(cvData.Field) ? "Unknown" : cvData.Field;
-            cvData.ITRelevance = cvData.ITRelevance > 0 ? cvData.ITRelevance : 1.0f;
             cvData.Description = string.IsNullOrEmpty(cvData.Description) ? "No description provided." : cvData.Description;
             cvData.Skills = string.IsNullOrEmpty(cvData.Skills) ? "No skills provided." : cvData.Skills;
             cvData.Experience = string.IsNullOrEmpty(cvData.Experience) ? "No experience provided." : cvData.Experience;
@@ -311,85 +308,90 @@ namespace JOB_FINDER_API.Models.Services
                    !string.IsNullOrEmpty(cvData.Education) && !cvData.Education.Contains("No education");
         }
 
-        public async Task<(bool Success, string ErrorMessage, float[] Vector, float ITRelevance)> PreprocessAndGenerateEmbeddingAsync(string text, float itRelevance)
+        public async Task<(bool Success, string ErrorMessage, float[] Vector)> PreprocessAndGenerateEmbeddingAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
                 _logger.LogWarning("PreprocessAndGenerateEmbeddingAsync called with empty or whitespace text");
-                return (false, "Input text is empty", new float[0], itRelevance);
+                return (false, "Input text is empty", new float[0]);
             }
 
-            var itKeywords = new HashSet<string> { "java", "python", "c#", "dotnet", "android", "rest", "api", "testing", "sql", "ui", "ux", "development", "software", "engineering" };
+            var itKeywords = new HashSet<string> { "java", "python", "c#", "dotnet", "android", "rest", "api", "testing", "sql", "ui", "ux", "development", "software", "engineering", "react", "next.js", "javascript" };
             var nonItKeywords = new HashSet<string> { "marketing", "seo", "social", "design" };
 
-            var words = text.ToLower().Split();
+            var words = text.ToLower().Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
             var weightedText = string.Join(" ", words.Select(word =>
             {
-                if (itKeywords.Contains(word)) return word + " ";
-                if (nonItKeywords.Contains(word)) return word + $" *{Math.Max(0.1f, itRelevance * 0.5f)}";
+                if (itKeywords.Contains(word)) return word + " *1.0";
+                if (nonItKeywords.Contains(word)) return word + " *0.1";
                 return word + " *0.5";
             }));
 
             if (string.IsNullOrWhiteSpace(weightedText))
             {
                 _logger.LogWarning("No processable content found in text after weighting");
-                return (false, "No processable content", new float[0], itRelevance);
+                return (false, "No processable content", new float[0]);
             }
 
             var modelName = "models/text-embedding-004";
             var preprocessedText = weightedText;
-            var existingEmbedding = await _context.Embeddings
-                .FirstOrDefaultAsync(e => e.Text == preprocessedText && e.Model == modelName);
-            if (existingEmbedding != null)
+
+            using (var scope = _serviceScopeFactory.CreateScope())
             {
-                _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
-                return (true, string.Empty, existingEmbedding.Vector, itRelevance);
-            }
-
-            try
-            {
-                var requestBody = new
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                var existingEmbedding = await context.Embeddings
+                    .FirstOrDefaultAsync(e => e.Text == preprocessedText && e.Model == modelName);
+                if (existingEmbedding != null)
                 {
-                    model = modelName,
-                    content = new { parts = new[] { new { text = preprocessedText } } }
-                };
-
-                var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-                _logger.LogDebug("Embedding Request Body: {RequestBody}", JsonSerializer.Serialize(requestBody));
-                var response = await _retryPolicy.ExecuteAsync(async () =>
-                    await _authenticatedClient.PostAsync("https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent", jsonContent));
-
-                _logger.LogDebug("Embedding API Response: Status={StatusCode}, Reason={ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Embedding API error: {ErrorContent}", errorContent);
-                    return (false, $"API Error: {errorContent}", new float[0], itRelevance);
+                    _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
+                    return (true, string.Empty, existingEmbedding.Vector);
                 }
 
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var geminiResult = JsonSerializer.Deserialize<JsonElement>(responseContent);
-                var embeddingArray = geminiResult.GetProperty("embedding").GetProperty("values").EnumerateArray()
-                    .Select(e => e.GetSingle()).ToArray();
-
-                var embeddingEntity = new Embedding
+                try
                 {
-                    Text = preprocessedText,
-                    Model = modelName,
-                    Vector = embeddingArray,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.Embeddings.Add(embeddingEntity);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("New embedding saved for text: {Text}", preprocessedText);
+                    var requestBody = new
+                    {
+                        model = modelName,
+                        content = new { parts = new[] { new { text = preprocessedText } } }
+                    };
 
-                return (true, string.Empty, embeddingArray, itRelevance);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Embedding generation error");
-                return (false, $"Embedding generation failed: {ex.Message}", new float[0], itRelevance);
+                    var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+                    _logger.LogDebug("Embedding Request Body: {RequestBody}", JsonSerializer.Serialize(requestBody));
+                    var response = await _retryPolicy.ExecuteAsync(async () =>
+                        await _authenticatedClient.PostAsync(_geminiConfig.EmbeddingEndpoint, jsonContent));
+
+                    _logger.LogDebug("Embedding API Response: Status={StatusCode}, Reason={ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        _logger.LogError("Embedding API error: {ErrorContent}", errorContent);
+                        return (false, $"API Error: {errorContent}", new float[0]);
+                    }
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var geminiResult = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                    var embeddingArray = geminiResult.GetProperty("embedding").GetProperty("values").EnumerateArray()
+                        .Select(e => e.GetSingle()).ToArray();
+
+                    var embeddingEntity = new Embedding
+                    {
+                        Text = preprocessedText,
+                        Model = modelName,
+                        Vector = embeddingArray,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    context.Embeddings.Add(embeddingEntity);
+                    await context.SaveChangesAsync();
+                    _logger.LogInformation("New embedding saved for text: {Text}", preprocessedText);
+
+                    return (true, string.Empty, embeddingArray);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Embedding generation error");
+                    return (false, $"Embedding generation failed: {ex.Message}", new float[0]);
+                }
             }
         }
 
@@ -403,10 +405,17 @@ namespace JOB_FINDER_API.Models.Services
 
             var nonNullTexts = texts.Select(t => t ?? string.Empty).ToArray();
             var embeddings = new float[nonNullTexts.Length][];
+            var tasks = new List<Task<(bool, string, float[])>>();
 
             for (int i = 0; i < nonNullTexts.Length; i++)
             {
-                var (success, error, vector, itRelevance) = await PreprocessAndGenerateEmbeddingAsync(nonNullTexts[i], 1.0f);
+                tasks.Add(PreprocessAndGenerateEmbeddingAsync(nonNullTexts[i]));
+            }
+
+            var results = await Task.WhenAll(tasks);
+            for (int i = 0; i < results.Length; i++)
+            {
+                var (success, error, vector) = results[i];
                 if (!success)
                 {
                     _logger.LogError("Failed to generate embedding for text at index {Index}: {Error}", i, error);
@@ -430,15 +439,15 @@ namespace JOB_FINDER_API.Models.Services
             return await PreprocessAndGenerateEmbeddingsAsync(texts);
         }
 
-        private async Task<(bool Success, string ErrorMessage, float[][] Vectors, float ITRelevance)> GenerateVectorsForCVCriteria(CV cv)
+        private async Task<(bool Success, string ErrorMessage, float[][] Vectors)> GenerateVectorsForCVCriteria(CV cv)
         {
             try
             {
-                var (success, error, cvData, _) = await ExtractCvDataAsync(cv);
+                var (success, error, cvData, summary) = await ExtractCvDataAsync(cv);
                 if (!success)
                 {
                     _logger.LogError("Failed to extract CV data: {Error}", error);
-                    return (false, error, new float[0][], 1.0f);
+                    return (false, error, new float[0][]);
                 }
 
                 var texts = new[]
@@ -449,34 +458,26 @@ namespace JOB_FINDER_API.Models.Services
                     cvData.Education
                 };
 
-                _logger.LogDebug("CV texts for embedding: {Texts}", string.Join(" | ", texts.Select(t => t.Length > 50 ? t.Substring(0, 50) + "..." : t)));
                 var embeddingsResult = await PreprocessAndGenerateEmbeddingsAsync(texts);
                 if (!embeddingsResult.Success)
                 {
-                    return (false, embeddingsResult.ErrorMessage, new float[0][], cvData.ITRelevance);
+                    return (false, embeddingsResult.ErrorMessage, new float[0][]);
                 }
 
-                return (true, string.Empty, embeddingsResult.Vectors, cvData.ITRelevance);
+                return (true, string.Empty, embeddingsResult.Vectors);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in GenerateVectorsForCVCriteria");
-                return (false, $"Failed to generate CV vectors: {ex.Message}", new float[0][], 1.0f);
+                return (false, $"Failed to generate CV vectors: {ex.Message}", new float[0][]);
             }
         }
 
-        private float[] CombineVectors(float[][] vectors)
+        private float CalculateDynamicThreshold(float[][] vectors)
         {
-            if (vectors == null || vectors.Length == 0 || vectors[0].Length == 0)
-                return new float[0];
-
-            int dimension = vectors[0].Length;
-            var combined = new float[dimension];
-            for (int i = 0; i < dimension; i++)
-            {
-                combined[i] = vectors.Average(v => v[i]);
-            }
-            return combined;
+            if (vectors == null || !vectors.Any() || vectors[0].Length == 0) return 0.3f;
+            var variances = vectors.Select(v => v.Select(x => x * x).Average()).ToArray();
+            return Math.Min(0.7f, Math.Max(0.3f, variances.Average() * 0.5f));
         }
 
         public float CalculateCosineSimilarity(float[] vector1, float[] vector2)
@@ -488,7 +489,7 @@ namespace JOB_FINDER_API.Models.Services
             return magnitude1 * magnitude2 == 0 ? 0 : dotProduct / (magnitude1 * magnitude2);
         }
 
-        public async Task<(bool Success, string ErrorMessage, float TotalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation)> CalculateTotalSimilarity(Job job, CV cv, string cvSummary, string jobSummary)
+        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv, string cvSummary, string jobSummary)
         {
             float totalWeight = job.DescriptionWeight + job.SkillsWeight + job.ExperienceWeight + job.EducationWeight;
             if (Math.Abs(totalWeight - 1.0f) > 0.0001f)
@@ -500,51 +501,92 @@ namespace JOB_FINDER_API.Models.Services
                 job.EducationWeight = 0.1f;
             }
 
-            try
+            using (var scope = _serviceScopeFactory.CreateScope())
             {
-                var jobVectorsResult = await GenerateVectorsForCriteria(job);
-                if (!jobVectorsResult.Success)
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                try
                 {
-                    _logger.LogError("Failed to generate job vectors: {Error}", jobVectorsResult.ErrorMessage);
-                    return (false, jobVectorsResult.ErrorMessage, 0f, 0f, 0f, 0f, 0f);
-                }
+                    var jobVectorsResult = await GenerateVectorsForCriteria(job);
+                    if (!jobVectorsResult.Success)
+                    {
+                        _logger.LogError("Failed to generate job vectors: {Error}", jobVectorsResult.ErrorMessage);
+                        return (false, jobVectorsResult.ErrorMessage, 0f, 0f, 0f, 0f, 0f, string.Empty);
+                    }
 
-                var cvVectorsResult = await GenerateVectorsForCVCriteria(cv);
-                if (!cvVectorsResult.Success)
+                    var cvVectorsResult = await GenerateVectorsForCVCriteria(cv);
+                    if (!cvVectorsResult.Success)
+                    {
+                        _logger.LogError("Failed to generate CV vectors: {Error}", cvVectorsResult.ErrorMessage);
+                        return (false, cvVectorsResult.ErrorMessage, 0f, 0f, 0f, 0f, 0f, string.Empty);
+                    }
+
+                    float dynamicThreshold = CalculateDynamicThreshold(jobVectorsResult.Vectors);
+
+                    var similarities = new[]
+                    {
+                        CalculateSimilarityWithContext(jobVectorsResult.Vectors[0], cvVectorsResult.Vectors[0], job.DescriptionWeight, dynamicThreshold),
+                        CalculateSimilarityWithContext(jobVectorsResult.Vectors[1], cvVectorsResult.Vectors[1], job.SkillsWeight, dynamicThreshold),
+                        CalculateSimilarityWithContext(jobVectorsResult.Vectors[2], cvVectorsResult.Vectors[2], job.ExperienceWeight, dynamicThreshold),
+                        CalculateSimilarityWithContext(jobVectorsResult.Vectors[3], cvVectorsResult.Vectors[3], job.EducationWeight, dynamicThreshold)
+                    };
+
+                    float totalSimilarity = similarities.Sum(s => s);
+                    _logger.LogInformation("Initial Similarity Scores for Job {JobId}: Description={Description:F2}, Skills={Skills:F2}, Experience={Experience:F2}, Education={Education:F2}, Total={Total:F2}",
+                        job.JobId, similarities[0], similarities[1], similarities[2], similarities[3], totalSimilarity);
+
+                    float finalSimilarity = totalSimilarity;
+                    string geminiReasoning = string.Empty;
+
+                    if (totalSimilarity >= _geminiConfig.SimilarityThreshold)
+                    {
+                        _logger.LogInformation("Total similarity {TotalSimilarity:F2} exceeds threshold {_SimilarityThreshold:F2}, calling Gemini for validation", totalSimilarity, _geminiConfig.SimilarityThreshold);
+                        var prompt = $"Analyze the following CV and job description to determine their similarity. Assign a similarity score (0 to 1) based on how well the CV matches the job requirements, focusing on skills, experience, and education. Provide detailed reasoning for the score.\n\nCV: {cv.FullCvJson}\nJob Description: {job.Description}\n\nResponse format:\nSimilarity Score: [0-1]\nReasoning: [Detailed explanation]";
+                        var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+                        var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+                        var response = await _retryPolicy.ExecuteAsync(async () => await _authenticatedClient.PostAsync(_geminiConfig.ChatEndpoint, jsonContent));
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            var errorContent = await response.Content.ReadAsStringAsync();
+                            _logger.LogError("Gemini API error: {ErrorContent}", errorContent);
+                        }
+                        else
+                        {
+                            var responseContent = await response.Content.ReadAsStringAsync();
+                            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                            var text = jsonResponse.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+                            var scoreLine = text.Split('\n').FirstOrDefault(l => l.StartsWith("Similarity Score:"));
+                            var reasoningLine = text.Split('\n').FirstOrDefault(l => l.StartsWith("Reasoning:"));
+
+                            finalSimilarity = float.TryParse(scoreLine?.Substring("Similarity Score:".Length).Trim(), out float s) ? s : totalSimilarity;
+                            geminiReasoning = reasoningLine?.Substring("Reasoning:".Length).Trim() ?? "No reasoning provided";
+                            _logger.LogInformation("Gemini adjusted similarity to {FinalSimilarity:F2} with reasoning: {Reasoning}", finalSimilarity, geminiReasoning);
+                        }
+                    }
+
+                    return (true, string.Empty, finalSimilarity, similarities[0], similarities[1], similarities[2], similarities[3], geminiReasoning);
+                }
+                catch (Exception ex)
                 {
-                    _logger.LogError("Failed to generate CV vectors: {Error}", cvVectorsResult.ErrorMessage);
-                    return (false, cvVectorsResult.ErrorMessage, 0f, 0f, 0f, 0f, 0f);
+                    _logger.LogError("Error in CalculateTotalSimilarity for Job {JobId}: {Error}", job?.JobId, ex.Message);
+                    return (false, $"Similarity calculation failed: {ex.Message}", 0f, 0f, 0f, 0f, 0f, string.Empty);
                 }
-
-                float itRelevance = cvVectorsResult.ITRelevance;
-                if (itRelevance < 0.1)
-                {
-                    _logger.LogInformation("CV for Job {JobId} has low IT relevance ({IT-Relevance:F2}), similarity will be minimal", job.JobId, itRelevance);
-                }
-
-                float rawSimilarityDescription = cvVectorsResult.Vectors.Length > 0 ? CalculateCosineSimilarity(jobVectorsResult.Vectors[0], cvVectorsResult.Vectors[0]) : 0f;
-                float similarityDescription = rawSimilarityDescription > 0.3 ? rawSimilarityDescription * job.DescriptionWeight * Math.Max(0.1f, itRelevance) : 0;
-
-                float rawSimilaritySkills = cvVectorsResult.Vectors.Length > 1 ? CalculateCosineSimilarity(jobVectorsResult.Vectors[1], cvVectorsResult.Vectors[1]) : 0f;
-                float similaritySkills = rawSimilaritySkills > 0.3 ? rawSimilaritySkills * job.SkillsWeight * Math.Max(0.1f, itRelevance) : 0;
-
-                float rawSimilarityExperience = cvVectorsResult.Vectors.Length > 2 ? CalculateCosineSimilarity(jobVectorsResult.Vectors[2], cvVectorsResult.Vectors[2]) : 0f;
-                float similarityExperience = rawSimilarityExperience > 0.3 ? rawSimilarityExperience * job.ExperienceWeight * Math.Max(0.1f, itRelevance) : 0;
-
-                float rawSimilarityEducation = cvVectorsResult.Vectors.Length > 3 ? CalculateCosineSimilarity(jobVectorsResult.Vectors[3], cvVectorsResult.Vectors[3]) : 0f;
-                float similarityEducation = rawSimilarityEducation > 0.3 ? rawSimilarityEducation * job.EducationWeight * Math.Max(0.1f, itRelevance) : 0;
-
-                float totalSimilarity = similarityDescription + similaritySkills + similarityExperience + similarityEducation;
-                _logger.LogInformation("Similarity Score for Job {JobId}: IT-Relevance={IT-Relevance:F2}, Description={Description:F2}, Skills={Skills:F2}, Experience={Experience:F2}, Education={Education:F2}, Total={Total:F2}",
-                    job.JobId, itRelevance, similarityDescription, similaritySkills, similarityExperience, similarityEducation, totalSimilarity);
-
-                return (true, string.Empty, totalSimilarity, similarityDescription, similaritySkills, similarityExperience, similarityEducation);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error in CalculateTotalSimilarity for Job {JobId}: {Error}", job.JobId, ex.Message);
-                return (false, $"Similarity calculation failed: {ex.Message}", 0f, 0f, 0f, 0f, 0f);
             }
         }
+
+        private float CalculateSimilarityWithContext(float[] jobVector, float[] cvVector, float weight, float threshold)
+        {
+            if (jobVector == null || cvVector == null || jobVector.Length == 0 || cvVector.Length == 0 || jobVector.Length != cvVector.Length)
+            {
+                _logger.LogWarning("Invalid vectors detected, returning 0 similarity.");
+                return 0f;
+            }
+
+            float rawSimilarity = CalculateCosineSimilarity(jobVector, cvVector);
+            return rawSimilarity > threshold ? rawSimilarity * weight : 0f;
+        }
     }
+
+
 }
+

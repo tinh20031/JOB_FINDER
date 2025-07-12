@@ -1,9 +1,10 @@
 ﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.DTO;
+using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authorization; // Add this
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using JOB_FINDER_API.Models.DTO;
 namespace JOB_FINDER_API.Controllers
 {
     [ApiController]
@@ -42,9 +43,30 @@ namespace JOB_FINDER_API.Controllers
             return Ok(new { isFavorite });
         }
 
+        /* [HttpPost]
+         [Authorize(Roles = "Candidate")]
+         public async Task<IActionResult> AddFavorite([FromBody] UserFavoriteJobCreateDto model)
+         {
+             var exists = await _context.UserFavoriteJobs.FindAsync(model.UserId, model.JobId);
+             if (exists != null)
+                 return Conflict("Job is already in favorites.");
+
+             var favorite = new UserFavoriteJob
+             {
+                 UserId = model.UserId,
+                 JobId = model.JobId
+             };
+
+             _context.UserFavoriteJobs.Add(favorite);
+             await _context.SaveChangesAsync();
+
+             return CreatedAtAction(nameof(IsFavorited), new { userId = model.UserId, jobId = model.JobId }, favorite);
+         }*/
         [HttpPost]
         [Authorize(Roles = "Candidate")]
-        public async Task<IActionResult> AddFavorite([FromBody] UserFavoriteJobCreateDto model)
+        public async Task<IActionResult> AddFavorite(
+     [FromBody] UserFavoriteJobCreateDto model,
+     [FromServices] NotificationService notificationService) // Add NotificationService
         {
             var exists = await _context.UserFavoriteJobs.FindAsync(model.UserId, model.JobId);
             if (exists != null)
@@ -58,6 +80,22 @@ namespace JOB_FINDER_API.Controllers
 
             _context.UserFavoriteJobs.Add(favorite);
             await _context.SaveChangesAsync();
+
+            // Create notification for the company
+            try
+            {
+                var user = await _context.Users.FindAsync(model.UserId);
+                if (user != null)
+                {
+                    await notificationService.CreateJobFavoritedNotification(favorite, user);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the request
+                // You need to add logger to UserFavoriteJobController or use a static logging method
+                Console.WriteLine($"Error creating job favorited notification: {ex.Message}");
+            }
 
             return CreatedAtAction(nameof(IsFavorited), new { userId = model.UserId, jobId = model.JobId }, favorite);
         }

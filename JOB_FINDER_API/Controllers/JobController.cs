@@ -17,10 +17,14 @@ namespace JOB_FINDER_API.Controllers
     {
         private readonly JobFinderDbContext _context;
         private readonly EmailService _emailService;
-        public JobController(JobFinderDbContext context, EmailService emailService)
+        private readonly NotificationService _notificationService;
+        private readonly ILogger<JobController> _logger;
+        public JobController(JobFinderDbContext context, EmailService emailService, NotificationService notificationService, ILogger<JobController> logger)
         {
             _context = context;
             _emailService = emailService;
+            _notificationService = notificationService;
+            _logger = logger;
         }
 
 
@@ -506,127 +510,281 @@ namespace JOB_FINDER_API.Controllers
             var jobs = await query.ToListAsync();
             return jobs;
         }
+
+        /*[HttpPut("{id}/status")]
+        [Authorize]
+        public async Task<IActionResult> UpdateJobStatus(int id, [FromQuery] Job.JobStatus newStatus)
+        {
+            try
+            {
+                await AutoDeactivateExpiredJobs();
+
+                var job = await _context.Jobs.FindAsync(id);
+                if (job == null) return NotFound("Job not found.");
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!int.TryParse(userIdClaim, out var userId))
+                    return Unauthorized("Invalid user ID.");
+
+                var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
+
+                if (job.TimeEnd < DateTime.UtcNow)
+                    return BadRequest("Cannot change status of expired job.");
+
+                if (role == "admin")
+                {
+                    if (job.Status == newStatus)
+                        return BadRequest("Job already in specified status.");
+
+                    // Chỉ gửi notification khi duyệt từ pending sang active
+                    bool shouldSendNotifications = job.Status == Job.JobStatus.pending && newStatus == Job.JobStatus.active;
+
+                    job.Status = newStatus;
+                    job.UpdatedAt = DateTime.UtcNow;
+
+                    // Nếu admin inactive job thì set flag DeactivatedByAdmin = true, ngược lại false
+                    if (newStatus == Job.JobStatus.inactive)
+                        job.DeactivatedByAdmin = true;
+                    else
+                        job.DeactivatedByAdmin = false;
+
+                    // Save job status changes first
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Job #{id} status updated to {newStatus}");
+
+                    if (shouldSendNotifications)
+                    {
+                        _logger.LogInformation($"Preparing to send notifications for job #{id}");
+
+                        try
+                        {
+                            // Get users who favorited the company (for email only)
+                            var favoriteUsers = await _context.UserFavoriteCompanies
+                                .Where(f => f.CompanyId == job.CompanyId)
+                                .Include(f => f.User)
+                                .Select(f => f.User)
+                                .ToListAsync();
+
+                            _logger.LogInformation($"Found {favoriteUsers.Count} users who favorited company {job.CompanyId}");
+
+                            // Get ALL candidates for notifications
+                            var allCandidates = await _context.Users
+                                .Where(u => u.RoleId == 1) // Assuming 1 is Candidate role
+                                .ToListAsync();
+
+                            _logger.LogInformation($"Found {allCandidates.Count} total candidates");
+
+                            // Get company user
+                            var companyUser = await _context.Users.FindAsync(job.CompanyId);
+
+                            if (companyUser != null)
+                            {
+                                // Send notifications to all candidates, but emails only to those who favorited
+                                await _notificationService.CreateNewJobNotification(job, companyUser, allCandidates, favoriteUsers);
+                                _logger.LogInformation($"Notifications sent for job #{id}");
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"Company user not found for company ID {job.CompanyId}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Error sending notifications: {ex.Message}");
+                            _logger.LogError($"Stack trace: {ex.StackTrace}");
+                        }
+                    }
+
+                    return Ok($"Admin updated job #{id} status to {newStatus}. Background service will manage timing automatically.");
+                }
+                else if (role == "company")
+                {
+                    // Existing company role code...
+                    if (job.CompanyId != userId)
+                        return Forbid("You are not the owner of this job.");
+
+                    if (job.Status == Job.JobStatus.pending)
+                        return Forbid("Job is pending approval. Only admin can update its status.");
+
+                    if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
+                    {
+                        job.Status = Job.JobStatus.inactive;
+                        job.DeactivatedByAdmin = false;
+                        job.UpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                        return Ok("Company deactivated the job successfully.");
+                    }
+
+                    if (job.Status == Job.JobStatus.inactive && newStatus == Job.JobStatus.active)
+                    {
+                        if (job.DeactivatedByAdmin)
+                            return Forbid("Job was deactivated by admin. Company cannot reactivate it.");
+
+                        if (job.TimeStart > DateTime.UtcNow)
+                            return BadRequest("Cannot activate job before its start date.");
+
+                        job.Status = Job.JobStatus.active;
+                        job.UpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                        return Ok("Company reactivated the job successfully.");
+                    }
+
+                    return BadRequest("Company can only deactivate an active job or activate an inactive job.");
+                }
+                else
+                {
+                    return Forbid("You do not have permission to update job status.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error updating job status: {ex.Message}");
+                return StatusCode(500, "An error occurred while updating the job status.");
+            }
+        }*/
         [HttpPut("{id}/status")]
         [Authorize]
         public async Task<IActionResult> UpdateJobStatus(int id, [FromQuery] Job.JobStatus newStatus)
         {
-            await AutoDeactivateExpiredJobs();
-
-            var job = await _context.Jobs.FindAsync(id);
-            if (job == null) return NotFound("Job not found.");
-
-
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!int.TryParse(userIdClaim, out var userId))
-                return Unauthorized("Invalid user ID.");
-
-
-            var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
-
-            if (job.TimeEnd < DateTime.UtcNow)
-                return BadRequest("Cannot change status of expired job.");
-
-
-            if (role == "admin")
+            try
             {
-                if (job.Status == newStatus)
-                    return BadRequest("Job already in specified status.");
+                await AutoDeactivateExpiredJobs();
 
-                // Chỉ gửi mail khi duyệt từ pending sang active
-                bool shouldSendMail = job.Status == Job.JobStatus.pending && newStatus == Job.JobStatus.active;
+                var job = await _context.Jobs.FindAsync(id);
+                if (job == null) return NotFound("Job not found.");
 
-                job.Status = newStatus;
-                job.UpdatedAt = DateTime.UtcNow;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!int.TryParse(userIdClaim, out var userId))
+                    return Unauthorized("Invalid user ID.");
 
-                // Nếu admin inactive job thì set flag DeactivatedByAdmin = true, ngược lại false
-                if (newStatus == Job.JobStatus.inactive)
-                    job.DeactivatedByAdmin = true;
-                else
-                    job.DeactivatedByAdmin = false;
+                var role = User.FindFirst(ClaimTypes.Role)?.Value.ToLower();
 
-                await _context.SaveChangesAsync();
+                if (job.TimeEnd < DateTime.UtcNow)
+                    return BadRequest("Cannot change status of expired job.");
 
-                if (shouldSendMail)
+                if (role == "admin")
                 {
-                    // Lấy danh sách user đã yêu thích công ty này
-                    var favoriteUsers = await _context.UserFavoriteCompanies
-                        .Where(f => f.CompanyId == job.CompanyId)
-                        .Select(f => f.User)
-                        .ToListAsync();
+                    // Store the previous status to check if it's changing from pending
+                    var previousStatus = job.Status;
 
-                    // Lấy thông tin company profile
-                    var companyProfile = await _context.CompanyProfile
-                        .FirstOrDefaultAsync(c => c.UserId == job.CompanyId);
+                    if (job.Status == newStatus)
+                        return BadRequest("Job already in specified status.");
 
-                    string companyName = companyProfile?.CompanyName ?? "Công ty";
-                    string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}"; // Thay bằng domain thật
+                    // Chỉ gửi notification khi duyệt từ pending sang active hoặc inactive
+                    bool isChangingFromPending = previousStatus == Job.JobStatus.pending;
+                    bool isApproving = newStatus == Job.JobStatus.active;
+                    bool isRejecting = newStatus == Job.JobStatus.inactive;
 
-                    string mailBody = $@"
-                        <div style='font-family: Arial, sans-serif;'>
-                            <h2 style='color:#2d8cf0;'>Công ty {companyName} vừa đăng việc mới!</h2>
-                            <p><b>Title Job:</b> {job.Title}</p>
-                            <p><b>Địa điểm:</b> {job.ProvinceName}</p>
-                            <p><b>Hạn nộp:</b> {job.ExpiryDate:dd/MM/yyyy}</p>
-                            <p><b>Mô tả:</b> {job.Description}</p>
-                            <div style='margin:20px 0;'>
-                                <a href='{jobUrl}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>Xem chi tiết & Ứng tuyển</a>
-                            </div>
-                        </div>
-                    ";
+                    job.Status = newStatus;
+                    job.UpdatedAt = DateTime.UtcNow;
 
-                    foreach (var user in favoriteUsers)
+                    // Nếu admin inactive job thì set flag DeactivatedByAdmin = true, ngược lại false
+                    if (newStatus == Job.JobStatus.inactive)
+                        job.DeactivatedByAdmin = true;
+                    else
+                        job.DeactivatedByAdmin = false;
+
+                    // Save job status changes first
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Job #{id} status updated to {newStatus}");
+
+                    // Send notification to company about job status change
+                    if (isChangingFromPending && (isApproving || isRejecting))
                     {
-                        if (!string.IsNullOrEmpty(user.Email))
+                        _logger.LogInformation($"Sending job status notification to company for job #{id}");
+                        await _notificationService.CreateJobStatusNotification(job, isApproving);
+                    }
+
+                    // Send notifications to candidates only if job is approved
+                    if (isChangingFromPending && isApproving)
+                    {
+                        _logger.LogInformation($"Preparing to send notifications to candidates for job #{id}");
+
+                        try
                         {
-                            _emailService.SendEmail(
-                                user.Email,
-                                $"[{companyName}] vừa đăng việc mới: {job.Title}",
-                                mailBody,
-                                true
-                            );
+                            // Get users who favorited the company (for email only)
+                            var favoriteUsers = await _context.UserFavoriteCompanies
+                                .Where(f => f.CompanyId == job.CompanyId)
+                                .Include(f => f.User)
+                                .Select(f => f.User)
+                                .ToListAsync();
+
+                            _logger.LogInformation($"Found {favoriteUsers.Count} users who favorited company {job.CompanyId}");
+
+                            // Get ALL candidates for notifications
+                            var allCandidates = await _context.Users
+                                .Where(u => u.RoleId == 1) // Assuming 1 is Candidate role
+                                .ToListAsync();
+
+                            _logger.LogInformation($"Found {allCandidates.Count} total candidates");
+
+                            // Get company user
+                            var companyUser = await _context.Users.FindAsync(job.CompanyId);
+
+                            if (companyUser != null)
+                            {
+                                // Send notifications to all candidates, but emails only to those who favorited
+                                await _notificationService.CreateNewJobNotification(job, companyUser, allCandidates, favoriteUsers);
+                                _logger.LogInformation($"Notifications sent for job #{id}");
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"Company user not found for company ID {job.CompanyId}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Error sending notifications: {ex.Message}");
+                            _logger.LogError($"Stack trace: {ex.StackTrace}");
                         }
                     }
+
+                    return Ok($"Admin updated job #{id} status to {newStatus}. Background service will manage timing automatically.");
                 }
+                else if (role == "company")
+                {
+                    // Existing company role code...
+                    if (job.CompanyId != userId)
+                        return Forbid("You are not the owner of this job.");
 
-                return Ok($"Admin updated job #{id} status to {newStatus}. Background service will manage timing automatically.");
+                    if (job.Status == Job.JobStatus.pending)
+                        return Forbid("Job is pending approval. Only admin can update its status.");
+
+                    if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
+                    {
+                        job.Status = Job.JobStatus.inactive;
+                        job.DeactivatedByAdmin = false;
+                        job.UpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                        return Ok("Company deactivated the job successfully.");
+                    }
+
+                    if (job.Status == Job.JobStatus.inactive && newStatus == Job.JobStatus.active)
+                    {
+                        if (job.DeactivatedByAdmin)
+                            return Forbid("Job was deactivated by admin. Company cannot reactivate it.");
+
+                        if (job.TimeStart > DateTime.UtcNow)
+                            return BadRequest("Cannot activate job before its start date.");
+
+                        job.Status = Job.JobStatus.active;
+                        job.UpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                        return Ok("Company reactivated the job successfully.");
+                    }
+
+                    return BadRequest("Company can only deactivate an active job or activate an inactive job.");
+                }
+                else
+                {
+                    return Forbid("You do not have permission to update job status.");
+                }
             }
-
-            if (role == "company")
+            catch (Exception ex)
             {
-                if (job.CompanyId != userId)
-                    return Forbid("You are not the owner of this job.");
-
-                if (job.Status == Job.JobStatus.pending)
-                    return Forbid("Job is pending approval. Only admin can update its status.");
-
-                if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
-                {
-                    job.Status = Job.JobStatus.inactive;
-                    job.DeactivatedByAdmin = false;
-                    job.UpdatedAt = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
-                    return Ok("Company deactivated the job successfully.");
-                }
-
-                if (job.Status == Job.JobStatus.inactive && newStatus == Job.JobStatus.active)
-                {
-                    if (job.DeactivatedByAdmin)
-                        return Forbid("Job was deactivated by admin. Company cannot reactivate it.");
-
-                    if (job.TimeStart > DateTime.UtcNow)
-                        return BadRequest("Cannot activate job before its start date.");
-
-                    job.Status = Job.JobStatus.active;
-                    job.UpdatedAt = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
-                    return Ok("Company reactivated the job successfully.");
-                }
-
-                return BadRequest("Company can only deactivate an active job or activate an inactive job.");
+                _logger.LogError($"Error updating job status: {ex.Message}");
+                return StatusCode(500, "An error occurred while updating the job status.");
             }
-
-            return Forbid("You do not have permission to update job status.");
         }
 
         private async Task AutoDeactivateExpiredJobs()

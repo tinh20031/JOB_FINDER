@@ -88,7 +88,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        [Authorize]
+        /*[Authorize]
         [HttpPost("apply")]
         public async Task<IActionResult> Apply(
             [FromForm] ApplyJobRequest request,
@@ -176,6 +176,120 @@ namespace JOB_FINDER_API.Controllers
                 else
                 {
                     _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
+                }
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Application submitted successfully",
+                    ApplicationId = application.ApplicationId,
+                    SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : (float?)null,
+                    CvSummary = cvSummary,
+                    JobSummary = jobSummary
+                });
+            }
+        }*/
+        [Authorize]
+        [HttpPost("apply")]
+        public async Task<IActionResult> Apply(
+    [FromForm] ApplyJobRequest request,
+    [FromServices] ICvSnapshotService cvSnapshotService,
+    [FromServices] CloudinaryService cloudinaryService,
+    [FromServices] EmailService emailService,
+    [FromServices] NotificationService notificationService) // Add NotificationService parameter
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+            _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                var user = await context.Users
+                    .Include(u => u.CandidateProfile)
+                    .FirstOrDefaultAsync(u => u.UserId == userId);
+
+                if (user == null)
+                    return Unauthorized("User not found.");
+
+                var profile = user.CandidateProfile;
+
+                if (string.IsNullOrWhiteSpace(user.FullName) ||
+                    string.IsNullOrWhiteSpace(profile?.JobTitle) ||
+                    string.IsNullOrWhiteSpace(user?.Phone) ||
+                    profile?.Dob == null ||
+                    string.IsNullOrWhiteSpace(profile?.Province) ||
+                    string.IsNullOrWhiteSpace(profile?.City))
+                {
+                    return BadRequest(new { Success = false, ErrorMessage = "Vui lòng cập nhật đầy đủ thông tin cá nhân (họ tên, chức danh, số điện thoại, ngày sinh, tỉnh/thành, quận/huyện) trước khi nộp đơn." });
+                }
+
+                var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService, context);
+                if (cv == null)
+                {
+                    _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
+                    return BadRequest(new { Success = false, ErrorMessage = error });
+                }
+
+                var job = await context.Jobs.FindAsync(request.JobId);
+                if (job == null)
+                {
+                    _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
+                    return NotFound(new { Success = false, ErrorMessage = "Job not found" });
+                }
+
+                var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
+                _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
+
+                string jobSummary = await SummarizeJobAsync(job, context);
+
+                var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
+                if (matchingResult.Success)
+                {
+                    using (var innerScope = _serviceScopeFactory.CreateScope())
+                    {
+                        var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                        var loadedApplication = await innerContext.Applications.FindAsync(application.ApplicationId);
+                        if (loadedApplication != null)
+                        {
+                            loadedApplication.SimilarityScore = matchingResult.FinalSimilarity;
+                            await innerContext.SaveChangesAsync();
+
+                            float similarityThreshold = _configuration.GetValue<float>("Matching:SimilarityThreshold", 0.7f);
+                            if (matchingResult.FinalSimilarity > similarityThreshold)
+                            {
+                                var company = await context.Users.FindAsync(job.CompanyId);
+                                if (company != null && !string.IsNullOrEmpty(company.Email))
+                                {
+                                    string mailBody = $@"<div style='font-family: Arial, sans-serif;'>
+                                <h2>New application for {job.Title}</h2>
+                                <p>Applicant: {userId}</p>
+                                <p>Similarity score: {matchingResult.FinalSimilarity:F2}</p>
+                                <p><a href='http://localhost:3000/application/{application.ApplicationId}'>View application</a></p>
+                            </div>";
+                                    emailService.SendEmail(company.Email, "New Job Application", mailBody, true);
+                                    _logger.LogInformation("Email sent to company {CompanyEmail} for Application {ApplicationId}", company.Email, application.ApplicationId);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
+                }
+
+                // Create notification for company about new application
+                try
+                {
+                    await notificationService.CreateNewApplicationNotification(application, user, job);
+                    _logger.LogInformation("Notification sent to company about new application from User {UserId} for Job {JobId}", userId, job.JobId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to send notification to company: {Error}", ex.Message);
+                    // Don't fail the request if notification sending fails
                 }
 
                 return Ok(new
@@ -443,9 +557,36 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
+        /* [Authorize]
+         [HttpPost("favorite-company/{companyId}")]
+         public async Task<IActionResult> FavoriteCompany(int companyId)
+         {
+             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+             if (!int.TryParse(userIdStr, out var userId))
+                 return Unauthorized("Invalid user ID.");
+             using (var scope = _serviceScopeFactory.CreateScope())
+             {
+                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                 if (await context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
+                     return BadRequest("Company is already favorited");
+
+                 var favorite = new UserFavoriteCompany
+                 {
+                     UserId = userId,
+                     CompanyId = companyId,
+                     CreatedAt = DateTime.UtcNow
+                 };
+                 context.UserFavoriteCompanies.Add(favorite);
+                 await context.SaveChangesAsync();
+                 _logger.LogInformation("Company {CompanyId} favorited by User {UserId}", companyId, userId);
+                 return Ok("Company added to favorites successfully");
+             }
+         }*/
         [Authorize]
         [HttpPost("favorite-company/{companyId}")]
-        public async Task<IActionResult> FavoriteCompany(int companyId)
+        public async Task<IActionResult> FavoriteCompany(
+     int companyId,
+     [FromServices] NotificationService notificationService) // Add NotificationService
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
@@ -464,6 +605,23 @@ namespace JOB_FINDER_API.Controllers
                 };
                 context.UserFavoriteCompanies.Add(favorite);
                 await context.SaveChangesAsync();
+
+                // Create notification for the company
+                try
+                {
+                    var user = await context.Users.FindAsync(userId);
+                    if (user != null)
+                    {
+                        await notificationService.CreateCompanyFavoritedNotification(favorite, user);
+                        _logger.LogInformation("Company {CompanyId} favorited by User {UserId} with notification", companyId, userId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error creating company favorited notification: {Error}", ex.Message);
+                    // Don't return error to client if notification fails
+                }
+
                 _logger.LogInformation("Company {CompanyId} favorited by User {UserId}", companyId, userId);
                 return Ok("Company added to favorites successfully");
             }

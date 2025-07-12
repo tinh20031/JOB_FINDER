@@ -39,6 +39,9 @@ namespace JOB_FINDER_API.Data
         public DbSet<AboutMe> AboutMes { get; set; }
         public DbSet<JobView> JobViews { get; set; }
         public DbSet<TryMatchRecord> TryMatchRecords { get; set; }
+        // Add this line in the DbContext class
+        public DbSet<Notification> Notifications { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -258,9 +261,9 @@ namespace JOB_FINDER_API.Data
                     v => JsonSerializer.Deserialize<float[]>(v, new JsonSerializerOptions()) ?? new float[0]
                 );
             modelBuilder.Entity<User>()
-    .HasOne(u => u.CandidateToCompanyRequest)
-    .WithOne(r => r.User)
-    .HasForeignKey<CandidateToCompanyRequest>(r => r.UserId);
+                .HasOne(u => u.CandidateToCompanyRequest)
+                .WithOne(r => r.User)
+                .HasForeignKey<CandidateToCompanyRequest>(r => r.UserId);
             modelBuilder.Entity<TryMatchRecord>().ToTable("TryMatchRecords");
             modelBuilder.Entity<TryMatchRecord>().HasKey(t => t.TryMatchId);
             modelBuilder.Entity<TryMatchRecord>()
@@ -279,7 +282,15 @@ namespace JOB_FINDER_API.Data
                 .HasForeignKey(t => t.CvId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            // Add this to the OnModelCreating method in JobFinderDbContext.cs (if not already present)
+            modelBuilder.Entity<Notification>()
+                .HasKey(n => n.NotificationId);
 
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

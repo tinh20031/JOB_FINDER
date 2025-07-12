@@ -84,7 +84,13 @@ builder.Services.AddSingleton<ApplyPercentageCalculator>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<JobStatusService>();
-
+builder.Services.AddScoped<NotificationService>();
+// Add to Program.cs to ensure logging is properly configured
+builder.Services.AddLogging(config =>
+{
+    config.AddConsole();
+    config.AddDebug();
+});
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
 builder.Services.AddScoped<Client>(sp => new Client("https://your-supabase-url/supabase", "your-supabase-key"));
@@ -324,6 +330,6 @@ app.UseSession();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
-
+app.MapHub<NotificationHub>("/notificationHub");
 app.Run();
 

@@ -4,6 +4,6 @@
     {
         public int JobId { get; set; }
         public int? CvId { get; set; } 
-        public IFormFile CvFile { get; set; } 
+        public IFormFile? CvFile { get; set; } 
     }
 }

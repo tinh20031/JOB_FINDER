@@ -814,6 +814,45 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("my-try-match-history")]
+        public async Task<IActionResult> my_try_match_history()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("ID người dùng không hợp lệ.");
+            _logger.LogInformation("Fetching try match history for User {UserId} at {DateTime}", userId, DateTime.UtcNow.AddHours(7).ToString("yyyy-MM-dd HH:mm:ss"));
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                var tryMatchRecords = await context.TryMatchRecords
+                    .Where(r => r.UserId == userId)
+                    .Include(r => r.Job)
+                    .Include(r => r.CV)
+                    .Select(r => new
+                    {
+                        TryMatchId = r.TryMatchId,
+                        JobId = r.JobId,
+                        JobTitle = r.Job.Title,
+                        CvId = r.CvId,
+                        CvFileUrl = r.CV.FileUrl,
+                        SimilarityScore = r.SimilarityScore,
+                   
+                        Suggestions = r.Suggestions,
+                        CreatedAt = r.CreatedAt,
+                        CvSummary = r.CvSummary,
+                        JobSummary = r.JobSummary
+                    })
+                    .OrderByDescending(r => r.CreatedAt)
+                    .ToListAsync();
+
+                return Ok(tryMatchRecords);
+            }
+        }
+
+
+
         private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvForTryMatchAsync(
             TryMatchRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)
         {

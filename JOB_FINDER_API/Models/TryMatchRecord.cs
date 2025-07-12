@@ -9,7 +9,6 @@
         public int JobId { get; set; }
         public int CvId { get; set; }
         public float SimilarityScore { get; set; }
-        public float ITRelevance { get; set; }
         public string Suggestions { get; set; }
         public DateTime CreatedAt { get; set; }
         public string CvSummary { get; set; }

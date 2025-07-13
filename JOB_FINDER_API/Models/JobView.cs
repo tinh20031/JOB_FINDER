@@ -11,6 +11,8 @@ namespace JOB_FINDER_API.Models
         public string? IpAddress { get; set; }
         public string? UserAgent { get; set; }
         public DateTime ViewedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
         public Job? Job { get; set; }

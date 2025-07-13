@@ -1,4 +1,4 @@
-﻿using CloudinaryDotNet;
+using CloudinaryDotNet;
 using FirebaseAdmin;
 using FireSharp.Config;
 using FireSharp.Interfaces;
@@ -13,9 +13,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Polly;
@@ -75,6 +78,9 @@ builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(GetRetryPolicy(
 builder.Services.AddHttpClient<SemanticMatchingService>()
     .AddPolicyHandler(GetRetryPolicy());
 
+// Add HttpClient for general use (from thanhtung)
+builder.Services.AddHttpClient();
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -88,8 +94,16 @@ builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<ApplyPercentageCalculator>();
+builder.Services.AddScoped<NotificationService>(); // From thanhtung
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<JobStatusService>();
+
+// Add logging (from thanhtung)
+builder.Services.AddLogging(config =>
+{
+    config.AddConsole();
+    config.AddDebug();
+});
 
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
@@ -144,7 +158,11 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Routing
-builder.Services.AddRouting(options => options.LowercaseUrls = true);
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+    // options.LowercaseQueryStrings = true; // Commented out as in thanhtung
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -316,10 +334,11 @@ app.UseSession();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();
 
-// Define Retry Policy
+// Define Retry Policy (from HEAD)
 static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
 {
     return HttpPolicyExtensions

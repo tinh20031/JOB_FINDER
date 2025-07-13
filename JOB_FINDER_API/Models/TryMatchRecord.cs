@@ -11,16 +11,18 @@
         public float SimilarityScore { get; set; }
         public string Suggestions { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public string CvSummary { get; set; }
         public string JobSummary { get; set; }
-
         [JsonIgnore] 
         public User User { get; set; }
 
         [JsonIgnore]
         public Job Job { get; set; }
 
-        [JsonIgnore] 
+
+        [JsonIgnore]
         public CV CV { get; set; }
     }
 }
+

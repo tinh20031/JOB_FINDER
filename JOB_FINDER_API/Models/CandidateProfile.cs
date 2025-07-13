@@ -15,7 +15,9 @@ namespace JOB_FINDER_API.Models
         public string? City { get; set; } = string.Empty;
          
         public string? PersonalLink { get; set; }
-        
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
 
         [JsonIgnore]
         public User? User { get; set; }

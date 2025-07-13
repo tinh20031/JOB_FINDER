@@ -58,6 +58,7 @@ namespace JOB_FINDER_API.Models
         [JsonIgnore]
         public ICollection<TryMatchRecord> TryMatchRecords { get; set; } = new List<TryMatchRecord>();
 
+
         private static DateTime NowVN()
         {
             // Nếu chạy trên Windows
@@ -68,6 +69,7 @@ namespace JOB_FINDER_API.Models
             // var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
             // return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
         }
+
 
         public bool IsExpired()
         {

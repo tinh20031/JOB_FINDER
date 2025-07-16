@@ -192,13 +192,6 @@ namespace JOB_FINDER_API.Data
             modelBuilder.Entity<Message>()
                 .HasIndex(m => m.SentAt);
 
-            // Configure Job to ExperienceLevel relationship
-            modelBuilder.Entity<Job>()
-                .HasOne(j => j.ExperienceLevel)
-                .WithMany(el => el.Jobs)
-                .HasForeignKey(j => j.ExperienceLevelId)
-                .OnDelete(DeleteBehavior.NoAction);
-
             // Configure UserFavoriteCompany relationships
             modelBuilder.Entity<UserFavoriteCompany>()
        .HasKey(ufc => new { ufc.UserId, ufc.CompanyProfileId });

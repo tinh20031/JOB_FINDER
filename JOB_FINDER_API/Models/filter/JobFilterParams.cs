@@ -6,7 +6,7 @@
         public int? IndustryId { get; set; }
         public int? LevelId { get; set; }
         public int? JobTypeId { get; set; }
-        public int? ExperienceLevelId { get; set; }
+        public int? Quantity { get; set; }
         public int? MinSalary { get; set; }
         public int? MaxSalary { get; set; }
         public string? ProvinceName { get; set; }

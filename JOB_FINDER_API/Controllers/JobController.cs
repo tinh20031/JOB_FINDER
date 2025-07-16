@@ -49,7 +49,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
-                .Include(j => j.ExperienceLevel)
+                // XÓA: .Include(j => j.ExperienceLevel)
                 .AsQueryable();
 
             if (role == "candidate")
@@ -112,12 +112,7 @@ namespace JOB_FINDER_API.Controllers
                     job.JobType.JobTypeId,
                     job.JobType.JobTypeName
                 },
-                job.ExperienceLevelId,
-                ExperienceLevel = job.ExperienceLevel == null ? null : new
-                {
-                    job.ExperienceLevel.ExperienceLevelid,
-                    job.ExperienceLevel.name
-                },
+                job.Quantity, // Thêm trường này
                 job.TimeStart,
                 job.TimeEnd,
                 job.Status,
@@ -153,7 +148,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
-                .Include(j => j.ExperienceLevel)
+                // XÓA: .Include(j => j.ExperienceLevel)
                 .FirstOrDefaultAsync(j => j.JobId == id);
 
             if (job == null)
@@ -213,12 +208,7 @@ namespace JOB_FINDER_API.Controllers
                     job.JobType.JobTypeId,
                     job.JobType.JobTypeName
                 },
-                job.ExperienceLevelId,
-                ExperienceLevel = job.ExperienceLevel == null ? null : new
-                {
-                    job.ExperienceLevel.ExperienceLevelid,
-                    job.ExperienceLevel.name
-                },
+                job.Quantity, // Thêm trường này
                 job.TimeStart,
                 job.TimeEnd,
                 job.Status,
@@ -248,6 +238,9 @@ namespace JOB_FINDER_API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (dto.Quantity < 1)
+                return BadRequest("Quantity must be at least 1.");
+
             if (float.IsNaN(dto.DescriptionWeight) || float.IsNaN(dto.SkillsWeight) ||
                 float.IsNaN(dto.ExperienceWeight) || float.IsNaN(dto.EducationWeight))
                 return BadRequest("Weights cannot be NaN.");
@@ -271,7 +264,7 @@ namespace JOB_FINDER_API.Controllers
                 ExpiryDate = dto.ExpiryDate,
                 LevelId = dto.LevelId,
                 JobTypeId = dto.JobTypeId,
-                ExperienceLevelId = dto.ExperienceLevelId,
+                Quantity = dto.Quantity, // Thay thế ExperienceLevelId
                 TimeStart = dto.TimeStart,
                 TimeEnd = dto.TimeEnd,
                 ProvinceName = dto.ProvinceName,
@@ -339,6 +332,9 @@ namespace JOB_FINDER_API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (dto.Quantity < 1)
+                return BadRequest("Quantity must be at least 1.");
+
             if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
                 return BadRequest("Minimum and maximum salary must be provided if salary is not negotiable.");
             if (dto.TimeEnd <= dto.TimeStart)
@@ -392,7 +388,7 @@ namespace JOB_FINDER_API.Controllers
             job.ExpiryDate = dto.ExpiryDate;
             job.LevelId = dto.LevelId;
             job.JobTypeId = dto.JobTypeId;
-            job.ExperienceLevelId = dto.ExperienceLevelId;
+            job.Quantity = dto.Quantity; // Thay thế ExperienceLevelId
             job.TimeStart = dto.TimeStart;
             job.TimeEnd = dto.TimeEnd;
             job.ProvinceName = dto.ProvinceName;
@@ -443,8 +439,9 @@ namespace JOB_FINDER_API.Controllers
                 query = query.Where(j => j.LevelId == filter.LevelId);
             if (filter.JobTypeId.HasValue)
                 query = query.Where(j => j.JobTypeId == filter.JobTypeId);
-            if (filter.ExperienceLevelId.HasValue)
-                query = query.Where(j => j.ExperienceLevelId == filter.ExperienceLevelId);
+            // XÓA: if (filter.ExperienceLevelId.HasValue) ...
+            if (filter.Quantity.HasValue)
+                query = query.Where(j => j.Quantity == filter.Quantity);
             if (filter.MinSalary.HasValue)
                 query = query.Where(j => j.MinSalary >= filter.MinSalary);
             if (filter.MaxSalary.HasValue)
@@ -635,7 +632,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
-                .Include(j => j.ExperienceLevel)
+                // XÓA: .Include(j => j.ExperienceLevel)
                 .FirstOrDefaultAsync(j => j.JobId == id);
 
             if (job == null)
@@ -704,12 +701,7 @@ namespace JOB_FINDER_API.Controllers
                     job.JobType.JobTypeId,
                     job.JobType.JobTypeName
                 },
-                job.ExperienceLevelId,
-                ExperienceLevel = job.ExperienceLevel == null ? null : new
-                {
-                    job.ExperienceLevel.ExperienceLevelid,
-                    job.ExperienceLevel.name
-                },
+                job.Quantity, // Thêm trường này
                 job.TimeStart,
                 job.TimeEnd,
                 job.Status,

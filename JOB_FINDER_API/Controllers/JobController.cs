@@ -443,8 +443,6 @@ namespace JOB_FINDER_API.Controllers
                 query = query.Where(j => j.LevelId == filter.LevelId);
             if (filter.JobTypeId.HasValue)
                 query = query.Where(j => j.JobTypeId == filter.JobTypeId);
-            if (filter.ExperienceLevelId.HasValue)
-                query = query.Where(j => j.ExperienceLevelId == filter.ExperienceLevelId);
             if (filter.MinSalary.HasValue)
                 query = query.Where(j => j.MinSalary >= filter.MinSalary);
             if (filter.MaxSalary.HasValue)

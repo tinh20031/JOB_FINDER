@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -23,12 +26,10 @@ namespace JOB_FINDER_API.Controllers
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var projects = await _context.HighlightProjects
-                .Where(p => p.CandidateProfileId == candidateProfile.CandidateProfileId)
-                .ToListAsync();
-
+            var projects = candidateProfile.HighlightProjects ?? new List<HighlightProjectInfo>();
             return Ok(projects);
         }
+
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
@@ -37,15 +38,12 @@ namespace JOB_FINDER_API.Controllers
             if (candidateProfile == null)
                 return NotFound("Không tìm thấy CandidateProfile cho userId này.");
 
-            var projects = await _context.HighlightProjects
-                .Where(p => p.CandidateProfileId == candidateProfile.CandidateProfileId)
-                .ToListAsync();
-
+            var projects = candidateProfile.HighlightProjects ?? new List<HighlightProjectInfo>();
             return Ok(projects);
         }
 
         [HttpPost("me")]
-        public async Task<IActionResult> CreateForMe([FromBody] HighlightProject model)
+        public async Task<IActionResult> CreateForMe([FromBody] HighlightProjectInfo model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -54,14 +52,27 @@ namespace JOB_FINDER_API.Controllers
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            model.CandidateProfileId = candidateProfile.CandidateProfileId;
-            _context.HighlightProjects.Add(model);
+            // Lấy danh sách projects hiện tại
+            var projects = candidateProfile.HighlightProjects ?? new List<HighlightProjectInfo>();
+
+            // Thêm ID mới và timestamps
+            model.Id = projects.Count > 0 ? projects.Max(p => p.Id) + 1 : 1;
+            model.CreatedAt = DateTime.UtcNow;
+            model.UpdatedAt = DateTime.UtcNow;
+
+            // Thêm project mới
+            projects.Add(model);
+
+            // Cập nhật lại danh sách
+            candidateProfile.HighlightProjects = projects;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return Ok(model);
         }
 
         [HttpPut("me/{id}")]
-        public async Task<IActionResult> UpdateForMe(int id, [FromBody] HighlightProject model)
+        public async Task<IActionResult> UpdateForMe(int id, [FromBody] HighlightProjectInfo model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -70,9 +81,11 @@ namespace JOB_FINDER_API.Controllers
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var project = await _context.HighlightProjects.FirstOrDefaultAsync(p => p.HighlightProjectId == id && p.CandidateProfileId == candidateProfile.CandidateProfileId);
-            if (project == null) return NotFound();
+            var projects = candidateProfile.HighlightProjects ?? new List<HighlightProjectInfo>();
+            var project = projects.FirstOrDefault(p => p.Id == id);
+            if (project == null) return NotFound("Không tìm thấy dự án nổi bật.");
 
+            // Cập nhật thông tin
             project.ProjectName = model.ProjectName;
             project.IsWorking = model.IsWorking;
             project.MonthStart = model.MonthStart;
@@ -87,6 +100,10 @@ namespace JOB_FINDER_API.Controllers
             project.ProjectLink = model.ProjectLink;
             project.UpdatedAt = DateTime.UtcNow;
 
+            // Cập nhật lại danh sách
+            candidateProfile.HighlightProjects = projects;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -94,9 +111,22 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var project = await _context.HighlightProjects.FindAsync(id);
-            if (project == null) return NotFound();
-            _context.HighlightProjects.Remove(project);
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
+
+            var projects = candidateProfile.HighlightProjects ?? new List<HighlightProjectInfo>();
+            var project = projects.FirstOrDefault(p => p.Id == id);
+            if (project == null) return NotFound("Không tìm thấy dự án nổi bật.");
+
+            // Xóa project và cập nhật lại danh sách
+            projects.Remove(project);
+            candidateProfile.HighlightProjects = projects;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }

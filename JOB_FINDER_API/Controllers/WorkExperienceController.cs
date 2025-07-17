@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -23,12 +26,10 @@ namespace JOB_FINDER_API.Controllers
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var works = await _context.WorkExperiences
-                .Where(w => w.CandidateProfileId == candidateProfile.CandidateProfileId)
-                .ToListAsync();
-
-            return Ok(works);
+            var workExperiences = candidateProfile.WorkExperiences ?? new List<WorkExperienceInfo>();
+            return Ok(workExperiences);
         }
+
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
@@ -37,15 +38,12 @@ namespace JOB_FINDER_API.Controllers
             if (candidateProfile == null)
                 return NotFound("Không tìm thấy CandidateProfile cho userId này.");
 
-            var works = await _context.WorkExperiences
-                .Where(w => w.CandidateProfileId == candidateProfile.CandidateProfileId)
-                .ToListAsync();
-
-            return Ok(works);
+            var workExperiences = candidateProfile.WorkExperiences ?? new List<WorkExperienceInfo>();
+            return Ok(workExperiences);
         }
 
         [HttpPost("me")]
-        public async Task<IActionResult> CreateForMe([FromBody] WorkExperience model)
+        public async Task<IActionResult> CreateForMe([FromBody] WorkExperienceInfo model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -54,14 +52,27 @@ namespace JOB_FINDER_API.Controllers
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            model.CandidateProfileId = candidateProfile.CandidateProfileId;
-            _context.WorkExperiences.Add(model);
+            // Lấy danh sách work experiences hiện tại
+            var workExperiences = candidateProfile.WorkExperiences ?? new List<WorkExperienceInfo>();
+
+            // Thêm ID mới và timestamps
+            model.Id = workExperiences.Count > 0 ? workExperiences.Max(w => w.Id) + 1 : 1;
+            model.CreatedAt = DateTime.UtcNow;
+            model.UpdatedAt = DateTime.UtcNow;
+
+            // Thêm work experience mới
+            workExperiences.Add(model);
+
+            // Cập nhật lại danh sách
+            candidateProfile.WorkExperiences = workExperiences;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return Ok(model);
         }
 
         [HttpPut("me/{id}")]
-        public async Task<IActionResult> UpdateForMe(int id, [FromBody] WorkExperience model)
+        public async Task<IActionResult> UpdateForMe(int id, [FromBody] WorkExperienceInfo model)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
@@ -70,22 +81,28 @@ namespace JOB_FINDER_API.Controllers
             var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var work = await _context.WorkExperiences.FirstOrDefaultAsync(w => w.WorkExperienceId == id && w.CandidateProfileId == candidateProfile.CandidateProfileId);
-            if (work == null) return NotFound();
+            var workExperiences = candidateProfile.WorkExperiences ?? new List<WorkExperienceInfo>();
+            var workExperience = workExperiences.FirstOrDefault(w => w.Id == id);
+            if (workExperience == null) return NotFound("Không tìm thấy kinh nghiệm làm việc.");
 
-            work.JobTitle = model.JobTitle;
-            work.CompanyName = model.CompanyName;
-            work.IsWorking = model.IsWorking;
-            work.MonthStart = model.MonthStart;
-            work.YearStart = model.YearStart;
-            work.MonthEnd = model.MonthEnd;
-            work.YearEnd = model.YearEnd;
-            work.WorkDescription = model.WorkDescription;
-            work.Technologies = model.Technologies;
-            work.Responsibilities = model.Responsibilities;
-            work.ProjectName = model.ProjectName;
-            work.Achievements = model.Achievements;
-            work.UpdatedAt = DateTime.UtcNow;
+            // Cập nhật thông tin
+            workExperience.JobTitle = model.JobTitle;
+            workExperience.CompanyName = model.CompanyName;
+            workExperience.IsWorking = model.IsWorking;
+            workExperience.MonthStart = model.MonthStart;
+            workExperience.YearStart = model.YearStart;
+            workExperience.MonthEnd = model.MonthEnd;
+            workExperience.YearEnd = model.YearEnd;
+            workExperience.WorkDescription = model.WorkDescription;
+            workExperience.Technologies = model.Technologies;
+            workExperience.Responsibilities = model.Responsibilities;
+            workExperience.ProjectName = model.ProjectName;
+            workExperience.Achievements = model.Achievements;
+            workExperience.UpdatedAt = DateTime.UtcNow;
+
+            // Cập nhật lại danh sách
+            candidateProfile.WorkExperiences = workExperiences;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -94,9 +111,22 @@ namespace JOB_FINDER_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var work = await _context.WorkExperiences.FindAsync(id);
-            if (work == null) return NotFound();
-            _context.WorkExperiences.Remove(work);
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var candidateProfile = await _context.CandidateProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
+
+            var workExperiences = candidateProfile.WorkExperiences ?? new List<WorkExperienceInfo>();
+            var workExperience = workExperiences.FirstOrDefault(w => w.Id == id);
+            if (workExperience == null) return NotFound("Không tìm thấy kinh nghiệm làm việc.");
+
+            // Xóa work experience và cập nhật lại danh sách
+            workExperiences.Remove(workExperience);
+            candidateProfile.WorkExperiences = workExperiences;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }

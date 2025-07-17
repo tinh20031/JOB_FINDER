@@ -17,7 +17,6 @@ public class ProfileStrengthService
         // Họ tên
         if (profile.User != null && !string.IsNullOrWhiteSpace(profile.User.FullName)) filled++;
         else missing.Add("Họ tên");
-        
 
         // Email
         if (profile.User != null && !string.IsNullOrWhiteSpace(profile.User.Email)) filled++;
@@ -32,7 +31,7 @@ public class ProfileStrengthService
         else missing.Add("Skills");
 
         // Giới thiệu bản thân
-        if (profile.AboutMes != null && profile.AboutMes.Any()) filled++;
+        if (!string.IsNullOrWhiteSpace(profile.AboutMeDescription)) filled++;
         else missing.Add("About Me");
 
         // Học vấn
@@ -56,8 +55,8 @@ public class ProfileStrengthService
         else missing.Add("Awards");
 
         // Ngoại ngữ
-        if (profile.ForeginLanguages != null && profile.ForeginLanguages.Any()) filled++;
-        else missing.Add("Foregin Languages");
+        if (profile.ForeignLanguages != null && profile.ForeignLanguages.Any()) filled++;
+        else missing.Add("Foreign Languages");
 
         // Tính phần trăm cơ bản
         int percent = (int)((double)filled / totalSections * 100);
@@ -72,7 +71,7 @@ public class ProfileStrengthService
             deduction += 5;
         if (string.IsNullOrWhiteSpace(profile.Gender))
             deduction += 5;
-       
+
         percent -= deduction;
         if (percent < 0) percent = 0;
         if (percent > 100) percent = 100;

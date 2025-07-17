@@ -21,9 +21,5 @@ namespace JOB_FINDER_API.Models
         public CandidateProfile? CandidateProfile { get; set; }
 
     }
-    public enum  SkillType
-    {
-        Core,
-        Soft
-    }
+ 
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using System.Text.Json;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -23,100 +24,70 @@ namespace JOB_FINDER_API.Controllers
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
 
-            var aboutMe = await _context.AboutMes
-                .FirstOrDefaultAsync(a => a.CandidateProfileId == candidateProfile.CandidateProfileId);
+            // Trả về thông tin AboutMe trực tiếp từ CandidateProfile
+            var aboutMe = new
+            {
+                AboutMeDescription = candidateProfile.AboutMeDescription
+            };
 
             return Ok(aboutMe);
         }
 
-        [HttpPost("me")]
-        public async Task<IActionResult> CreateForMe([FromBody] AboutMe model)
-        {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized();
-            var userId = int.Parse(userIdClaim.Value);
-
-            var candidateProfile = await _context.CandidateProfiles
-                .FirstOrDefaultAsync(p => p.UserId == userId);
-            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
-
-            model.CandidateProfileId = candidateProfile.CandidateProfileId;
-            _context.AboutMes.Add(model);
-            await _context.SaveChangesAsync();
-            return Ok(model);
-        }
-
-        [HttpPut("me/{id}")]
-        public async Task<IActionResult> UpdateForMe(int id, [FromBody] AboutMe model)
-        {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return Unauthorized();
-            var userId = int.Parse(userIdClaim.Value);
-
-            var candidateProfile = await _context.CandidateProfiles
-                .FirstOrDefaultAsync(p => p.UserId == userId);
-            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
-
-            var aboutMe = await _context.AboutMes
-                .FirstOrDefaultAsync(a => a.AboutMeId == id && a.CandidateProfileId == candidateProfile.CandidateProfileId);
-            if (aboutMe == null) return NotFound();
-
-            aboutMe.AboutMeDescription = model.AboutMeDescription;
-            aboutMe.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
-            // Tìm CandidateProfile theo userId
             var candidateProfile = await _context.CandidateProfiles
                 .FirstOrDefaultAsync(p => p.UserId == userId);
             if (candidateProfile == null)
                 return NotFound("Không tìm thấy CandidateProfile cho userId này.");
 
-            // Tìm AboutMe theo CandidateProfileId
-            var aboutMe = await _context.AboutMes
-                .FirstOrDefaultAsync(a => a.CandidateProfileId == candidateProfile.CandidateProfileId);
-
-            if (aboutMe == null)
-                return NotFound("Không tìm thấy AboutMe cho userId này.");  
+            var aboutMe = new
+            {
+                AboutMeDescription = candidateProfile.AboutMeDescription
+            };
 
             return Ok(aboutMe);
         }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+
+        [HttpPost("me")]
+        public async Task<IActionResult> CreateForMe([FromBody] AboutMeRequest model)
         {
-            var aboutme = await _context.AboutMes.FindAsync(id);
-            if (aboutme == null) return NotFound();
-            _context.AboutMes.Remove(aboutme);
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var candidateProfile = await _context.CandidateProfiles
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
+
+            candidateProfile.AboutMeDescription = model.AboutMeDescription;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok(model);
+        }
+
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateForMe([FromBody] AboutMeRequest model)
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var userId = int.Parse(userIdClaim.Value);
+
+            var candidateProfile = await _context.CandidateProfiles
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+            if (candidateProfile == null) return NotFound("Bạn chưa có CandidateProfile.");
+
+            candidateProfile.AboutMeDescription = model.AboutMeDescription;
+            candidateProfile.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
+    }
 
-
-
-        //[HttpGet("{userId}")]
-        //public async Task<IActionResult> GetByUserId(int userId)
-        //{
-        //    // Tìm CandidateProfile theo userId
-        //    var candidateProfile = await _context.CandidateProfiles
-        //        .FirstOrDefaultAsync(p => p.UserId == userId);
-        //    if (candidateProfile == null)
-        //        return NotFound("Không tìm thấy CandidateProfile cho userId này.");
-
-        //    // Tìm AboutMe theo CandidateProfileId
-        //    var aboutMe = await _context.AboutMes
-        //        .FirstOrDefaultAsync(a => a.CandidateProfileId == candidateProfile.CandidateProfileId);
-
-        //    if (aboutMe == null)
-        //        return NotFound("Không tìm thấy AboutMe cho userId này.");
-
-        //    return Ok(aboutMe);
-        //}
-
-
-
+    public class AboutMeRequest
+    {
+        public string? AboutMeDescription { get; set; }
     }
 }

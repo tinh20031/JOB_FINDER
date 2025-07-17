@@ -27,17 +27,12 @@ namespace JOB_FINDER_API.Data
         public DbSet<UserFavoriteJob> UserFavoriteJobs { get; set; }
         public DbSet<CV> CVs { get; set; }
         public DbSet<Embedding> Embeddings { get; set; }
-        public DbSet<Education> Educations { get; set; }
+        //public DbSet<Education> Educations { get; set; }
         public DbSet<Contact> Contacts { get; set; }
-        public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
+     
         public DbSet<CandidateToCompanyRequest> CandidateToCompanyRequests { get; set; }
         public DbSet<UserFavoriteCompany> UserFavoriteCompanies { get; set; }
-        public DbSet<WorkExperience> WorkExperiences { get; set; }
-        public DbSet<HighlightProject> HighlightProjects { get; set; }
-        public DbSet<Certificate> Certificates { get; set; }
-        public DbSet<Award> Awards { get; set; }
-        public DbSet<ForeignLanguage> ForeignLanguages { get; set; }
-        public DbSet<AboutMe> AboutMes { get; set; }
+       
         public DbSet<JobView> JobViews { get; set; }
         public DbSet<TryMatchRecord> TryMatchRecords { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -86,12 +81,7 @@ namespace JOB_FINDER_API.Data
             );
 
 
-            modelBuilder.Entity<ExperienceLevel>().HasData(
-                new ExperienceLevel { ExperienceLevelid = 1, name = "Fresher" },
-                new ExperienceLevel { ExperienceLevelid = 2, name = "Junior" },
-                new ExperienceLevel { ExperienceLevelid = 3, name = "Middle" },
-                new ExperienceLevel { ExperienceLevelid = 4, name = "Senior" }
-            );
+          
 
             modelBuilder.Entity<CompanyProfile>()
                 .HasKey(cp => cp.CompanyProfileId);
@@ -214,61 +204,35 @@ namespace JOB_FINDER_API.Data
                 .HasForeignKey<CandidateProfile>(cp => cp.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure Education relationships
-            modelBuilder.Entity<Education>()
-                .HasOne(e => e.CandidateProfile)
-                .WithMany(cp => cp.Educations)
-                .HasForeignKey(e => e.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Cấu hình cho các trường JSON - sử dụng nvarchar(max) cho SQL Server
+            modelBuilder.Entity<CandidateProfile>()
+                .Property(cp => cp.SkillsJson)
+                .HasColumnType("nvarchar(max)");
 
-            // Configure AboutMe relationships
-            modelBuilder.Entity<AboutMe>()
-                .HasOne(a => a.CandidateProfile)
-                .WithMany(cp => cp.AboutMes)
-                .HasForeignKey(a => a.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CandidateProfile>()
+                .Property(cp => cp.EducationsJson)
+                .HasColumnType("nvarchar(max)");
 
-            // Configure WorkExperience relationships
-            modelBuilder.Entity<WorkExperience>()
-                .HasOne(w => w.CandidateProfile)
-                .WithMany(cp => cp.WorkExperiences)
-                .HasForeignKey(w => w.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CandidateProfile>()
+                .Property(cp => cp.WorkExperiencesJson)
+                .HasColumnType("nvarchar(max)");
 
-            // Configure HighlightProject relationships
-            modelBuilder.Entity<HighlightProject>()
-                .HasOne(h => h.CandidateProfile)
-                .WithMany(cp => cp.HighlightProjects)
-                .HasForeignKey(h => h.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CandidateProfile>()
+                .Property(cp => cp.AwardsJson)
+                .HasColumnType("nvarchar(max)");
 
-            // Configure Certificate relationships
-            modelBuilder.Entity<Certificate>()
-                .HasOne(c => c.CandidateProfile)
-                .WithMany(cp => cp.Certificates)
-                .HasForeignKey(c => c.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CandidateProfile>()
+                .Property(cp => cp.HighlightProjectsJson)
+                .HasColumnType("nvarchar(max)");
 
-            // Configure Award relationships
-            modelBuilder.Entity<Award>()
-                .HasOne(a => a.CandidateProfile)
-                .WithMany(cp => cp.Awards)
-                .HasForeignKey(a => a.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CandidateProfile>()
+                .Property(cp => cp.CertificatesJson)
+                .HasColumnType("nvarchar(max)");
 
-            // Configure ForeignLanguage relationships
-            modelBuilder.Entity<ForeignLanguage>()
-                .HasOne(f => f.CandidateProfile)
-                .WithMany(cp => cp.ForeginLanguages)
-                .HasForeignKey(f => f.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Configure Skill relationships
-            modelBuilder.Entity<Skill>()
-                .HasOne(s => s.CandidateProfile)
-                .WithMany(cp => cp.Skills)
-                .HasForeignKey(s => s.CandidateProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CandidateProfile>()
+                .Property(cp => cp.ForeignLanguagesJson)
+                .HasColumnType("nvarchar(max)");
+            
 
             // Configure Embedding
             modelBuilder.Entity<Embedding>().HasKey(e => e.Id);

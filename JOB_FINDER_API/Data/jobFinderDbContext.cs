@@ -132,10 +132,10 @@ namespace JOB_FINDER_API.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UserFavoriteJob>()
-                .HasOne(ufj => ufj.Job)
-                .WithMany() // 
-                .HasForeignKey(ufj => ufj.JobId)
-                .OnDelete(DeleteBehavior.Cascade);
+     .HasOne(ufj => ufj.Job)
+     .WithMany(j => j.FavoritedByUsers) 
+     .HasForeignKey(ufj => ufj.JobId)
+     .OnDelete(DeleteBehavior.Cascade);
             // Configure Message relationships
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)

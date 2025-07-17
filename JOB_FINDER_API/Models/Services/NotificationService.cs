@@ -1,10 +1,10 @@
-﻿using JOB_FINDER_API.Data;
+﻿
+using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +56,7 @@ namespace JOB_FINDER_API.Services
                 }
                 string jobUrl = $"{baseUrl}/job-single-v3/{job.JobId}";
 
-                string title = $"New job from {companyName}";
+                string title = $"New job from{companyName}";
                 string message = $"{companyName} just posted a new job: {job.Title}";
 
                 string mailBody = $@"
@@ -72,12 +72,13 @@ namespace JOB_FINDER_API.Services
                     </div>
                 ";
 
+              
                 var notifications = new List<Notification>();
                 int notificationsCreated = 0;
 
                 foreach (var recipient in notificationRecipients)
                 {
-                    if (recipient?.UserId.HasValue == true)
+                    if (recipient?.UserId.HasValue == true) 
                     {
                         try
                         {
@@ -85,7 +86,7 @@ namespace JOB_FINDER_API.Services
 
                             var notification = new Notification
                             {
-                                UserId = recipient.UserId.Value,
+                                UserId = recipient.UserId.Value, 
                                 Title = title,
                                 Message = message,
                                 Link = jobUrl,
@@ -104,6 +105,7 @@ namespace JOB_FINDER_API.Services
                     }
                 }
 
+               
                 if (emailRecipients != null)
                 {
                     foreach (var recipient in emailRecipients)
@@ -116,7 +118,7 @@ namespace JOB_FINDER_API.Services
 
                                 _emailService.SendEmail(
                                     recipient.Email,
-                                    $"[{companyName}] Just posted a new job: {job.Title}",
+                                    $"[{companyName}] just posted new job: {job.Title}",
                                     mailBody,
                                     true
                                 );
@@ -131,12 +133,18 @@ namespace JOB_FINDER_API.Services
 
                 _logger.LogInformation($"Created {notificationsCreated} notifications, saving to database");
 
+             
                 if (notifications.Any())
                 {
+                    
                     _context.Notifications.AddRange(notifications);
+
+                
                     var savedCount = await _context.SaveChangesAsync();
+
                     _logger.LogInformation($"Successfully saved {savedCount} notifications to database");
 
+                  
                     if (_notificationHubContext != null)
                     {
                         foreach (var notification in notifications)
@@ -166,8 +174,10 @@ namespace JOB_FINDER_API.Services
             }
         }
 
+        
         public async Task CreateNewJobNotification(Job job, User companyUser, IEnumerable<User> recipients)
         {
+           
             await CreateNewJobNotification(job, companyUser, recipients, recipients);
         }
 
@@ -177,13 +187,17 @@ namespace JOB_FINDER_API.Services
             {
                 if (job.CompanyId > 0)
                 {
-                    var companyUserId = job.CompanyId;
+                    var companyUserId = job.CompanyId; 
                     _logger.LogInformation($"Creating job status notification for company user {companyUserId}, job #{job.JobId}");
 
-                    string title = isApproved ? "Job approved" : "Job not approved";
+                    string title = isApproved ?
+                        "Job approved" :
+                        "Job not approved";
+
                     string message = isApproved ?
-                        $"Job '{job.Title}' has been approved by the admin and displayed on the system." :
-                        $"Job '{job.Title}' has been rejected by the admin.";
+                        $"Job '{job.Title}' Yours has been approved by the admin and displayed on the system." :
+                        $"Job '{job.Title}' Your request has been rejected by the admin.";
+
                     string baseUrl = _configuration["AppSettings:BaseUrl"];
                     if (string.IsNullOrEmpty(baseUrl))
                     {
@@ -203,10 +217,13 @@ namespace JOB_FINDER_API.Services
                         CreatedAt = DateTime.UtcNow
                     };
 
+                    // Add notification to database
                     _context.Notifications.Add(notification);
                     await _context.SaveChangesAsync();
+
                     _logger.LogInformation($"Job status notification created for company user {companyUserId}");
 
+                    // Send real-time notification via SignalR
                     if (_notificationHubContext != null)
                     {
                         try
@@ -214,6 +231,7 @@ namespace JOB_FINDER_API.Services
                             await _notificationHubContext.Clients
                                 .Group($"User_{companyUserId}")
                                 .SendAsync("ReceiveNotification", notification);
+
                             _logger.LogInformation($"Real-time job status notification sent to company user {companyUserId}");
                         }
                         catch (Exception ex)
@@ -261,6 +279,7 @@ namespace JOB_FINDER_API.Services
                 notification.IsRead = true;
                 await _context.SaveChangesAsync();
 
+                // Notify the user that notification has been marked as read
                 await _notificationHubContext.Clients
                     .Group($"User_{userId}")
                     .SendAsync("NotificationRead", notificationId);
@@ -280,6 +299,7 @@ namespace JOB_FINDER_API.Services
 
             await _context.SaveChangesAsync();
 
+            // Notify the user that all notifications have been marked as read
             await _notificationHubContext.Clients
                 .Group($"User_{userId}")
                 .SendAsync("AllNotificationsRead");
@@ -306,9 +326,11 @@ namespace JOB_FINDER_API.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
+                // Save to database
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
 
+                // Send real-time via SignalR
                 await _notificationHubContext.Clients.Group($"User_{userId}")
                     .SendAsync("ReceiveNotification", new
                     {
@@ -334,6 +356,7 @@ namespace JOB_FINDER_API.Services
         {
             try
             {
+                // Make sure we have a valid company ID
                 if (job.CompanyId <= 0)
                 {
                     _logger.LogWarning($"Cannot create application notification: Job #{job.JobId} has no valid company ID");
@@ -341,6 +364,8 @@ namespace JOB_FINDER_API.Services
                 }
 
                 var companyUserId = job.CompanyId;
+
+                // Get company user details for notification content
                 var company = await _context.Users.FindAsync(companyUserId);
                 if (company == null)
                 {
@@ -359,24 +384,27 @@ namespace JOB_FINDER_API.Services
                 string candidateProfileUrl = $"{baseUrl}/candidate-profile/{candidate.UserId}";
                 string applicationUrl = $"{baseUrl}/company-dashboard/candidates/details/{application.ApplicationId}";
 
-                string title = $"New application for job: {job.Title}";
-                string message = $"{candidateName} applied for your job {job.Title}";
+                string title = $"Candidate's new job: {job.Title}";
+                string message = $"{candidateName} applied for the job {job.Title} your";
 
                 var notification = new Notification
                 {
                     UserId = companyUserId,
                     Title = title,
                     Message = message,
-                    Link = applicationUrl,
+                    Link = applicationUrl,  // Link to view the application details
                     Type = Notification.NotificationType.NewJobApplication,
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
                 };
 
+                // Add to database
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
+
                 _logger.LogInformation($"New application notification created for company #{companyUserId}");
 
+                // Send real-time notification via SignalR
                 if (_notificationHubContext != null)
                 {
                     try
@@ -384,6 +412,7 @@ namespace JOB_FINDER_API.Services
                         await _notificationHubContext.Clients
                             .Group($"User_{companyUserId}")
                             .SendAsync("ReceiveNotification", notification);
+
                         _logger.LogInformation($"Real-time application notification sent to company #{companyUserId}");
                     }
                     catch (Exception ex)
@@ -404,16 +433,17 @@ namespace JOB_FINDER_API.Services
             try
             {
                 var companyUserId = favoriteCompany.CompanyProfileId;
-                string candidateName = candidate.FullName ?? "User";
                 string baseUrl = _configuration["AppSettings:BaseUrl"];
                 if (string.IsNullOrEmpty(baseUrl))
                 {
                     _logger.LogError("BaseUrl is not configured in appsettings.json.");
                     throw new InvalidOperationException("BaseUrl is not configured in appsettings.json.");
                 }
+
+                string candidateName = candidate.FullName ?? "Ứng viên";
                 string candidateProfileUrl = $"{baseUrl}/candidate-profile/{candidate.UserId}";
 
-                string title = "Your company is favorited";
+                string title = "Your company is loved";
                 string message = $"{candidateName} added your company to favorites";
 
                 var notification = new Notification
@@ -421,16 +451,19 @@ namespace JOB_FINDER_API.Services
                     UserId = companyUserId,
                     Title = title,
                     Message = message,
-                    Link = candidateProfileUrl,
+                    Link = candidateProfileUrl,  // Link to view the candidate's profile
                     Type = Notification.NotificationType.CompanyFavorited,
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
                 };
 
+                // Add to database
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
+
                 _logger.LogInformation($"Company favorited notification created for company #{companyUserId}");
 
+                // Send real-time notification via SignalR
                 if (_notificationHubContext != null)
                 {
                     try
@@ -438,6 +471,7 @@ namespace JOB_FINDER_API.Services
                         await _notificationHubContext.Clients
                             .Group($"User_{companyUserId}")
                             .SendAsync("ReceiveNotification", notification);
+
                         _logger.LogInformation($"Real-time company favorited notification sent to company #{companyUserId}");
                     }
                     catch (Exception ex)
@@ -457,6 +491,7 @@ namespace JOB_FINDER_API.Services
         {
             try
             {
+                // Get the job details
                 var job = await _context.Jobs.FindAsync(favoriteJob.JobId);
                 if (job == null)
                 {
@@ -464,6 +499,7 @@ namespace JOB_FINDER_API.Services
                     return;
                 }
 
+                // Make sure we have a valid company ID
                 if (job.CompanyId <= 0)
                 {
                     _logger.LogWarning($"Cannot create job favorited notification: Job #{job.JobId} has no valid company ID");
@@ -471,6 +507,7 @@ namespace JOB_FINDER_API.Services
                 }
 
                 var companyUserId = job.CompanyId;
+
                 string candidateName = candidate.FullName ?? "User";
                 string baseUrl = _configuration["AppSettings:BaseUrl"];
                 if (string.IsNullOrEmpty(baseUrl))
@@ -481,7 +518,7 @@ namespace JOB_FINDER_API.Services
                 string jobUrl = $"{baseUrl}/job-single-v3/{job.JobId}";
                 string candidateProfileUrl = $"{baseUrl}/candidate-profile/{candidate.UserId}";
 
-                string title = "Job favorited";
+                string title = "Favorite job";
                 string message = $"{candidateName} added job {job.Title} to favorites";
 
                 var notification = new Notification
@@ -489,16 +526,19 @@ namespace JOB_FINDER_API.Services
                     UserId = companyUserId,
                     Title = title,
                     Message = message,
-                    Link = candidateProfileUrl,
+                    Link = candidateProfileUrl, // Link to view the candidate's profile
                     Type = Notification.NotificationType.JobFavorited,
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
                 };
 
+                // Add to database
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
+
                 _logger.LogInformation($"Job favorited notification created for company #{companyUserId}");
 
+                // Send real-time notification via SignalR
                 if (_notificationHubContext != null)
                 {
                     try
@@ -506,6 +546,7 @@ namespace JOB_FINDER_API.Services
                         await _notificationHubContext.Clients
                             .Group($"User_{companyUserId}")
                             .SendAsync("ReceiveNotification", notification);
+
                         _logger.LogInformation($"Real-time job favorited notification sent to company #{companyUserId}");
                     }
                     catch (Exception ex)

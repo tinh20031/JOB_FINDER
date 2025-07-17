@@ -17,7 +17,7 @@ namespace JOB_FINDER_API.Models.DTO
         public int IndustryId { get; set; }
         public int LevelId { get; set; }
         public int JobTypeId { get; set; }
-        public int ExperienceLevelId { get; set; }
+        public int Quantity { get; set; }
         public string ProvinceName { get; set; }
         public DateTime ExpiryDate { get; set; }
         public DateTime TimeStart { get; set; }

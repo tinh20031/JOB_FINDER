@@ -30,7 +30,7 @@ namespace JOB_FINDER_API.Models.DTO
         public int JobTypeId { get; set; }
 
         [Range(1, int.MaxValue)]
-        public int ExperienceLevelId { get; set; }
+        public int Quantity { get; set; }
 
         [Required]
         public DateTime TimeStart { get; set; }

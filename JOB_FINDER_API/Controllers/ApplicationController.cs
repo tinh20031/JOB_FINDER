@@ -381,7 +381,7 @@ namespace JOB_FINDER_API.Controllers
                             a.Job.ExpiryDate,
                             a.Job.LevelId,
                             a.Job.JobTypeId,
-                            a.Job.ExperienceLevelId,
+                            a.Job.Quantity,
                             a.Job.TimeStart,
                             a.Job.TimeEnd,
                             a.Job.Status,
@@ -428,7 +428,7 @@ namespace JOB_FINDER_API.Controllers
                         j.ExpiryDate,
                         j.LevelId,
                         j.JobTypeId,
-                        j.ExperienceLevelId,
+                        j.Quantity,
                         j.TimeStart,
                         j.TimeEnd,
                         j.Status,
@@ -602,7 +602,9 @@ namespace JOB_FINDER_API.Controllers
                         {
                             a.Job.JobId,
                             a.Job.Title,
-                            a.Job.Description
+                            a.Job.Description,
+                            a.Job.Quantity
+
                         }
                     })
                     .ToListAsync();

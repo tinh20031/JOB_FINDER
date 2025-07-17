@@ -1,37 +1,61 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\",
+  "WorkspaceRootPath": "E:\\JobFinder\\JOB_FINDER\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordresendverificationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordresendverificationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordresetdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordresetdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordverifydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordverifydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\\u0111\u1ED3 \u00E1n\\job_finder\\job_finder_api\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\controllers\\userfavoritejobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\userfavoritejobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\controllers\\userfavoritecompanycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\userfavoritecompanycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\models\\dto\\userfavoritecompanycreatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\userfavoritecompanycreatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\models\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordresendverificationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordresendverificationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordverifydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordverifydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\models\\dto\\forgotpasswordresetdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\dto\\forgotpasswordresetdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|e:\\jobfinder\\job_finder\\job_finder_api\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -42,7 +66,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 188,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 9,
           "Children": [
             {
               "$type": "Bookmark",
@@ -71,106 +95,171 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "ForgotPasswordResendVerificationDto.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-04T15:09:04.624Z",
-              "EditorCaption": ""
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Properties\\launchSettings.json",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Properties\\launchSettings.json",
+              "RelativeToolTip": "JOB_FINDER_API\\Properties\\launchSettings.json",
+              "ViewState": "AgIAACIAAAAAAAAAAAAcwDQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-15T16:44:40.721Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "ForgotPasswordRequestDto.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Title": "JobController.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\JobController.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\JobController.cs",
+              "ViewState": "AgIAAP0BAAAAAAAAAAAAwCsCAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-04T15:08:47.351Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-06T16:10:10.904Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ForgotPasswordResetDto.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 7,
+              "Title": "EmailService.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\Services\\EmailService.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Services\\EmailService.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\Services\\EmailService.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\Services\\EmailService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-04T15:08:46.757Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ForgotPasswordVerifyDto.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-04T15:08:45.68Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-06T16:04:49.348Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAADUBAAAAAAAAAAAkwEABAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-04T14:21:30.055Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\appsettings.json",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
-              "RelativeToolTip": "JOB_FINDER_API\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-07-04T14:55:53.155Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
               "Title": "Program.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Program.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Program.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Program.cs",
-              "ViewState": "AgIAADAAAAAAAAAAAAAAAEYAAAArAAAAAAAAAA==",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Program.cs*",
+              "RelativeToolTip": "JOB_FINDER_API\\Program.cs*",
+              "ViewState": "AgIAAIQAAAAAAAAAAAAUwKMAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-04T14:43:32.646Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\appsettings.json",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
+              "RelativeToolTip": "JOB_FINDER_API\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-04T14:55:53.155Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UserFavoriteJobController.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\UserFavoriteJobController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEoAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T15:54:03.214Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "UserFavoriteCompanyCreateDto.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\UserFavoriteCompanyCreateDto.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\UserFavoriteCompanyCreateDto.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\UserFavoriteCompanyCreateDto.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\UserFavoriteCompanyCreateDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T16:02:23.155Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UserFavoriteCompanyController.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteCompanyController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\UserFavoriteCompanyController.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\UserFavoriteCompanyController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\UserFavoriteCompanyController.cs",
+              "ViewState": "AgIAAFAAAAAAAAAAAAAjwGoAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-06T16:03:11.394Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ForgotPasswordResendVerificationDto.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResendVerificationDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-04T15:09:04.624Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ForgotPasswordRequestDto.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-04T15:08:47.351Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "ForgotPasswordVerifyDto.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordVerifyDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-04T15:08:45.68Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAABUAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-04T14:21:30.055Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ForgotPasswordResetDto.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\DTO\\ForgotPasswordResetDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-04T15:08:46.757Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "UserService.cs",
-              "DocumentMoniker": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Services\\UserService.cs",
+              "DocumentMoniker": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Services\\UserService.cs",
               "RelativeDocumentMoniker": "JOB_FINDER_API\\Services\\UserService.cs",
-              "ToolTip": "E:\\\u0110\u1ED3 \u00C1n\\JOB_FINDER\\JOB_FINDER_API\\Services\\UserService.cs",
+              "ToolTip": "E:\\JobFinder\\JOB_FINDER\\JOB_FINDER_API\\Services\\UserService.cs",
               "RelativeToolTip": "JOB_FINDER_API\\Services\\UserService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-04T14:43:10.469Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-04T14:43:10.469Z"
             }
           ]
         }

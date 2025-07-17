@@ -535,11 +535,10 @@ namespace JOB_FINDER_API.Controllers
 
                     string mailBody = $@"
                         <div style='font-family: Arial, sans-serif;'>
-                            <h2 style='color:#2d8cf0;'>Công ty {companyName} vừa đăng việc mới!</h2>
-                            <p><b>Title Job:</b> {job.Title}</p>
-                            <p><b>Địa điểm:</b> {job.ProvinceName}</p>
-                            <p><b>Hạn nộp:</b> {job.ExpiryDate:dd/MM/yyyy}</p>
-                            <p><b>Mô tả:</b> {job.Description}</p>
+                            <h2 style='color:#2d8cf0;'>Company {companyName} has just posted a new job!</h2>
+                            <p><b>Job Title:</b> {job.Title}</p>
+                            <p><b>Location:</b> {job.ProvinceName}</p>
+                            <p><b>ExpiryDate Deadline:</b> {job.ExpiryDate:dd/MM/yyyy}</p>
                             <div style='margin:20px 0;'>
                                 <a href='{jobUrl}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>Xem chi tiết & Ứng tuyển</a>
                             </div>
@@ -552,7 +551,7 @@ namespace JOB_FINDER_API.Controllers
                         {
                             _emailService.SendEmail(
                                 user.Email,
-                                $"[{companyName}] vừa đăng việc mới: {job.Title}",
+                                $"[{companyName}]  has just posted a new job: {job.Title}",
                                 mailBody,
                                 true
                             );

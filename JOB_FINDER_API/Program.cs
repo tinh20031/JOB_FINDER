@@ -1,4 +1,4 @@
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using FirebaseAdmin;
 using FireSharp.Config;
 using FireSharp.Interfaces;
@@ -139,21 +139,30 @@ builder.Services.AddRouting(options =>
 });
 
 // CORS
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         builder =>
         {
-            builder.WithOrigins(
-                    "https://job-finder-fe.vercel.app",
-                    "http://localhost:3000",
-                    "https://job-finder-kjt2.onrender.com",
-                    "http://job-finder-kjt2.onrender.com",
-                    "http://localhost:5194"
-                )
+            var allowedOrigins = new[]
+            {
+                "https://job-finder-fe.vercel.app",
+                "http://localhost:3000",
+                "https://job-finder-kjt2.onrender.com",
+                "http://job-finder-kjt2.onrender.com",
+                "http://localhost:5194",
+                "http://10.0.2.2:5195",
+                "http://localhost:8081",
+                "http://192.168.1.226:5195"
+            };
+
+            builder
+                .SetIsOriginAllowed(origin => string.IsNullOrEmpty(origin) || allowedOrigins.Contains(origin))
+                .AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
+                .AllowAnyHeader();
+                //.AllowCredentials();
         });
 });
 
@@ -284,7 +293,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 // Authorization
 builder.Services.AddAuthorization();
-
+builder.WebHost.UseUrls("http://0.0.0.0:5195");
 var app = builder.Build();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions

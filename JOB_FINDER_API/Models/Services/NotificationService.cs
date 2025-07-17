@@ -322,7 +322,7 @@ namespace JOB_FINDER_API.Services
                     .FirstOrDefaultAsync(c => c.UserId == companyUser.UserId);
 
                 string companyName = companyProfile?.CompanyName ?? companyUser.FullName ?? "Company";
-                string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}";
+                string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}";
 
                 string title = $"New job from{companyName}";
                 string message = $"{companyName} just posted a new job: {job.Title}";
@@ -468,7 +468,7 @@ namespace JOB_FINDER_API.Services
                         $"Job '{job.Title}' Yours has been approved by the admin and displayed on the system." :
                         $"Job '{job.Title}' Your request has been rejected by the admin.";
 
-                    string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}";
+                    string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}";
 
                     var notification = new Notification
                     {
@@ -638,7 +638,7 @@ namespace JOB_FINDER_API.Services
                 }
 
                 string candidateName = candidate.FullName ?? "User";
-                string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}";
+                string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}";
                 string candidateProfileUrl = $"http://localhost:3000/candidate-profile/{candidate.UserId}";
                 string applicationUrl = $"http://localhost:3000/company-dashboard/candidates/details/{application.ApplicationId}";
 
@@ -761,8 +761,8 @@ namespace JOB_FINDER_API.Services
                 var companyUserId = job.CompanyId;
 
                 string candidateName = candidate.FullName ?? "User";
-                string jobUrl = $"http://localhost:3000/job-single-v3/{job.JobId}";
-                string candidateProfileUrl = $"http://localhost:3000/candidate-profile/{candidate.UserId}";
+                string jobUrl = $"https://job-finder-fe.vercel.app/job-single-v3/{job.JobId}";
+                string candidateProfileUrl = $"https://job-finder-fe.vercel.app/candidate-profile/{candidate.UserId}";
 
                 string title = "Favorite job";
                 string message = $"{candidateName} added job {job.Title} to favorites";

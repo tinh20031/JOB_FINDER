@@ -91,9 +91,9 @@ namespace JOB_FINDER_API.Controllers
         [Authorize]
         [HttpPost("apply")]
         public async Task<IActionResult> Apply(
-            [FromForm] ApplyJobRequest request,
-            [FromServices] ICvSnapshotService cvSnapshotService,
-            [FromServices] CloudinaryService cloudinaryService)
+           [FromForm] ApplyJobRequest request,
+           [FromServices] ICvSnapshotService cvSnapshotService,
+           [FromServices] CloudinaryService cloudinaryService)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
@@ -200,6 +200,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
+
         private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvAsync(
             ApplyJobRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)
         {
@@ -293,7 +294,6 @@ namespace JOB_FINDER_API.Controllers
 
             return (cv, uploadedCvUrl, cvData, cvSummary, error);
         }
-
         private async Task<string> SummarizeJobAsync(Job job, JobFinderDbContext context)
         {
             try
@@ -328,6 +328,8 @@ namespace JOB_FINDER_API.Controllers
             await context.SaveChangesAsync();
             return application;
         }
+
+
 
         private string CleanExtractedText(string text)
         {
@@ -756,14 +758,13 @@ namespace JOB_FINDER_API.Controllers
                 return Ok(new { userId, companyId, distinctJobCount = count });
             }
         }
-
         [Authorize]
         [HttpPost("try-match")]
         public async Task<IActionResult> TryMatch(
-            [FromForm] TryMatchRequest request,
-            [FromServices] ICvSnapshotService cvSnapshotService,
-            [FromServices] CloudinaryService cloudinaryService,
-            [FromServices] IServiceScopeFactory serviceScopeFactory)
+                   [FromForm] TryMatchRequest request,
+                   [FromServices] ICvSnapshotService cvSnapshotService,
+                   [FromServices] CloudinaryService cloudinaryService,
+                   [FromServices] IServiceScopeFactory serviceScopeFactory)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
@@ -868,7 +869,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
         private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvForTryMatchAsync(
-            TryMatchRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)
+              TryMatchRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)
         {
             CV cv = null;
             string uploadedCvUrl = null;
@@ -980,22 +981,41 @@ namespace JOB_FINDER_API.Controllers
         {
             var suggestions = new List<string>();
 
-            if (matchingResult.SimilarityDescription < 0.3)
-                suggestions.Add("Improve your CV description to better align with the job requirements. Focus on including key responsibilities mentioned in the job description.");
+            // 1. Description
+            if (matchingResult.SimilarityDescription < 0.4)
+            {
+                suggestions.Add("Update your CV description to better match the job's main focus and responsibilities.");
+            }
 
-            if (matchingResult.SimilaritySkills < 0.3)
-                suggestions.Add($"Add more skills relevant to {job.YourSkill ?? "job requirements"}. Consider including {string.Join(", ", job.YourSkill?.Split(',').Take(3) ?? new[] { "technical skills" })}.");
+            // 2. Skills
+            if (matchingResult.SimilaritySkills < 0.5)
+            {
+                suggestions.Add("Add more skills that align with the job's technical requirements to improve your fit.");
+            }
 
-            if (matchingResult.SimilarityExperience < 0.3)
-                suggestions.Add("Expand your experience section with detailed roles and years that match the job's experience level (e.g., Fresher, Intern).");
+            // 3. Experience
+            if (matchingResult.SimilarityExperience < 0.4)
+            {
+                suggestions.Add("Expand your experience section to highlight roles or projects relevant to the job's needs.");
+            }
 
-            if (matchingResult.SimilarityEducation < 0.3)
-                suggestions.Add("Highlight relevant degrees or certifications in IT (e.g., Java, RESTful API) that align with the job's education requirements.");
+            // 4. Education
+            if (matchingResult.SimilarityEducation < 0.6)
+            {
+                suggestions.Add("Include relevant education details or certifications that match the job's qualifications.");
+            }
 
+            // 5. Overall
             if (matchingResult.FinalSimilarity < 0.5)
-                suggestions.Add("Overall, your CV has low compatibility. Tailor it closer to the job by addressing the above points and seeking additional training if needed.");
+            {
+                string suggestion = $"Your CV has low compatibility with the job (score: {matchingResult.FinalSimilarity:F2}). Consider tailoring your CV to better fit the job requirements and exploring additional training.";
+                if (!string.IsNullOrEmpty(matchingResult.GeminiReasoning))
+                    suggestion += $" Additional feedback: {matchingResult.GeminiReasoning}.";
+                suggestions.Add(suggestion);
+            }
 
-            return suggestions.Any() ? suggestions : new List<string> { "Your CV is well-aligned with the job. No major improvements suggested!" };
+            return suggestions.Any() ? suggestions : new List<string> { "Your CV is well-aligned with the job. No major changes needed!" };
         }
+
     }
 }

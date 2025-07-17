@@ -20,7 +20,7 @@ namespace JOB_FINDER_API.Controllers
             _config = config;
         }
 
-
+        //local 
         [HttpPost("request")]
         public async Task<IActionResult> RequestUpgrade([FromBody] JOB_FINDER_API.Models.Requests.CandidateToCompanyRequest request)
         {
@@ -79,6 +79,67 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Đã gửi yêu cầu lên admin.");
         }
 
+
+
+
+        //production 
+        //[HttpPost("request")]
+//        public async Task<IActionResult> RequestUpgrade([FromBody] JOB_FINDER_API.Models.Requests.CandidateToCompanyRequest request)
+//        {
+//            var user = await _context.Users.FindAsync(request.UserId);
+//            if (user == null)
+//                return BadRequest("User not found.");
+//            // Kiểm tra đã tồn tại request chưa
+//            var existingRequest = await _context.CandidateToCompanyRequests
+//                .FirstOrDefaultAsync(r => r.UserId == request.UserId);
+//            if (existingRequest != null)
+//            {
+//                return BadRequest("You have submitted a request before please wait");
+//            }
+//            // Lưu request vào database
+//            var entity = new JOB_FINDER_API.Models.CandidateToCompanyRequest
+//            {
+//                UserId = request.UserId,
+//                CompanyName = request.CompanyName,
+//                CompanyProfileDescription = request.CompanyProfileDescription,
+//                Location = request.Location,
+//                TeamSize = request.TeamSize,
+//                Website = request.Website,
+//                Contact = request.Contact,
+//                IndustryId = request.IndustryId,
+//                CreatedAt = DateTime.UtcNow
+//            };
+//            _context.CandidateToCompanyRequests.Add(entity);
+//            await _context.SaveChangesAsync();
+
+//            // Gửi mail cho admin với form HTML đẹp
+//            var adminEmail = _config["Admin:Email"];
+//            var subject = "Yêu cầu xác thực lên Company";
+//            var htmlBody = $@"
+//<html>
+//  <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+//    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+//      <h2 style='color: #2d8cf0;'>Company Verification Request</h2>
+//      <p><b>Applicant:</b> {user.FullName} ({user.Email})</p>
+//      <p><b>Company Name:</b> {request.CompanyName}</p>
+//      <p><b>Description:</b> {request.CompanyProfileDescription}</p>
+//      <p><b>Address:</b> {request.Location}</p>
+//      <p><b>Team Size:</b> {request.TeamSize}</p>
+//      <p><b>Website:</b> {request.Website}</p>
+//      <p><b>Contact:</b> {request.Contact}</p>
+//      <p><b>Industry ID:</b> {request.IndustryId}</p>
+//      <div style='margin: 24px 0;'>
+//        <a href='https://job-finder-fe.vercel.app/admin-dashboard/user-manager/{user.UserId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
+//      </div>
+//      <p style='font-size: 13px; color: #888;'>Please verify this request if the information is valid.</p>
+//    </div>
+//  </body>
+//</html>
+//";
+//            SendEmail(adminEmail, subject, htmlBody, true);
+
+//            return Ok("Đã gửi yêu cầu lên admin.");
+//        }
         // Admin xác thực, tạo CompanyProfile và đổi role
         [HttpPost("verify/{userId}")]
         public async Task<IActionResult> VerifyUpgrade(int userId)
@@ -133,7 +194,7 @@ namespace JOB_FINDER_API.Controllers
         Your account has been <b>successfully verified as a Company</b> on the <b>Job Finder</b> system.
       </p>
       <div style='margin: 24px 0; text-align: center;'>
-        <a href='http://localhost:3000/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Log in now</a>
+        <a href='https://job-finder-fe.vercel.app/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Log in now</a>
       </div>
       <p style='font-size: 14px; color: #888; text-align: center;'>
         If you have any questions, please contact our support team.<br>

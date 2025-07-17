@@ -589,7 +589,7 @@ namespace JOB_FINDER_API.Controllers
             return Challenge(properties, "Google");
         }
 
-        //bản gốc dùng được 
+        //bản gốc dùng được
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse()
         {
@@ -659,6 +659,78 @@ namespace JOB_FINDER_API.Controllers
             // Redirect to frontend with token and role
             return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
         }
+
+
+       // produiction
+        //[HttpGet("google-response")]
+        //public async Task<IActionResult> GoogleResponse()
+        //{
+        //    var authenticateResult = await HttpContext.AuthenticateAsync("External");
+        //    if (!authenticateResult.Succeeded)
+        //    {
+        //        return Redirect($"https://job-finder-kjt2.onrender.com/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
+        //    }
+
+        //    var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
+        //    var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
+
+        //    if (string.IsNullOrEmpty(email))
+        //    {
+        //        return Redirect($"https://job-finder-kjt2.onrender.com/auth/error?message={Uri.EscapeDataString("Email not provided")}");
+        //    }
+
+        //    // Check if user exists
+        //    var user = await _dbContext.Users
+        //        .Include(u => u.Role)
+        //        .FirstOrDefaultAsync(u => u.Email == email);
+
+        //    if (user == null)
+        //    {
+        //        // Create new user with Candidate role
+        //        var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
+        //        if (candidateRole == null)
+        //        {
+        //            return Redirect($"https://job-finder-kjt2.onrender.com/auth/error?message={Uri.EscapeDataString("User role not found")}");
+        //        }
+
+        //        user = new User
+        //        {
+        //            FullName = name,
+        //            Email = email,
+        //            RoleId = candidateRole.RoleId,
+        //            CreatedAt = DateTime.UtcNow,
+        //            UpdatedAt = DateTime.UtcNow,
+        //            IsActive = true,
+        //            IsEmailVerified = true,
+        //            EmailVerificationCode = "VERIFIED",
+        //            EmailVerificationCodeExpiry = null
+        //        };
+        //        _dbContext.Users.Add(user);
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Create CandidateProfile for new user
+        //        var candidateProfile = new CandidateProfile
+        //        {
+        //            UserId = user.UserId ?? 0
+        //        };
+        //        _dbContext.CandidateProfiles.Add(candidateProfile);
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Refresh user to include the role
+        //        user = await _dbContext.Users
+        //            .Include(u => u.Role)
+        //            .FirstOrDefaultAsync(u => u.Email == email);
+        //    }
+
+        //    // Generate JWT token
+        //    var token = GenerateJwtToken(user);
+
+        //    // Sign out of the temporary External cookie
+        //    await HttpContext.SignOutAsync("External");
+
+        //    // Redirect to frontend with token and role
+        //    return Redirect($"https://job-finder-kjt2.onrender.com/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
+        //}
 
         [HttpPost("forgot-password/request")]
         public async Task<IActionResult> RequestForgotPassword([FromBody] ForgotPasswordRequestDto dto)

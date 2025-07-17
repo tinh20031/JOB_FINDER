@@ -23,8 +23,12 @@ namespace JOB_FINDER_API.Models
         public Industry? Industry { get; set; }
 
         public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
         public User? User { get; set; }
+        [JsonIgnore]
+        public ICollection<UserFavoriteCompany> UserFavoriteCompanies { get; set; } = new List<UserFavoriteCompany>();
     }
 }

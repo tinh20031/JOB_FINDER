@@ -15,6 +15,7 @@ namespace JOB_FINDER_API.Models
         public string? Contact { get; set; }
         public int IndustryId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public Industry? Industry { get; set; }
         [JsonIgnore]

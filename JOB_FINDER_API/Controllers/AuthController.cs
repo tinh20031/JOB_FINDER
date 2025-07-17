@@ -1,3 +1,4 @@
+
 using FirebaseAdmin.Auth;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
@@ -14,7 +15,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
-using static Google.Apis.Auth.OAuth2.Web.AuthorizationCodeWebApp;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -220,103 +220,6 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, $"Registration error: {ex.Message}");
             }
         }
-
-        //[HttpPost("login")]
-        //public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        //{
-        //    try
-        //    {
-        //        // Validate email format
-        //        if (!IsValidEmail(request.Email))
-        //        {
-        //            return BadRequest("Invalid email format. Please provide a valid email address.");
-        //        }
-
-        //        var user = await _dbContext.Users
-        //            .Include(u => u.Role)
-        //            .Include(u => u.CompanyProfile)
-        //            .FirstOrDefaultAsync(u => u.Email == request.Email);
-
-        //        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
-        //        {
-        //            return Unauthorized("Invalid login credentials.");
-        //        }
-
-        //        if (!user.IsActive)
-        //        {
-        //            return Forbid("Your account has been locked. Please contact support.");
-        //        }
-
-        //        // Email verification check
-        //        if (!user.IsEmailVerified)
-        //        {
-        //            // Regenerate verification code if needed
-        //            if (user.EmailVerificationCodeExpiry == null || user.EmailVerificationCodeExpiry < DateTime.UtcNow)
-        //            {
-        //                user.EmailVerificationCode = GenerateVerificationCode();
-        //                user.EmailVerificationCodeExpiry = DateTime.UtcNow.AddHours(24);
-        //                await _dbContext.SaveChangesAsync();
-
-        //                // Send new verification code
-        //                try
-        //                {
-        //                    _emailService.SendVerificationEmail(user.Email, user.EmailVerificationCode);
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    // Log but continue
-        //                    Console.WriteLine($"Unable to send verification email: {ex.Message}");
-        //                }
-        //            }
-
-        //            return BadRequest(new
-        //            {
-        //                message = "Email has not been verified. Please check your inbox to verify your account before logging in.",
-        //                requiresVerification = true,
-        //                userId = user.Id,
-        //                email = user.Email
-        //            });
-        //        }
-
-        //        if (user.Role == null)
-        //        {
-        //            return StatusCode(500, "User role not found.");
-        //        }
-
-        //        var token = GenerateJwtToken(user);
-
-        //        // Lấy thông tin công ty nếu có
-        //        string? companyName = null;
-        //        string? urlCompanyLogo = null;
-        //        if (user.CompanyProfile != null)
-        //        {
-        //            companyName = user.CompanyProfile.CompanyName;
-        //            urlCompanyLogo = user.CompanyProfile.UrlCompanyLogo;
-        //        }
-
-        //        return Ok(new
-        //        {
-        //            Token = token,
-        //            Role = user.Role.RoleName,
-        //            User = new
-        //            {
-        //                user.Id,
-        //                user.FullName,
-        //                user.Email,
-        //                user.Phone,
-        //                user.RoleId,
-        //                user.Image,
-        //                RoleName = user.Role.RoleName,
-        //                CompanyName = companyName,
-        //                UrlCompanyLogo = urlCompanyLogo
-        //            }
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Login error: {ex.Message}");
-        //    }
-        //}
 
         //bản gốc dùng được k đuộc xóa 
         //[HttpPost("login")]
@@ -653,10 +556,10 @@ namespace JOB_FINDER_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                 //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                 new Claim("nameid", user.UserId.ToString()),
-                 new Claim(ClaimTypes.Role, user.Role.RoleName)
-            }),
+                    //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim("nameid", user.UserId.ToString()),
+                    new Claim(ClaimTypes.Role, user.Role.RoleName)
+                }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
                 Audience = _configuration["Jwt:Audience"],
@@ -678,153 +581,51 @@ namespace JOB_FINDER_API.Controllers
             {
                 RedirectUri = callbackUrl,
                 Items =
-            {
-                { ".xsrf", Guid.NewGuid().ToString() }
-            }
+                {
+                    { ".xsrf", Guid.NewGuid().ToString() }
+                }
             };
 
             return Challenge(properties, "Google");
         }
 
-        // Make sure Google response endpoint matches exactly
         //bản gốc dùng được 
-        //[HttpGet("google-response")]
-        //public async Task<IActionResult> GoogleResponse()
-        //{
-        //    var authenticateResult = await HttpContext.AuthenticateAsync("External");
-        //    if (!authenticateResult.Succeeded)
-        //    {
-        //        return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
-        //    }
-
-        //    var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
-        //    var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
-
-        //    if (string.IsNullOrEmpty(email))
-        //    {
-        //        return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
-        //    }
-
-        //    // Check if user exists
-        //    var user = await _dbContext.Users
-        //        .Include(u => u.Role)
-        //        .FirstOrDefaultAsync(u => u.Email == email);
-
-        //    if (user == null)
-        //    {
-        //        // Create new user with Candidate role
-        //        var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
-        //        if (candidateRole == null)
-        //        {
-        //            return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
-        //        }
-
-        //        user = new User
-        //        {
-        //            FullName = name,
-        //            Email = email,
-        //            RoleId = candidateRole.RoleId,
-        //            CreatedAt = DateTime.UtcNow,
-        //            UpdatedAt = DateTime.UtcNow,
-        //            IsActive = true,
-        //            IsEmailVerified = true,
-        //            EmailVerificationCode = "VERIFIED",
-        //            EmailVerificationCodeExpiry = null
-        //        };
-        //        _dbContext.Users.Add(user);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        // Create CandidateProfile for new user
-        //        var candidateProfile = new CandidateProfile
-        //        {
-        //            UserId = user.Id ?? 0
-        //        };
-        //        _dbContext.CandidateProfiles.Add(candidateProfile);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        // Refresh user to include the role
-        //        user = await _dbContext.Users
-        //            .Include(u => u.Role)
-        //            .FirstOrDefaultAsync(u => u.Email == email);
-        //    }
-
-        //    // Generate JWT token
-        //    var token = GenerateJwtToken(user);
-
-        //    // Sign out of the temporary External cookie
-        //    await HttpContext.SignOutAsync("External");
-
-        //    // Redirect to frontend with token and role
-        //    return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
-        //}
-
-        //final local
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse()
         {
             var authenticateResult = await HttpContext.AuthenticateAsync("External");
             if (!authenticateResult.Succeeded)
             {
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed: " + authenticateResult.Failure?.Message)}");
+                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Authentication failed")}");
             }
 
             var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
             var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
-            var googleIdToken = authenticateResult.Properties.GetTokenValue("id_token");
-
-            Console.WriteLine($"Debug - Email: {email}");
-            Console.WriteLine($"Debug - Name: {name}");
-            Console.WriteLine($"Debug - Google ID Token: {googleIdToken ?? "null"}");
 
             if (string.IsNullOrEmpty(email))
             {
                 return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Email not provided")}");
             }
 
+            // Check if user exists
             var user = await _dbContext.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == email);
 
-            var firebaseAuth = FirebaseAuth.DefaultInstance; // Khai báo một lần duy nhất
-
             if (user == null)
             {
+                // Create new user with Candidate role
                 var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
                 if (candidateRole == null)
                 {
                     return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("User role not found")}");
                 }
 
-                // Thử lấy Firebase UID từ id_token nếu có
-                string firebaseUid = null;
-                if (!string.IsNullOrEmpty(googleIdToken))
-                {
-                    try
-                    {
-                        var decodedToken = await firebaseAuth.VerifyIdTokenAsync(googleIdToken);
-                        firebaseUid = decodedToken.Uid;
-                        Console.WriteLine($"Debug - Firebase UID from id_token: {firebaseUid}");
-                    }
-                    catch (FirebaseAuthException ex)
-                    {
-                        Console.WriteLine($"Debug - Error verifying id_token: {ex.Message} (Error Code: {ex.ErrorCode})");
-                        firebaseUid = Guid.NewGuid().ToString();
-                        Console.WriteLine($"Debug - Fallback Firebase UID: {firebaseUid}");
-                    }
-                }
-                else
-                {
-                    firebaseUid = Guid.NewGuid().ToString();
-                    Console.WriteLine($"Debug - No id_token, generated Firebase UID: {firebaseUid}");
-                }
-
-                // Tạo người dùng với FirebaseUid đã gán
                 user = new User
                 {
                     FullName = name,
                     Email = email,
                     RoleId = candidateRole.RoleId,
-                    FirebaseUid = firebaseUid, // Lưu FirebaseUid
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsActive = true,
@@ -835,7 +636,7 @@ namespace JOB_FINDER_API.Controllers
                 _dbContext.Users.Add(user);
                 await _dbContext.SaveChangesAsync();
 
-                // Tạo CandidateProfile cho người dùng mới
+                // Create CandidateProfile for new user
                 var candidateProfile = new CandidateProfile
                 {
                     UserId = user.UserId ?? 0
@@ -847,148 +648,17 @@ namespace JOB_FINDER_API.Controllers
                 user = await _dbContext.Users
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == email);
-                Console.WriteLine($"Debug - Reloaded Firebase UID: {user.FirebaseUid}");
-                Console.WriteLine($"Debug - Created User ID: {user.UserId}");
-            }
-            else if (string.IsNullOrEmpty(user.FirebaseUid))
-            {
-                // Nếu user đã tồn tại nhưng FirebaseUid rỗng, gán giá trị mới
-                user.FirebaseUid = Guid.NewGuid().ToString();
-                await _dbContext.SaveChangesAsync();
-                await _dbContext.Entry(user).ReloadAsync(); // Đồng bộ lại từ DB
-                Console.WriteLine($"Debug - Updated Firebase UID for existing user: {user.FirebaseUid}");
             }
 
-            // Kiểm tra và tạo custom token
-            if (string.IsNullOrEmpty(user.FirebaseUid))
-            {
-                Console.WriteLine("Debug - Critical Error: FirebaseUid is still null or empty after assignment.");
-                return Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString("Internal error: Unable to generate Firebase UID")}");
-            }
-
-            string customToken = await firebaseAuth.CreateCustomTokenAsync(user.FirebaseUid);
-
+            // Generate JWT token
             var token = GenerateJwtToken(user);
+
+            // Sign out of the temporary External cookie
             await HttpContext.SignOutAsync("External");
 
-            return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
+            // Redirect to frontend with token and role
+            return Redirect($"http://localhost:3000/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
         }
-
-        //final production
-        //[HttpGet("google-response")]
-        //public async Task<IActionResult> GoogleResponse()
-        //{
-        //    var authenticateResult = await HttpContext.AuthenticateAsync("External");
-        //    if (!authenticateResult.Succeeded)
-        //    {
-        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Authentication failed: " + authenticateResult.Failure?.Message)}");
-        //    }
-
-        //    var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
-        //    var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
-        //    var googleIdToken = authenticateResult.Properties.GetTokenValue("id_token");
-
-        //    Console.WriteLine($"Debug - Email: {email}");
-        //    Console.WriteLine($"Debug - Name: {name}");
-        //    Console.WriteLine($"Debug - Google ID Token: {googleIdToken ?? "null"}");
-
-        //    if (string.IsNullOrEmpty(email))
-        //    {
-        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Email not provided")}");
-        //    }
-
-        //    var user = await _dbContext.Users
-        //        .Include(u => u.Role)
-        //        .FirstOrDefaultAsync(u => u.Email == email);
-
-        //    var firebaseAuth = FirebaseAuth.DefaultInstance; // Khai báo một lần duy nhất
-
-        //    if (user == null)
-        //    {
-        //        var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
-        //        if (candidateRole == null)
-        //        {
-        //            return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("User role not found")}");
-        //        }
-
-        //        // Thử lấy Firebase UID từ id_token nếu có
-        //        string firebaseUid = null;
-        //        if (!string.IsNullOrEmpty(googleIdToken))
-        //        {
-        //            try
-        //            {
-        //                var decodedToken = await firebaseAuth.VerifyIdTokenAsync(googleIdToken);
-        //                firebaseUid = decodedToken.Uid;
-        //                Console.WriteLine($"Debug - Firebase UID from id_token: {firebaseUid}");
-        //            }
-        //            catch (FirebaseAuthException ex)
-        //            {
-        //                Console.WriteLine($"Debug - Error verifying id_token: {ex.Message} (Error Code: {ex.ErrorCode})");
-        //                firebaseUid = Guid.NewGuid().ToString();
-        //                Console.WriteLine($"Debug - Fallback Firebase UID: {firebaseUid}");
-        //            }
-        //        }
-        //        else
-        //        {
-        //            firebaseUid = Guid.NewGuid().ToString();
-        //            Console.WriteLine($"Debug - No id_token, generated Firebase UID: {firebaseUid}");
-        //        }
-
-        //        // Tạo người dùng với FirebaseUid đã gán
-        //        user = new User
-        //        {
-        //            FullName = name,
-        //            Email = email,
-        //            RoleId = candidateRole.RoleId,
-        //            FirebaseUid = firebaseUid, // Lưu FirebaseUid
-        //            CreatedAt = DateTime.UtcNow,
-        //            UpdatedAt = DateTime.UtcNow,
-        //            IsActive = true,
-        //            IsEmailVerified = true,
-        //            EmailVerificationCode = "VERIFIED",
-        //            EmailVerificationCodeExpiry = null
-        //        };
-        //        _dbContext.Users.Add(user);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        // Tạo CandidateProfile cho người dùng mới
-        //        var candidateProfile = new CandidateProfile
-        //        {
-        //            UserId = user.UserId ?? 0
-        //        };
-        //        _dbContext.CandidateProfiles.Add(candidateProfile);
-        //        await _dbContext.SaveChangesAsync();
-
-        //        // Refresh user to include the role
-        //        user = await _dbContext.Users
-        //            .Include(u => u.Role)
-        //            .FirstOrDefaultAsync(u => u.Email == email);
-        //        Console.WriteLine($"Debug - Reloaded Firebase UID: {user.FirebaseUid}");
-        //        Console.WriteLine($"Debug - Created User ID: {user.UserId}");
-        //    }
-        //    else if (string.IsNullOrEmpty(user.FirebaseUid))
-        //    {
-        //        // Nếu user đã tồn tại nhưng FirebaseUid rỗng, gán giá trị mới
-        //        user.FirebaseUid = Guid.NewGuid().ToString();
-        //        await _dbContext.SaveChangesAsync();
-        //        await _dbContext.Entry(user).ReloadAsync(); // Đồng bộ lại từ DB
-        //        Console.WriteLine($"Debug - Updated Firebase UID for existing user: {user.FirebaseUid}");
-        //    }
-
-        //    // Kiểm tra và tạo custom token
-        //    if (string.IsNullOrEmpty(user.FirebaseUid))
-        //    {
-        //        Console.WriteLine("Debug - Critical Error: FirebaseUid is still null or empty after assignment.");
-        //        return Redirect($"https://job-finder-fe.vercel.app/auth/error?message={Uri.EscapeDataString("Internal error: Unable to generate Firebase UID")}");
-        //    }
-
-        //    string customToken = await firebaseAuth.CreateCustomTokenAsync(user.FirebaseUid);
-
-        //    var token = GenerateJwtToken(user);
-        //    await HttpContext.SignOutAsync("External");
-
-        //    return Redirect($"https://job-finder-fe.vercel.app/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseToken={Uri.EscapeDataString(customToken)}");
-        //}
 
         [HttpPost("forgot-password/request")]
         public async Task<IActionResult> RequestForgotPassword([FromBody] ForgotPasswordRequestDto dto)
@@ -999,7 +669,25 @@ namespace JOB_FINDER_API.Controllers
 
             var code = GenerateVerificationCode();
             _cache.Set($"fp_{dto.Email}", code, TimeSpan.FromMinutes(10));
-            _emailService.SendEmail(dto.Email, "Password reset verification code", $"Your verification code i   s: {code}", false);
+
+            string subject = "Password Reset Request";
+            string body = $@"
+<html>
+  <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+      <h2 style='color: #2d8cf0;'>Password Reset Request</h2>
+      <p>Hello,</p>
+      <p>We received a request to reset your password for the Job Finder account associated with this email. To proceed, please use the verification code below:</p>
+      <div style='margin: 24px 0; text-align: center;'>
+        <h1 style='font-size: 32px; letter-spacing: 5px; color: #2d8cf0; border: 2px dashed #2d8cf0; display: inline-block; padding: 10px 20px; border-radius: 5px;'>{code}</h1>
+      </div>
+      <p>The verification code is valid for 10 minutes. If you did not request this code, please ignore this email or contact support.</p>
+      <p>Best regards,<br>Job Finder Team</p>
+    </div>
+  </body>
+</html>";
+
+            _emailService.SendEmail(dto.Email, subject, body, true);
             return Ok("The verification code has been sent to your email.");
         }
 
@@ -1022,6 +710,22 @@ namespace JOB_FINDER_API.Controllers
 
                 await _userService.UpdatePasswordAsync(user, dto.NewPassword);
                 _cache.Remove($"fp_{dto.Email}");
+
+                string subject = "Password Reset Successful";
+                string body = $@"
+<html>
+  <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+      <h2 style='color: #2d8cf0;'>Password Reset Successful</h2>
+      <p>Hello,</p>
+      <p>Your password for the Job Finder account associated with this email has been successfully reset. You can now log in with your new password.</p>
+      <p>If you did not request this change, please contact support immediately.</p>
+      <p>Best regards,<br>Job Finder Team</p>
+    </div>
+  </body>
+</html>";
+
+                _emailService.SendEmail(dto.Email, subject, body, true);
                 return Ok("Password reset successful.");
             }
             return BadRequest("The verification code is incorrect or has expired.");
@@ -1045,17 +749,28 @@ namespace JOB_FINDER_API.Controllers
 
             var code = GenerateVerificationCode();
             _cache.Set($"fp_{dto.Email}", code, TimeSpan.FromMinutes(10));
-
             _cache.Set(throttleKey, true, TimeSpan.FromSeconds(60));
+
+            string subject = "Password Reset Verification Code (Resend)";
+            string body = $@"
+<html>
+  <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+      <h2 style='color: #2d8cf0;'>Password Reset Verification Code (Resend)</h2>
+      <p>Hello,</p>
+      <p>We have resent a verification code to reset your password for the Job Finder account associated with this email. Please use the code below:</p>
+      <div style='margin: 24px 0; text-align: center;'>
+        <h1 style='font-size: 32px; letter-spacing: 5px; color: #2d8cf0; border: 2px dashed #2d8cf0; display: inline-block; padding: 10px 20px; border-radius: 5px;'>{code}</h1>
+      </div>
+      <p>The verification code is valid for 10 minutes. If you did not request this code, please ignore this email or contact support.</p>
+      <p>Best regards,<br>Job Finder Team</p>
+    </div>
+  </body>
+</html>";
 
             try
             {
-                _emailService.SendEmail(
-                    dto.Email,
-                    "Password Reset Verification Code (Resend)",
-                    $"Your new verification code is: {code}",
-                    false
-                );
+                _emailService.SendEmail(dto.Email, subject, body, true);
                 return Ok("The verification code has been resent to your email.");
             }
             catch (Exception ex)
@@ -1065,8 +780,3 @@ namespace JOB_FINDER_API.Controllers
         }
     }
 }
-
-
-
-
-

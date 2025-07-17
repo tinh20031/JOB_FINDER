@@ -21,6 +21,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Polly;
+using Polly.Extensions.Http;
 using Supabase;
 using System.Security.Claims;
 using System.Text;
@@ -40,8 +42,9 @@ if (!keysDirectory.Exists)
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(keysDirectory)
     .SetApplicationName("JobFinderApp")
-    .SetDefaultKeyLifetime(TimeSpan.FromDays(90)); // Optional: set key lifetime
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
+// Initialize Firebase
 string firebaseJsonPath = Path.Combine(builder.Environment.ContentRootPath, "Configs", "job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json");
 try
 {
@@ -56,6 +59,8 @@ catch (Exception ex)
     Console.WriteLine($"Error initializing FirebaseApp: {ex.Message}");
     throw;
 }
+
+// Register Firebase Client
 builder.Services.AddSingleton<IFirebaseClient>(sp =>
 {
     IFirebaseConfig config = new FirebaseConfig
@@ -66,12 +71,20 @@ builder.Services.AddSingleton<IFirebaseClient>(sp =>
     return new FireSharp.FirebaseClient(config);
 });
 
+// Register Polly Retry Policy
+builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(GetRetryPolicy());
+
+// Configure HttpClient for SemanticMatchingService with Polly
+builder.Services.AddHttpClient<SemanticMatchingService>()
+    .AddPolicyHandler(GetRetryPolicy());
+
+// Add HttpClient for general use (from thanhtung)
+builder.Services.AddHttpClient();
+
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
-builder.Services.AddMemoryCache();
 
 // Custom services
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
@@ -79,18 +92,19 @@ builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
-// Add this line to your service registrations
-builder.Services.AddSingleton<ApplyPercentageCalculator>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<ApplyPercentageCalculator>();
+builder.Services.AddScoped<NotificationService>(); // From thanhtung
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<JobStatusService>();
-builder.Services.AddScoped<NotificationService>();
-// Add to Program.cs to ensure logging is properly configured
+
+// Add logging (from thanhtung)
 builder.Services.AddLogging(config =>
 {
     config.AddConsole();
     config.AddDebug();
 });
+
 // Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
 builder.Services.AddScoped<Client>(sp => new Client("https://your-supabase-url/supabase", "your-supabase-key"));
@@ -104,7 +118,7 @@ builder.Services.AddSingleton(cloudinary);
 // Swagger
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "JobFinder API", Version = "v1" });
     c.OperationFilter<UploadFileOperationFilter>();
 
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -138,35 +152,33 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
-// Add this to your services configuration
+// Routing
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
-    //options.LowercaseQueryStrings = true;
+    // options.LowercaseQueryStrings = true; // Commented out as in thanhtung
 });
 
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
-        builder =>
-        {
-            builder.WithOrigins(
-                    "https://job-finder-fe.vercel.app",
-                    "http://localhost:3000",
-                    "https://job-finder-kjt2.onrender.com",
-                    "http://job-finder-kjt2.onrender.com",
-                    "http://localhost:5194"
-                )
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
+    options.AddPolicy("AllowReactApp", builder =>
+    {
+        builder.WithOrigins(
+                "https://job-finder-fe.vercel.app",
+                "http://localhost:3000",
+                "https://job-finder-kjt2.onrender.com",
+                "http://job-finder-kjt2.onrender.com",
+                "http://localhost:5194")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
 });
 
 // DbContext
@@ -205,7 +217,6 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 
-    // Allow token via query string for SignalR
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -229,7 +240,6 @@ builder.Services.AddAuthentication(options =>
     options.Cookie.IsEssential = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
 
-
     options.Events = new CookieAuthenticationEvents
     {
         OnRedirectToLogin = context =>
@@ -252,13 +262,11 @@ builder.Services.AddAuthentication(options =>
     options.SignInScheme = "External";
     options.SaveTokens = true;
 
-    // Configure scope
     options.Scope.Clear();
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
 
-    // Configure cookie settings consistently
     options.CorrelationCookie.SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax;
     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     options.CorrelationCookie.HttpOnly = true;
@@ -302,10 +310,8 @@ var app = builder.Build();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
-
 });
 
-// Development tools
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -313,10 +319,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.EnableFilter());
 }
 
-// CORS Middleware
 app.UseCors("AllowReactApp");
 
-// Log applied CORS origins
 app.Use(async (context, next) =>
 {
     var origin = context.Request.Headers["Origin"].ToString();
@@ -331,5 +335,19 @@ app.UseSession();
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<NotificationHub>("/notificationHub");
+
 app.Run();
 
+// Define Retry Policy (from HEAD)
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .WaitAndRetryAsync(
+            3,
+            retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+            onRetry: (outcome, timespan, retryAttempt, context) =>
+            {
+                Console.WriteLine($"Retry {retryAttempt} after {timespan.TotalSeconds} seconds due to: {outcome.Exception?.Message}");
+            });
+}

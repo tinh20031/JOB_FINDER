@@ -690,7 +690,7 @@ namespace JOB_FINDER_API.Services
         {
             try
             {
-                var companyUserId = favoriteCompany.CompanyId;
+                var companyUserId = favoriteCompany.CompanyProfileId;
 
                 string candidateName = candidate.FullName ?? "Ứng viên";
                 string candidateProfileUrl = $"http://localhost:3000/candidate-profile/{candidate.UserId}";

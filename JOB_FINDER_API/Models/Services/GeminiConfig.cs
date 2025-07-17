@@ -12,6 +12,7 @@
         public string RedirectUri { get; set; }
         public string ServiceAccountKeyPath { get; set; }
         public float SimilarityThreshold { get; set; }
+
     }
 }
 

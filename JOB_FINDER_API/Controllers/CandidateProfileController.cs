@@ -20,20 +20,37 @@ namespace JOB_FINDER_API.Controllers
         {
             var profile = await _context.CandidateProfiles
                 .Include(p => p.User)
-                .Include(p => p.AboutMes)
-                .Include(p => p.Skills)
-                .Include(p => p.Educations)
-                .Include(p => p.WorkExperiences)
-                .Include(p => p.HighlightProjects)
-                .Include(p => p.Certificates)
-                .Include(p => p.Awards)
-                .Include(p => p.ForeginLanguages)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
+
             if (profile == null) return NotFound();
-            return Ok(profile);
+
+            return Ok(new
+            {
+                profile.CandidateProfileId,
+                profile.UserId,
+                profile.Gender,
+                profile.Dob,
+                profile.JobTitle,
+                profile.Address,
+                profile.Province,
+                profile.City,
+                profile.PersonalLink,
+                Email = profile.User?.Email ?? string.Empty,
+                FullName = profile.User?.FullName ?? string.Empty,
+                Phone = profile.User?.Phone ?? string.Empty,
+                Image = profile.User?.Image ?? string.Empty,
+                profile.AboutMeDescription,
+                Skills = profile.Skills,
+                Educations = profile.Educations,
+                WorkExperiences = profile.WorkExperiences,
+                HighlightProjects = profile.HighlightProjects,
+                Certificates = profile.Certificates,
+                Awards = profile.Awards,
+                ForeignLanguages = profile.ForeignLanguages
+            });
         }
 
-        
+
         [HttpGet("me")]
         public async Task<IActionResult> GetMyProfile()
         {
@@ -45,14 +62,6 @@ namespace JOB_FINDER_API.Controllers
 
             var profile = await _context.CandidateProfiles
                 .Include(p => p.User)
-                .Include(p => p.AboutMes)
-                .Include(p => p.Skills)
-                .Include(p => p.Educations)
-                .Include(p => p.WorkExperiences)
-                .Include(p => p.HighlightProjects)
-                .Include(p => p.Certificates)
-                .Include(p => p.Awards)
-                .Include(p => p.ForeginLanguages)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (profile == null)
@@ -75,14 +84,14 @@ namespace JOB_FINDER_API.Controllers
                     FullName = user.FullName ?? string.Empty,
                     Phone = user.Phone ?? string.Empty,
                     Image = user.Image ?? string.Empty,
-                    AboutMes = new List<object>(),
-                    Skills = new List<object>(),
-                    Educations = new List<object>(),
-                    WorkExperiences = new List<object>(),
-                    HighlightProjects = new List<object>(),
-                    Certificates = new List<object>(),
-                    Awards = new List<object>(),
-                    ForeginLanguages = new List<object>()
+                    AboutMeDescription = string.Empty,
+                    Skills = new List<SkillInfo>(),
+                    Educations = new List<EducationInfo>(),
+                    WorkExperiences = new List<WorkExperienceInfo>(),
+                    HighlightProjects = new List<HighlightProjectInfo>(),
+                    Certificates = new List<CertificateInfo>(),
+                    Awards = new List<AwardInfo>(),
+                    ForeignLanguages = new List<ForeignLanguageInfo>()
                 });
             }
 
@@ -101,16 +110,17 @@ namespace JOB_FINDER_API.Controllers
                 FullName = profile.User?.FullName ?? string.Empty,
                 Phone = profile.User?.Phone ?? string.Empty,
                 Image = profile.User?.Image ?? string.Empty,
-                AboutMes = profile.AboutMes,
+                profile.AboutMeDescription,
                 Skills = profile.Skills,
                 Educations = profile.Educations,
                 WorkExperiences = profile.WorkExperiences,
                 HighlightProjects = profile.HighlightProjects,
                 Certificates = profile.Certificates,
                 Awards = profile.Awards,
-                ForeginLanguages = profile.ForeginLanguages
+                ForeignLanguages = profile.ForeignLanguages
             });
         }
+
         [HttpPut("me")]
         public async Task<IActionResult> UpdateMyProfile([FromForm] UpdateCandidateProfileDto model, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {
@@ -141,7 +151,7 @@ namespace JOB_FINDER_API.Controllers
                 profile.User.FullName = model.FullName;
                 profile.User.Phone = model.Phone;
             }
-          
+
             if (imageFile != null)
             {
                 profile.User.Image = await cloudinaryService.UploadImageAsync(imageFile);
@@ -150,8 +160,6 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
-        
 
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete(int userId)
@@ -174,14 +182,6 @@ namespace JOB_FINDER_API.Controllers
 
             var profile = await _context.CandidateProfiles
                 .Include(p => p.User)
-                .Include(p => p.AboutMes)
-                .Include(p => p.Educations)
-                .Include(p => p.WorkExperiences)
-                .Include(p => p.Skills)
-                .Include(p => p.Certificates)
-                .Include(p => p.HighlightProjects)
-                .Include(p => p.Awards)
-                .Include(p => p.ForeginLanguages)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (profile == null) return NotFound();

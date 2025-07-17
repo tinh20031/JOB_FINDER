@@ -65,7 +65,6 @@ namespace JOB_FINDER_API.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] CreateCVRequest request)
         {
-
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId) || userId != request.UserId)
             {
@@ -85,14 +84,12 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("No file selected.");
             }
 
-
             if (!request.File.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
                 !Path.GetExtension(request.File.FileName).ToLower().EndsWith(".pdf"))
             {
                 _logger.LogWarning("Invalid file format for CV by UserId {UserId}. Only PDF is allowed.", userId);
                 return BadRequest("Only PDF files are allowed.");
             }
-
 
             var fileUrl = await _cloudinaryService.UploadCvAsync(request.File);
             if (string.IsNullOrEmpty(fileUrl))
@@ -122,7 +119,6 @@ namespace JOB_FINDER_API.Controllers
                     return BadRequest("CV content is empty or unreadable.");
                 }
 
-
                 var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
                 if (!success)
                 {
@@ -139,7 +135,6 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest($"PDF extraction failed: {ex.Message}");
             }
 
-
             var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
             var fullCvJson = JsonSerializer.Serialize(new
             {
@@ -148,7 +143,6 @@ namespace JOB_FINDER_API.Controllers
                 Summary = cvSummary,
                 CVData = cvData
             }, jsonOptions);
-
 
             var cv = new CV
             {
@@ -170,7 +164,6 @@ namespace JOB_FINDER_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, CV model)
         {
-
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId) || userId != model.UserId)
             {
@@ -209,7 +202,6 @@ namespace JOB_FINDER_API.Controllers
                 return Unauthorized("You can only delete your own CV.");
             }
 
-
             var relatedApplications = _context.Applications.Where(a => a.CvId == id);
             _context.Applications.RemoveRange(relatedApplications);
 
@@ -231,4 +223,3 @@ namespace JOB_FINDER_API.Controllers
         }
     }
 }
-

@@ -6,6 +6,8 @@ namespace JOB_FINDER_API.Models
     {
         public int JobId { get; set; }
         public int SkillId { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
         public Job Job { get; set; } = null!;

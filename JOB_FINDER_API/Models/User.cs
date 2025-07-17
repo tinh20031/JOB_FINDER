@@ -44,10 +44,11 @@ namespace JOB_FINDER_API.Models
         public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
         [JsonIgnore]
         public ICollection<UserFavoriteCompany> FavoriteCompanies { get; set; } = new List<UserFavoriteCompany>();
-        [JsonIgnore]
-        public ICollection<TryMatchRecord> TryMatchRecords { get; set; } = new List<TryMatchRecord>();
+
         [JsonIgnore]
         public CandidateToCompanyRequest? CandidateToCompanyRequest { get; set; }
-       
+        [JsonIgnore]
+        public ICollection<TryMatchRecord> TryMatchRecords { get; set; } = new List<TryMatchRecord>();
+
     }
 }

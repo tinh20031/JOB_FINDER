@@ -88,219 +88,115 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        /*[Authorize]
+        [Authorize]
         [HttpPost("apply")]
         public async Task<IActionResult> Apply(
             [FromForm] ApplyJobRequest request,
             [FromServices] ICvSnapshotService cvSnapshotService,
-            [FromServices] CloudinaryService cloudinaryService,
-            [FromServices] EmailService emailService)
+            [FromServices] CloudinaryService cloudinaryService)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
                 return Unauthorized("Invalid user ID.");
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
+            if (role != "candidate")
+                return Forbid("Only candidates can apply for jobs.");
+
             _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var user = await context.Users
-                    .Include(u => u.CandidateProfile)
-                    .FirstOrDefaultAsync(u => u.UserId == userId);
-
-                if (user == null)
-                    return Unauthorized("User not found.");
-
-                var profile = user.CandidateProfile;
-
-                if (string.IsNullOrWhiteSpace(user.FullName) ||
-                    string.IsNullOrWhiteSpace(profile?.JobTitle) ||
-                    string.IsNullOrWhiteSpace(user?.Phone) ||
-                    profile?.Dob == null ||
-                    string.IsNullOrWhiteSpace(profile?.Province) ||
-                    string.IsNullOrWhiteSpace(profile?.City))
-                {
-                    return BadRequest(new { Success = false, ErrorMessage = "Vui lòng cập nhật đầy đủ thông tin cá nhân (họ tên, chức danh, số điện thoại, ngày sinh, tỉnh/thành, quận/huyện) trước khi nộp đơn." });
-                }
-
-                var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService, context);
-                if (cv == null)
-                {
-                    _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
-                    return BadRequest(new { Success = false, ErrorMessage = error });
-                }
-
-                var job = await context.Jobs.FindAsync(request.JobId);
-                if (job == null)
-                {
-                    _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
-                    return NotFound(new { Success = false, ErrorMessage = "Job not found" });
-                }
-
-                var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
-                _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
-
-                string jobSummary = await SummarizeJobAsync(job, context);
-
-                var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
-                if (matchingResult.Success)
-                {
-                    using (var innerScope = _serviceScopeFactory.CreateScope())
-                    {
-                        var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                        var loadedApplication = await innerContext.Applications.FindAsync(application.ApplicationId);
-                        if (loadedApplication != null)
-                        {
-                            loadedApplication.SimilarityScore = matchingResult.FinalSimilarity; // Sử dụng FinalSimilarity thay vì TotalSimilarity
-                            await innerContext.SaveChangesAsync();
-
-                            float similarityThreshold = _configuration.GetValue<float>("Matching:SimilarityThreshold", 0.7f);
-                            if (matchingResult.FinalSimilarity > similarityThreshold)
-                            {
-                                var company = await context.Users.FindAsync(job.CompanyId);
-                                if (company != null && !string.IsNullOrEmpty(company.Email))
-                                {
-                                    string mailBody = $@"<div style='font-family: Arial, sans-serif;'>
-                                        <h2>New application for {job.Title}</h2>
-                                        <p>Applicant: {userId}</p>
-                                        <p>Similarity score: {matchingResult.FinalSimilarity:F2}</p>
-                                        <p><a href='http://localhost:3000/application/{application.ApplicationId}'>View application</a></p>
-                                    </div>";
-                                    emailService.SendEmail(company.Email, "New Job Application", mailBody, true);
-                                    _logger.LogInformation("Email sent to company {CompanyEmail} for Application {ApplicationId}", company.Email, application.ApplicationId);
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
-                }
-
-                return Ok(new
-                {
-                    Success = true,
-                    Message = "Application submitted successfully",
-                    ApplicationId = application.ApplicationId,
-                    SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : (float?)null,
-                    CvSummary = cvSummary,
-                    JobSummary = jobSummary
-                });
-            }
-        }*/
-        [Authorize]
-        [HttpPost("apply")]
-        public async Task<IActionResult> Apply(
-    [FromForm] ApplyJobRequest request,
-    [FromServices] ICvSnapshotService cvSnapshotService,
-    [FromServices] CloudinaryService cloudinaryService,
-    [FromServices] EmailService emailService,
-    [FromServices] NotificationService notificationService) // Add NotificationService parameter
-        {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out var userId))
-                return Unauthorized("Invalid user ID.");
-            _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
-
-            using (var scope = _serviceScopeFactory.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var user = await context.Users
-                    .Include(u => u.CandidateProfile)
-                    .FirstOrDefaultAsync(u => u.UserId == userId);
-
-                if (user == null)
-                    return Unauthorized("User not found.");
-
-                var profile = user.CandidateProfile;
-
-                if (string.IsNullOrWhiteSpace(user.FullName) ||
-                    string.IsNullOrWhiteSpace(profile?.JobTitle) ||
-                    string.IsNullOrWhiteSpace(user?.Phone) ||
-                    profile?.Dob == null ||
-                    string.IsNullOrWhiteSpace(profile?.Province) ||
-                    string.IsNullOrWhiteSpace(profile?.City))
-                {
-                    return BadRequest(new { Success = false, ErrorMessage = "Vui lòng cập nhật đầy đủ thông tin cá nhân (họ tên, chức danh, số điện thoại, ngày sinh, tỉnh/thành, quận/huyện) trước khi nộp đơn." });
-                }
-
-                var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService, context);
-                if (cv == null)
-                {
-                    _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
-                    return BadRequest(new { Success = false, ErrorMessage = error });
-                }
-
-                var job = await context.Jobs.FindAsync(request.JobId);
-                if (job == null)
-                {
-                    _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
-                    return NotFound(new { Success = false, ErrorMessage = "Job not found" });
-                }
-
-                var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
-                _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
-
-                string jobSummary = await SummarizeJobAsync(job, context);
-
-                var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
-                if (matchingResult.Success)
-                {
-                    using (var innerScope = _serviceScopeFactory.CreateScope())
-                    {
-                        var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                        var loadedApplication = await innerContext.Applications.FindAsync(application.ApplicationId);
-                        if (loadedApplication != null)
-                        {
-                            loadedApplication.SimilarityScore = matchingResult.FinalSimilarity;
-                            await innerContext.SaveChangesAsync();
-
-                            float similarityThreshold = _configuration.GetValue<float>("Matching:SimilarityThreshold", 0.7f);
-                            if (matchingResult.FinalSimilarity > similarityThreshold)
-                            {
-                                var company = await context.Users.FindAsync(job.CompanyId);
-                                if (company != null && !string.IsNullOrEmpty(company.Email))
-                                {
-                                    string mailBody = $@"<div style='font-family: Arial, sans-serif;'>
-                                <h2>New application for {job.Title}</h2>
-                                <p>Applicant: {userId}</p>
-                                <p>Similarity score: {matchingResult.FinalSimilarity:F2}</p>
-                                <p><a href='http://localhost:3000/application/{application.ApplicationId}'>View application</a></p>
-                            </div>";
-                                    emailService.SendEmail(company.Email, "New Job Application", mailBody, true);
-                                    _logger.LogInformation("Email sent to company {CompanyEmail} for Application {ApplicationId}", company.Email, application.ApplicationId);
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
-                }
-
-                // Create notification for company about new application
                 try
                 {
-                    await notificationService.CreateNewApplicationNotification(application, user, job);
-                    _logger.LogInformation("Notification sent to company about new application from User {UserId} for Job {JobId}", userId, job.JobId);
+                    // Check user profile completeness
+                    var user = await context.Users
+                        .Include(u => u.CandidateProfile)
+                        .FirstOrDefaultAsync(u => u.UserId == userId);
+
+                    if (user == null)
+                        return Unauthorized("User not found.");
+
+                    var profile = user.CandidateProfile;
+                    if (string.IsNullOrWhiteSpace(user.FullName) ||
+                        string.IsNullOrWhiteSpace(profile?.JobTitle) ||
+                        string.IsNullOrWhiteSpace(user.Phone) ||
+                        profile?.Dob == null ||
+                        string.IsNullOrWhiteSpace(profile?.Province) ||
+                        string.IsNullOrWhiteSpace(profile?.City))
+                    {
+                        _logger.LogWarning("User {UserId} has incomplete profile for job application", userId);
+                        return BadRequest(new { Success = false, ErrorMessage = "Please update your personal information (full name, job title, phone, date of birth, province, city) before applying." });
+                    }
+
+                    // Process CV
+                    var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService, context);
+                    if (cv == null)
+                    {
+                        _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
+                        return BadRequest(new { Success = false, ErrorMessage = error });
+                    }
+
+                    // Check job existence and validity
+                    var job = await context.Jobs.FindAsync(request.JobId);
+                    if (job == null)
+                    {
+                        _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
+                        return NotFound(new { Success = false, ErrorMessage = "Job not found" });
+                    }
+
+                    if (job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
+                    {
+                        _logger.LogWarning("Job {JobId} is not active or deactivated for User {UserId}", request.JobId, userId);
+                        return BadRequest(new { Success = false, ErrorMessage = "Cannot apply to an inactive or deactivated job." });
+                    }
+
+                    // Save application
+                    var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
+                    _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
+
+                    // Summarize job
+                    string jobSummary = await SummarizeJobAsync(job, context);
+
+                    // Calculate similarity scores
+                    var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
+                    if (matchingResult.Success)
+                    {
+                        application.SimilarityScore = matchingResult.FinalSimilarity;
+                        application.SimilarityDescription = matchingResult.SimilarityDescription;
+                        application.SimilaritySkills = matchingResult.SimilaritySkills;
+                        application.SimilarityExperience = matchingResult.SimilarityExperience;
+                        application.SimilarityEducation = matchingResult.SimilarityEducation;
+                        await context.SaveChangesAsync();
+                        _logger.LogInformation("Saved similarity scores for Application {ApplicationId}: Total={Total:F2}, Description={Desc:F2}, Skills={Skills:F2}, Experience={Exp:F2}, Education={Edu:F2}",
+                            application.ApplicationId, matchingResult.FinalSimilarity, matchingResult.SimilarityDescription, matchingResult.SimilaritySkills, matchingResult.SimilarityExperience, matchingResult.SimilarityEducation);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
+                    }
+
+                    return Ok(new
+                    {
+                        Success = true,
+                        Message = "Application submitted successfully",
+                        ApplicationId = application.ApplicationId,
+                        SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : (float?)null,
+                        SimilarityDescription = matchingResult.Success ? matchingResult.SimilarityDescription : (float?)null,
+                        SimilaritySkills = matchingResult.Success ? matchingResult.SimilaritySkills : (float?)null,
+                        SimilarityExperience = matchingResult.Success ? matchingResult.SimilarityExperience : (float?)null,
+                        SimilarityEducation = matchingResult.Success ? matchingResult.SimilarityEducation : (float?)null,
+                        CvSummary = cvSummary,
+                        JobSummary = jobSummary,
+                        GeminiReasoning = matchingResult.Success ? matchingResult.GeminiReasoning : null
+                    });
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Failed to send notification to company: {Error}", ex.Message);
-                    // Don't fail the request if notification sending fails
+                    _logger.LogError(ex, "Error processing job application for User {UserId}, Job {JobId}", userId, request.JobId);
+                    return StatusCode(500, new { Success = false, ErrorMessage = "An error occurred while processing your application." });
                 }
-
-                return Ok(new
-                {
-                    Success = true,
-                    Message = "Application submitted successfully",
-                    ApplicationId = application.ApplicationId,
-                    SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : (float?)null,
-                    CvSummary = cvSummary,
-                    JobSummary = jobSummary
-                });
             }
         }
 
@@ -466,6 +362,10 @@ namespace JOB_FINDER_API.Controllers
                         a.CoverLetter,
                         a.ResumeUrl,
                         a.SimilarityScore,
+                        a.SimilarityDescription,
+                        a.SimilaritySkills,
+                        a.SimilarityExperience,
+                        a.SimilarityEducation,
                         Job = new
                         {
                             a.Job.JobId,
@@ -542,6 +442,10 @@ namespace JOB_FINDER_API.Controllers
                             a.CoverLetter,
                             a.ResumeUrl,
                             a.SimilarityScore,
+                            a.SimilarityDescription,
+                            a.SimilaritySkills,
+                            a.SimilarityExperience,
+                            a.SimilarityEducation,
                             CvInfo = new
                             {
                                 a.CV.CVId,
@@ -557,134 +461,109 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        /* [Authorize]
-         [HttpPost("favorite-company/{companyId}")]
-         public async Task<IActionResult> FavoriteCompany(int companyId)
-         {
-             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-             if (!int.TryParse(userIdStr, out var userId))
-                 return Unauthorized("Invalid user ID.");
-             using (var scope = _serviceScopeFactory.CreateScope())
-             {
-                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                 if (await context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
-                     return BadRequest("Company is already favorited");
-
-                 var favorite = new UserFavoriteCompany
-                 {
-                     UserId = userId,
-                     CompanyId = companyId,
-                     CreatedAt = DateTime.UtcNow
-                 };
-                 context.UserFavoriteCompanies.Add(favorite);
-                 await context.SaveChangesAsync();
-                 _logger.LogInformation("Company {CompanyId} favorited by User {UserId}", companyId, userId);
-                 return Ok("Company added to favorites successfully");
-             }
-         }*/
         [Authorize]
-        [HttpPost("favorite-company/{companyId}")]
-        public async Task<IActionResult> FavoriteCompany(
-     int companyId,
-     [FromServices] NotificationService notificationService) // Add NotificationService
+        [HttpPost("favorite-company/{userId}")]
+        public async Task<IActionResult> FavoriteCompany(int userId)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out var userId))
-                return Unauthorized("Invalid user ID.");
-            using (var scope = _serviceScopeFactory.CreateScope())
+            var candidateIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(candidateIdStr, out var candidateId))
+                return Unauthorized("Invalid candidate ID.");
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+
+            // Find CompanyProfile by UserId and ensure User.RoleId = 2 (Company)
+            var companyProfile = await context.CompanyProfile
+                .Include(cp => cp.User)
+                .FirstOrDefaultAsync(cp => cp.UserId == userId && cp.User.RoleId == 2);
+
+            if (companyProfile == null)
+                return BadRequest("Company profile not found or user is not a company.");
+
+            // Check if the company is already favorited
+            if (await context.UserFavoriteCompanies.AnyAsync(f => f.UserId == candidateId && f.CompanyProfileId == companyProfile.CompanyProfileId))
+                return BadRequest("Company already favorited.");
+
+            // Add to favorites using the actual CompanyProfileId
+            var favorite = new UserFavoriteCompany
             {
-                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                if (await context.UserFavoriteCompanies.AnyAsync(f => f.UserId == userId && f.CompanyId == companyId))
-                    return BadRequest("Company is already favorited");
+                UserId = candidateId,
+                CompanyProfileId = companyProfile.CompanyProfileId, // Use CompanyProfileId, not userId
+                CreatedAt = DateTime.UtcNow
+            };
+            context.UserFavoriteCompanies.Add(favorite);
+            await context.SaveChangesAsync();
 
-                var favorite = new UserFavoriteCompany
-                {
-                    UserId = userId,
-                    CompanyId = companyId,
-                    CreatedAt = DateTime.UtcNow
-                };
-                context.UserFavoriteCompanies.Add(favorite);
-                await context.SaveChangesAsync();
-
-                // Create notification for the company
-                try
-                {
-                    var user = await context.Users.FindAsync(userId);
-                    if (user != null)
-                    {
-                        await notificationService.CreateCompanyFavoritedNotification(favorite, user);
-                        _logger.LogInformation("Company {CompanyId} favorited by User {UserId} with notification", companyId, userId);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error creating company favorited notification: {Error}", ex.Message);
-                    // Don't return error to client if notification fails
-                }
-
-                _logger.LogInformation("Company {CompanyId} favorited by User {UserId}", companyId, userId);
-                return Ok("Company added to favorites successfully");
-            }
+            _logger.LogInformation("CompanyProfile {CompanyProfileId} favorited by User {UserId}", companyProfile.CompanyProfileId, candidateId);
+            return Ok("Company added to favorites successfully.");
         }
 
         [Authorize]
         [HttpGet("my-favorite-companies")]
         public async Task<IActionResult> GetMyFavoriteCompanies()
         {
-            var userIdStr = User.Identity?.Name;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
                 return Unauthorized("Invalid user ID");
 
-            using (var scope = _serviceScopeFactory.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                _logger.LogInformation("Fetching favorite companies for User {UserId}", userId);
-                var companies = await context.UserFavoriteCompanies
-                    .Where(f => f.UserId == userId)
-                    .Join(
-                        context.CompanyProfile,
-                        fav => fav.CompanyId,
-                        cp => cp.UserId,
-                        (fav, cp) => new
-                        {
-                            cp.UserId,
-                            cp.CompanyName,
-                            cp.CompanyProfileDescription,
-                            cp.Location,
-                            cp.UrlCompanyLogo,
-                            cp.ImageLogoLgr,
-                            cp.TeamSize,
-                            cp.Industry,
-                            cp.Website,
-                            cp.Contact
-                        }
-                    )
-                    .ToListAsync();
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
 
-                return Ok(companies);
-            }
+            var companies = await context.UserFavoriteCompanies
+                .Where(f => f.UserId == userId)
+                .Include(f => f.CompanyProfile)
+                    .ThenInclude(cp => cp.User)
+                .Include(f => f.CompanyProfile.Industry)
+                .Select(f => new
+                {
+                    f.CompanyProfile.UserId,
+                    f.CompanyProfile.CompanyProfileId,
+                    f.CompanyProfile.CompanyName,
+                    f.CompanyProfile.CompanyProfileDescription,
+                    f.CompanyProfile.Location,
+                    f.CompanyProfile.UrlCompanyLogo,
+                    f.CompanyProfile.ImageLogoLgr,
+                    f.CompanyProfile.TeamSize,
+                    IndustryName = f.CompanyProfile.Industry.IndustryName,
+                    f.CompanyProfile.Website,
+                    f.CompanyProfile.Contact
+                })
+                .ToListAsync();
+
+            return Ok(companies);
         }
 
-        [Authorize]
-        [HttpDelete("favorite-company/{companyId}")]
-        public async Task<IActionResult> UnfavoriteCompany(int companyId)
-        {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out var userId))
-                return Unauthorized("Invalid user ID.");
-            using (var scope = _serviceScopeFactory.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var favorite = await context.UserFavoriteCompanies
-                    .FirstOrDefaultAsync(f => f.UserId == userId && f.CompanyId == companyId);
-                if (favorite == null)
-                    return NotFound("Company not found in favorites");
 
-                context.UserFavoriteCompanies.Remove(favorite);
-                await context.SaveChangesAsync();
-                _logger.LogInformation("Company {CompanyId} removed from favorites by User {UserId}", companyId, userId);
-                return Ok("Company removed from favorites successfully");
-            }
+        [Authorize]
+        [HttpDelete("favorite-company/{userId}")]
+        public async Task<IActionResult> UnfavoriteCompany(int userId)
+        {
+            var candidateIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(candidateIdStr, out var candidateId))
+                return Unauthorized("Invalid candidate ID.");
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+
+            var companyProfile = await context.CompanyProfile
+                .Include(cp => cp.User)
+                .FirstOrDefaultAsync(cp => cp.UserId == userId && cp.User.RoleId == 2);
+
+            if (companyProfile == null)
+                return NotFound("Company profile not found or user is not a company.");
+
+         
+            var favorite = await context.UserFavoriteCompanies
+                .FirstOrDefaultAsync(f => f.UserId == candidateId && f.CompanyProfileId == companyProfile.CompanyProfileId);
+
+            if (favorite == null)
+                return NotFound("Company not found in favorites");
+
+            context.UserFavoriteCompanies.Remove(favorite);
+            await context.SaveChangesAsync();
+
+            _logger.LogInformation("CompanyProfile {CompanyProfileId} removed from favorites by User {UserId}", companyProfile.CompanyProfileId, candidateId);
+            return Ok("Company removed from favorites successfully");
         }
 
         [HttpGet("job/{jobId}")]
@@ -708,6 +587,10 @@ namespace JOB_FINDER_API.Controllers
                         a.CoverLetter,
                         a.ResumeUrl,
                         a.SimilarityScore,
+                        a.SimilarityDescription,
+                        a.SimilaritySkills,
+                        a.SimilarityExperience,
+                        a.SimilarityEducation,
                         User = new
                         {
                             a.User.UserId,
@@ -874,19 +757,18 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-
         [Authorize]
         [HttpPost("try-match")]
         public async Task<IActionResult> TryMatch(
-    [FromForm] TryMatchRequest request,
-    [FromServices] ICvSnapshotService cvSnapshotService,
-    [FromServices] CloudinaryService cloudinaryService,
-    [FromServices] IServiceScopeFactory serviceScopeFactory)
+            [FromForm] TryMatchRequest request,
+            [FromServices] ICvSnapshotService cvSnapshotService,
+            [FromServices] CloudinaryService cloudinaryService,
+            [FromServices] IServiceScopeFactory serviceScopeFactory)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
-                return Unauthorized("ID người dùng không hợp lệ.");
-            _logger.LogInformation("Người dùng {UserId} bắt đầu thử khớp cho Công việc {JobId}", userId, request.JobId);
+                return Unauthorized("Invalid user ID.");
+            _logger.LogInformation("User {UserId} started trying match for Job {JobId}", userId, request.JobId);
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
@@ -894,15 +776,15 @@ namespace JOB_FINDER_API.Controllers
                 var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvForTryMatchAsync(request, userId, cloudinaryService, context);
                 if (cv == null)
                 {
-                    _logger.LogError("Không thể xử lý CV cho Người dùng {UserId}: {Error}", userId, error);
+                    _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
                     return BadRequest(new { Success = false, ErrorMessage = error });
                 }
 
                 var job = await context.Jobs.FindAsync(request.JobId);
                 if (job == null)
                 {
-                    _logger.LogWarning("Công việc {JobId} không được tìm thấy cho Người dùng {UserId}", request.JobId, userId);
-                    return NotFound(new { Success = false, ErrorMessage = "Công việc không được tìm thấy" });
+                    _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
+                    return NotFound(new { Success = false, ErrorMessage = "Job not found" });
                 }
 
                 string jobSummary = await SummarizeJobAsync(job, context);
@@ -936,14 +818,55 @@ namespace JOB_FINDER_API.Controllers
                 return Ok(new
                 {
                     Success = true,
-                    Message = "Thử khớp thành công",
+                    Message = "Match attempt successful",
                     SimilarityScore = matchingResult.FinalSimilarity,
+                    SimilarityDescription = matchingResult.SimilarityDescription,
+                    SimilaritySkills = matchingResult.SimilaritySkills,
+                    SimilarityExperience = matchingResult.SimilarityExperience,
+                    SimilarityEducation = matchingResult.SimilarityEducation,
                     CvSummary = cvSummary,
                     JobSummary = jobSummary,
                     Suggestions = suggestions
                 });
             }
         }
+
+        [Authorize]
+        [HttpGet("my-try-match-history")]
+        public async Task<IActionResult> MyTryMatchHistory()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+            _logger.LogInformation("Fetching try match history for User {UserId} at {DateTime}", userId, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                var tryMatchRecords = await context.TryMatchRecords
+                    .Where(r => r.UserId == userId)
+                    .Include(r => r.Job)
+                    .Include(r => r.CV)
+                    .Select(r => new
+                    {
+                        TryMatchId = r.TryMatchId,
+                        JobId = r.JobId,
+                        JobTitle = r.Job.Title,
+                        CvId = r.CvId,
+                        CvFileUrl = r.CV.FileUrl,
+                        SimilarityScore = r.SimilarityScore,
+                        Suggestions = r.Suggestions,
+                        CreatedAt = r.CreatedAt,
+                        CvSummary = r.CvSummary,
+                        JobSummary = r.JobSummary
+                    })
+                    .OrderByDescending(r => r.CreatedAt)
+                    .ToListAsync();
+
+                return Ok(tryMatchRecords);
+            }
+        }
+
         private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvForTryMatchAsync(
             TryMatchRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)
         {
@@ -960,7 +883,7 @@ namespace JOB_FINDER_API.Controllers
                 uploadedCvUrl = await cloudinaryService.UploadCvAsync(request.CvFile);
                 if (string.IsNullOrEmpty(uploadedCvUrl))
                 {
-                    return (null, null, null, null, "Không thể tải CV lên Cloudinary");
+                    return (null, null, null, null, "Unable to upload CV to Cloudinary");
                 }
 
                 string extractedText = string.Empty;
@@ -978,7 +901,7 @@ namespace JOB_FINDER_API.Controllers
 
                     if (string.IsNullOrWhiteSpace(extractedText))
                     {
-                        return (null, null, null, null, "Nội dung CV trống hoặc không thể đọc");
+                        return (null, null, null, null, "CV content is empty or unreadable");
                     }
 
                     var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
@@ -1010,7 +933,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return (null, null, null, null, $"Lỗi trích xuất PDF: {ex.Message}");
+                    return (null, null, null, null, $"PDF extraction failed: {ex.Message}");
                 }
             }
             else if (request.CvId.HasValue)
@@ -1018,7 +941,7 @@ namespace JOB_FINDER_API.Controllers
                 cv = await context.CVs.FindAsync(request.CvId.Value);
                 if (cv == null || cv.UserId != userId)
                 {
-                    return (null, null, null, null, "CV không tồn tại hoặc không thuộc về người dùng");
+                    return (null, null, null, null, "CV not found or does not belong to the user");
                 }
                 uploadedCvUrl = cv.FileUrl;
 
@@ -1036,7 +959,7 @@ namespace JOB_FINDER_API.Controllers
                 cv = await context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
                 if (cv == null)
                 {
-                    return (null, null, null, null, "Không tìm thấy CV và không có tệp được tải lên");
+                    return (null, null, null, null, "No CV found and no file uploaded");
                 }
                 uploadedCvUrl = cv.FileUrl;
 
@@ -1058,23 +981,21 @@ namespace JOB_FINDER_API.Controllers
             var suggestions = new List<string>();
 
             if (matchingResult.SimilarityDescription < 0.3)
-                suggestions.Add("Cải thiện phần mô tả CV của bạn để phù hợp hơn với yêu cầu công việc. Tập trung vào việc bao gồm các trách nhiệm chính được đề cập trong mô tả công việc.");
+                suggestions.Add("Improve your CV description to better align with the job requirements. Focus on including key responsibilities mentioned in the job description.");
 
             if (matchingResult.SimilaritySkills < 0.3)
-                suggestions.Add($"Thêm nhiều kỹ năng liên quan đến {job.YourSkill ?? "yêu cầu công việc"}. Hãy cân nhắc bao gồm {string.Join(", ", job.YourSkill?.Split(',').Take(3) ?? new[] { "kỹ năng kỹ thuật" })}.");
+                suggestions.Add($"Add more skills relevant to {job.YourSkill ?? "job requirements"}. Consider including {string.Join(", ", job.YourSkill?.Split(',').Take(3) ?? new[] { "technical skills" })}.");
 
             if (matchingResult.SimilarityExperience < 0.3)
-                suggestions.Add("Mở rộng phần kinh nghiệm với các vai trò và năm chi tiết phù hợp với cấp độ kinh nghiệm của công việc (ví dụ: Mới tốt nghiệp, Thực tập).");
+                suggestions.Add("Expand your experience section with detailed roles and years that match the job's experience level (e.g., Fresher, Intern).");
 
             if (matchingResult.SimilarityEducation < 0.3)
-                suggestions.Add("Nổi bật các bằng cấp hoặc chứng chỉ liên quan đến CNTT (ví dụ: Java, RESTful API) phù hợp với yêu cầu giáo dục của công việc.");
+                suggestions.Add("Highlight relevant degrees or certifications in IT (e.g., Java, RESTful API) that align with the job's education requirements.");
 
-            if (matchingResult.FinalSimilarity < 0.5) // Sử dụng FinalSimilarity thay vì TotalSimilarity
-                suggestions.Add("Nhìn chung, CV của bạn có độ tương thích thấp. Hãy tùy chỉnh nó sát hơn với công việc bằng cách giải quyết các điểm trên và tìm kiếm thêm đào tạo nếu cần.");
+            if (matchingResult.FinalSimilarity < 0.5)
+                suggestions.Add("Overall, your CV has low compatibility. Tailor it closer to the job by addressing the above points and seeking additional training if needed.");
 
-            return suggestions.Any() ? suggestions : new List<string> { "CV của bạn đã phù hợp với công việc. Không có đề xuất cải thiện lớn!" };
+            return suggestions.Any() ? suggestions : new List<string> { "Your CV is well-aligned with the job. No major improvements suggested!" };
         }
     }
 }
-
-

@@ -24,7 +24,7 @@ namespace JOB_FINDER_API.Models
         public DateTime ExpiryDate { get; set; }
         public int LevelId { get; set; }
         public int JobTypeId { get; set; }
-        public int ExperienceLevelId { get; set; }
+        public int Quantity { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
         public JobStatus Status { get; set; } = JobStatus.pending;
@@ -45,8 +45,8 @@ namespace JOB_FINDER_API.Models
         public Level? Level { get; set; }
         [JsonIgnore]
         public JobType? JobType { get; set; }
-        [JsonIgnore]
-        public ExperienceLevel? ExperienceLevel { get; set; }
+        //[JsonIgnore]
+        //public ExperienceLevel? ExperienceLevel { get; set; }
         [JsonIgnore]
         public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
         [JsonIgnore]

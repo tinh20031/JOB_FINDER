@@ -14,12 +14,12 @@ namespace JOB_FINDER_API.Controllers
     {
         private readonly JobFinderDbContext _context;
         private readonly IConfiguration _config;
+
         public CandidateToCompanyController(JobFinderDbContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
         }
-
 
         [HttpPost("request")]
         public async Task<IActionResult> RequestUpgrade([FromBody] JOB_FINDER_API.Models.Requests.CandidateToCompanyRequest request)
@@ -27,14 +27,14 @@ namespace JOB_FINDER_API.Controllers
             var user = await _context.Users.FindAsync(request.UserId);
             if (user == null)
                 return BadRequest("User not found.");
-            // Kiểm tra đã tồn tại request chưa
+
             var existingRequest = await _context.CandidateToCompanyRequests
                 .FirstOrDefaultAsync(r => r.UserId == request.UserId);
             if (existingRequest != null)
             {
                 return BadRequest("You have submitted a request before please wait");
             }
-            // Lưu request vào database
+
             var entity = new JOB_FINDER_API.Models.CandidateToCompanyRequest
             {
                 UserId = request.UserId,
@@ -50,7 +50,12 @@ namespace JOB_FINDER_API.Controllers
             _context.CandidateToCompanyRequests.Add(entity);
             await _context.SaveChangesAsync();
 
-            // Gửi mail cho admin với form HTML đẹp
+            string baseUrl = _config["AppSettings:BaseUrl"];
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new InvalidOperationException("BaseUrl is not configured in appsettings.json.");
+            }
+
             var adminEmail = _config["Admin:Email"];
             var subject = "Yêu cầu xác thực lên Company";
             var htmlBody = $@"
@@ -67,7 +72,7 @@ namespace JOB_FINDER_API.Controllers
       <p><b>Contact:</b> {request.Contact}</p>
       <p><b>Industry ID:</b> {request.IndustryId}</p>
       <div style='margin: 24px 0;'>
-        <a href='http://localhost:3000/admin-dashboard/user-manager/{user.UserId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
+        <a href='{baseUrl}/admin-dashboard/user-manager/{user.UserId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
       </div>
       <p style='font-size: 13px; color: #888;'>Please verify this request if the information is valid.</p>
     </div>
@@ -79,7 +84,6 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Đã gửi yêu cầu lên admin.");
         }
 
-        // Admin xác thực, tạo CompanyProfile và đổi role
         [HttpPost("verify/{userId}")]
         public async Task<IActionResult> VerifyUpgrade(int userId)
         {
@@ -87,22 +91,18 @@ namespace JOB_FINDER_API.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            // Lấy lại request gốc từ bảng tạm
             var request = await _context.CandidateToCompanyRequests
                 .OrderByDescending(r => r.CreatedAt)
                 .FirstOrDefaultAsync(r => r.UserId == userId);
             if (request == null)
                 return BadRequest("Không tìm thấy request gốc.");
 
-            // Kiểm tra IndustryId hợp lệ
             var industry = await _context.Industries.FindAsync(request.IndustryId);
             if (industry == null)
                 return BadRequest("IndustryId không hợp lệ.");
 
-            // Đổi role sang Company
             user.RoleId = 2;
 
-            // Tạo CompanyProfile
             if (!await _context.CompanyProfile.AnyAsync(c => c.UserId == userId))
             {
                 var companyProfile = new CompanyProfile
@@ -123,7 +123,12 @@ namespace JOB_FINDER_API.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Gửi mail thông báo cho user với form HTML đẹp
+            string baseUrl = _config["AppSettings:BaseUrl"];
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new InvalidOperationException("BaseUrl is not configured in appsettings.json.");
+            }
+
             var htmlBody = $@"
 <html>
   <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
@@ -133,7 +138,7 @@ namespace JOB_FINDER_API.Controllers
         Your account has been <b>successfully verified as a Company</b> on the <b>Job Finder</b> system.
       </p>
       <div style='margin: 24px 0; text-align: center;'>
-        <a href='http://localhost:3000/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Log in now</a>
+        <a href='{baseUrl}/login' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Log in now</a>
       </div>
       <p style='font-size: 14px; color: #888; text-align: center;'>
         If you have any questions, please contact our support team.<br>
@@ -153,7 +158,6 @@ namespace JOB_FINDER_API.Controllers
             return Ok("Đã xác thực và chuyển role thành công.");
         }
 
-        // Hỗ trợ gửi email HTML
         private void SendEmail(string to, string subject, string body, bool isHtml = false)
         {
             var smtpHost = _config["Smtp:Host"];

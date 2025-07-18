@@ -20,7 +20,7 @@ namespace JOB_FINDER_API.Models.Requests
         public DateTime ExpiryDate { get; set; }
         public int LevelId { get; set; }
         public int JobTypeId { get; set; }
-        public int ExperienceLevelId { get; set; }
+        public int Quantity { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
         public Job.JobStatus Status { get; set; } = Job.JobStatus.pending;

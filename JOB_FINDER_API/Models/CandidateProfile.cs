@@ -15,17 +15,19 @@ namespace JOB_FINDER_API.Models
         public string? City { get; set; } = string.Empty;
         public string? PersonalLink { get; set; }
 
-        // AboutMe thông tin đưa vào trực tiếp
-        public string? AboutMeDescription { get; set; }
 
+        public string? VideoUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        public string? AboutMeDescription { get; set; }
+
 
         [JsonIgnore]
         public User? User { get; set; }
 
-        // Các thông tin khác sẽ được lưu dưới dạng JSON trong database
-        [Column(TypeName = "nvarchar(max)")] // Thay đổi từ jsonb sang nvarchar(max) cho SQL Server
+    
+        [Column(TypeName = "nvarchar(max)")] 
         public string? SkillsJson { get; set; }
 
         [Column(TypeName = "nvarchar(max)")]
@@ -46,7 +48,7 @@ namespace JOB_FINDER_API.Models
         [Column(TypeName = "nvarchar(max)")]
         public string? ForeignLanguagesJson { get; set; }
 
-        // Properties không được ánh xạ tới cơ sở dữ liệu - chỉ để đọc/ghi dữ liệu
+     
         [NotMapped]
         public List<SkillInfo> Skills
         {

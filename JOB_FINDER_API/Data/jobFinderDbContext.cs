@@ -29,7 +29,7 @@ namespace JOB_FINDER_API.Data
         public DbSet<Embedding> Embeddings { get; set; }
         //public DbSet<Education> Educations { get; set; }
         public DbSet<Contact> Contacts { get; set; }
-        public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
+     
         public DbSet<CandidateToCompanyRequest> CandidateToCompanyRequests { get; set; }
         public DbSet<UserFavoriteCompany> UserFavoriteCompanies { get; set; }
        
@@ -81,12 +81,7 @@ namespace JOB_FINDER_API.Data
             );
 
 
-            modelBuilder.Entity<ExperienceLevel>().HasData(
-                new ExperienceLevel { ExperienceLevelid = 1, name = "Fresher" },
-                new ExperienceLevel { ExperienceLevelid = 2, name = "Junior" },
-                new ExperienceLevel { ExperienceLevelid = 3, name = "Middle" },
-                new ExperienceLevel { ExperienceLevelid = 4, name = "Senior" }
-            );
+          
 
             modelBuilder.Entity<CompanyProfile>()
                 .HasKey(cp => cp.CompanyProfileId);
@@ -137,10 +132,10 @@ namespace JOB_FINDER_API.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UserFavoriteJob>()
-                .HasOne(ufj => ufj.Job)
-                .WithMany() // 
-                .HasForeignKey(ufj => ufj.JobId)
-                .OnDelete(DeleteBehavior.Cascade);
+     .HasOne(ufj => ufj.Job)
+     .WithMany(j => j.FavoritedByUsers) 
+     .HasForeignKey(ufj => ufj.JobId)
+     .OnDelete(DeleteBehavior.Cascade);
             // Configure Message relationships
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
@@ -186,13 +181,6 @@ namespace JOB_FINDER_API.Data
             // Configure index for Message SentAt
             modelBuilder.Entity<Message>()
                 .HasIndex(m => m.SentAt);
-
-            // Configure Job to ExperienceLevel relationship
-            modelBuilder.Entity<Job>()
-                .HasOne(j => j.ExperienceLevel)
-                .WithMany(el => el.Jobs)
-                .HasForeignKey(j => j.ExperienceLevelId)
-                .OnDelete(DeleteBehavior.NoAction);
 
             // Configure UserFavoriteCompany relationships
             modelBuilder.Entity<UserFavoriteCompany>()

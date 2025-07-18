@@ -104,28 +104,26 @@ namespace JOB_FINDER_API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task JoinUserGroup(int userId)
+        public async Task JoinUserGroup(string userId)
         {
             try
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
-                _logger.LogInformation("User {UserId} manually joined group", userId);
-                OnlineUsers.AddOrUpdate(userId.ToString(), 1, (key, oldValue) => oldValue + 1);
-
-                // Cập nhật trạng thái online trong Firebase
-                var status = new
+                if (string.IsNullOrEmpty(userId))
                 {
-                    status = "online",
-                    last_seen = DateTime.UtcNow.ToString("o")
-                };
+                    _logger.LogError("UserId is null or empty");
+                    throw new ArgumentNullException(nameof(userId));
+                }
+                await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+                _logger.LogInformation("User {UserId} joined group", userId);
+                OnlineUsers.AddOrUpdate(userId, 1, (key, oldValue) => oldValue + 1);
+                var status = new { status = "online", last_seen = DateTime.UtcNow.ToString("o") };
                 await _firebaseClient.SetAsync($"users/{userId}/status", status);
-
-                // Thông báo trạng thái cho tất cả client
-                await Clients.All.SendAsync("UserOnlineStatusChanged", new { userId, isOnline = true });
+                await Clients.All.SendAsync("UserOnlineStatusChanged", new { userId = int.Parse(userId), isOnline = true });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error joining user group for user {UserId}", userId);
+                throw;
             }
         }
 

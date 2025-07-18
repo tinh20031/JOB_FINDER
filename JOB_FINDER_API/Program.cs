@@ -94,11 +94,11 @@ builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<ApplyPercentageCalculator>();
-builder.Services.AddScoped<NotificationService>(); // From thanhtung
+builder.Services.AddScoped<NotificationService>(); 
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<JobStatusService>();
 
-// Add logging (from thanhtung)
+builder.Services.AddScoped<VideoService>();
 builder.Services.AddLogging(config =>
 {
     config.AddConsole();

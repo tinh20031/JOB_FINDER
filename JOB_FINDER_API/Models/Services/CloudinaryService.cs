@@ -109,5 +109,49 @@ namespace JOB_FINDER_API.Services
                 return (uploadResult.SecureUrl.ToString(), mediaType, fileName);
             }
         }
+
+        public async Task<string?> UploadVideoAsync(IFormFile file)
+        {
+            if (file == null || file.Length <= 0) return null;
+
+        
+            var allowedVideoTypes = new[] { "video/mp4", "video/webm", "video/ogg" };
+            if (!allowedVideoTypes.Contains(file.ContentType.ToLower()))
+            {
+                throw new ArgumentException("Unsupported video format. Allowed: MP4, WebM, OGG.");
+            }
+
+
+            if (file.Length > 100 * 1024 * 1024)
+            {
+                throw new ArgumentException("Video file size exceeds 100MB limit.");
+            }
+
+            await using var stream = file.OpenReadStream();
+            var uploadParams = new VideoUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "videos", 
+                PublicId = Guid.NewGuid().ToString(),
+                Transformation = new Transformation()
+                    .Quality("auto")
+                    .FetchFormat("auto")
+            };
+
+          
+            var uploadResult = file.Length > 10 * 1024 * 1024
+                ? await _cloudinary.UploadLargeAsync(uploadParams)
+                : await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.Error != null)
+            {
+                throw new Exception(uploadResult.Error.Message);
+            }
+
+            return uploadResult.SecureUrl.ToString();
+        }
+
+
+
     }
 }

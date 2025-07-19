@@ -6,6 +6,7 @@ using Google.Apis.Auth.OAuth2;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.Background;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -97,6 +98,8 @@ builder.Services.AddSingleton<ApplyPercentageCalculator>();
 builder.Services.AddScoped<NotificationService>(); 
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<JobStatusService>();
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+builder.Services.AddHostedService<QueuedHostedService>();
 
 builder.Services.AddScoped<VideoService>();
 builder.Services.AddLogging(config =>

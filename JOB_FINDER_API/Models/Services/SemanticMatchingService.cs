@@ -555,30 +555,29 @@ Text:
             if (summarize && jobText.Length > summaryLengthThreshold)
             {
                 var (summarizeSuccess, summary, error) = await SummarizeAndTranslate(jobText, "en");
-                if (summarizeSuccess)
-                {
-                    processedJobText = summary;
-                    _logger.LogInformation("Summarized job text: Length={Length}", processedJobText.Length);
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to summarize job text: {Error}, using original text", error);
-                }
+                processedJobText = summarizeSuccess ? summary : jobText; // Sử dụng text gốc nếu summarize thất bại
+                _logger.LogInformation("Summarized job text: Length={Length}", processedJobText.Length);
             }
 
-            var (preprocessSuccess, _, _, contextAnalysis) = await PreprocessTextWithGeminiAsync(processedJobText);
+            // Preprocess toàn bộ job text để đảm bảo tính nhất quán
+            var (preprocessSuccess, cleanedJobText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(processedJobText);
             if (preprocessSuccess)
             {
                 jobContext = contextAnalysis;
+            }
+            else
+            {
+                _logger.LogWarning("Preprocess failed for job text, using original text");
             }
 
             var tasks = texts.Select(async (text, i) =>
             {
                 if (!string.IsNullOrWhiteSpace(text))
                 {
-                    var (vectorSuccess, cleanedText, weightedTerms, _) = await PreprocessTextWithGeminiAsync(text);
-                    var (success, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cleanedText);
-                    return (Index: i, Success: success, Vector: vector, Error: vectorError);
+                    // Sử dụng cùng cleanedJobText để đảm bảo preprocess giống nhau
+                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
+                        string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText);
+                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                 }
                 return (Index: i, Success: false, Vector: new float[0], Error: "Empty text");
             }).ToArray();
@@ -586,25 +585,15 @@ Text:
             var results = await Task.WhenAll(tasks);
             foreach (var result in results)
             {
-                if (result.Success && result.Vector != null && result.Vector.Length > 0)
+                vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
+                if (!result.Success)
                 {
-                    vectors[result.Index] = result.Vector;
-                    _logger.LogInformation("Generated vector for job criteria {Index}: Length={Length}", result.Index, result.Vector.Length);
-                }
-                else
-                {
-                    vectors[result.Index] = new float[0];
                     _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
+                    ClearPreprocessCache(); // Xóa cache khi vector hóa thất bại
                 }
             }
 
-            if (vectors.All(v => v.Length == 0))
-            {
-                _logger.LogError("All job vectors are empty for Job {JobId}", job.JobId);
-                return (false, "Failed to generate any job vectors", vectors, jobContext);
-            }
-
-            return (true, string.Empty, vectors, jobContext);
+            return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "All vectors empty" : string.Empty, vectors, jobContext);
         }
 
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string CvContext)> GenerateVectorsForCVCriteria(CV cv, string cvText, bool summarize = false)
@@ -625,11 +614,11 @@ Text:
 
             var texts = new[]
             {
-                cvData.Description ?? "No description",
-                cvData.Skills != null && cvData.Skills.Any() ? string.Join(" ", cvData.Skills) : "No skills",
-                cvData.Experience ?? "No experience",
-                cvData.Education ?? "No education"
-            };
+        cvData.Description ?? "No description",
+        cvData.Skills != null && cvData.Skills.Any() ? string.Join(" ", cvData.Skills) : "No skills",
+        cvData.Experience ?? "No experience",
+        cvData.Education ?? "No education"
+    };
             _logger.LogInformation("Extracted CV criteria - Description: {Description}, Skills: {Skills}, Experience: {Experience}, Education: {Education}",
                 texts[0], string.Join(", ", cvData.Skills ?? new List<string> { "No skills" }), texts[2], texts[3]);
 
@@ -641,30 +630,29 @@ Text:
             if (summarize && cvText.Length > summaryLengthThreshold)
             {
                 var (success, summary, error) = await SummarizeAndTranslate(cvText, "en");
-                if (success)
-                {
-                    processedCvText = summary;
-                    _logger.LogInformation("Summarized CV text: Length={Length}", processedCvText.Length);
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to summarize CV text: {Error}, using original text", error);
-                }
+                processedCvText = success ? summary : cvText; // Sử dụng text gốc nếu summarize thất bại
+                _logger.LogInformation("Summarized CV text: Length={Length}", processedCvText.Length);
             }
 
-            var (preprocessSuccess, _, _, contextAnalysis) = await PreprocessTextWithGeminiAsync(processedCvText);
+            // Preprocess toàn bộ cv text để đảm bảo tính nhất quán
+            var (preprocessSuccess, cleanedCvText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(processedCvText);
             if (preprocessSuccess)
             {
                 cvContext = contextAnalysis;
+            }
+            else
+            {
+                _logger.LogWarning("Preprocess failed for CV text, using original text");
             }
 
             var tasks = texts.Select(async (text, i) =>
             {
                 if (!string.IsNullOrWhiteSpace(text) && !text.Contains("No "))
                 {
-                    var (vectorSuccess, cleanedText, weightedTerms, _) = await PreprocessTextWithGeminiAsync(text);
-                    var (success, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cleanedText);
-                    return (Index: i, Success: success, Vector: vector, Error: vectorError);
+                    // Sử dụng cùng cleanedCvText để đảm bảo preprocess giống nhau
+                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
+                        string.IsNullOrEmpty(cleanedCvText) ? text : cleanedCvText);
+                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                 }
                 else
                 {
@@ -676,36 +664,32 @@ Text:
                         3 => cvData.Education ?? fullCvText,
                         _ => fullCvText
                     };
-                    var (vectorSuccess, cleanedText, weightedTerms, _) = await PreprocessTextWithGeminiAsync(fallbackText);
-                    var (success, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cleanedText);
-                    return (Index: i, Success: success, Vector: vector, Error: vectorError);
+                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(fallbackText);
+                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                 }
             }).ToArray();
 
             var results = await Task.WhenAll(tasks);
             foreach (var result in results)
             {
-                if (result.Success && result.Vector != null && result.Vector.Length > 0)
+                vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
+                if (!result.Success)
                 {
-                    vectors[result.Index] = result.Vector;
-                    _logger.LogInformation("Generated vector for CV criteria {Index}: Length={Length}", result.Index, result.Vector.Length);
-                }
-                else
-                {
-                    vectors[result.Index] = new float[0];
                     _logger.LogWarning("Failed to generate vector for CV criteria {Index}: {Error}", result.Index, result.Error);
+                    ClearPreprocessCache(); // Xóa cache khi vector hóa thất bại
                 }
             }
 
-            if (vectors.All(v => v.Length == 0))
-            {
-                _logger.LogError("All CV vectors are empty for CV");
-                return (false, "Failed to generate any CV vectors", vectors, cvContext);
-            }
-
-            return (true, string.Empty, vectors, cvContext);
+            return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "All vectors empty" : string.Empty, vectors, cvContext);
         }
-
+        public void ClearPreprocessCache()
+        {
+            lock (_preprocessCache)
+            {
+                _preprocessCache.Clear();
+                _logger.LogInformation("Preprocess cache cleared.");
+            }
+        }
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors)> GenerateBatchEmbeddingsAsync(string[] texts)
         {
             if (texts == null || !texts.Any())
@@ -879,64 +863,14 @@ Text:
                     float similarityEducation = Math.Clamp(similarities[3], 0f, 1f);
 
                     float totalSimilarity = similarityDescription + similaritySkills + similarityExperience + similarityEducation;
-                    totalSimilarity = Math.Clamp(totalSimilarity, 0f, 1f);
+                    totalSimilarity = Math.Clamp(totalSimilarity / 4, 0f, 1f); // Trung bình các thành phần
 
-                    _logger.LogInformation("Initial Similarity Scores for Job {JobId}: Description={Description:F2}, Skills={Skills:F2}, Experience={Experience:F2}, Education={Education:F2}, Total={Total:F2}",
+                    _logger.LogInformation("Similarity Scores for Job {JobId}: Description={Description:F2}, Skills={Skills:F2}, Experience={Experience:F2}, Education={Education:F2}, Total={Total:F2}",
                         job.JobId, similarityDescription, similaritySkills, similarityExperience, similarityEducation, totalSimilarity);
 
+                    // Không gọi Gemini nữa, sử dụng totalSimilarity đã tính
                     float finalSimilarity = totalSimilarity;
-                    string geminiReasoning = string.Empty;
-
-                    _logger.LogInformation("Calling Gemini to adjust similarity score for Job {JobId}", job.JobId);
-                    var prompt = $@"Analyze the CV and job description to determine their similarity (0 to 1). Use the provided weights: description={descriptionWeight:F2}, skills={skillsWeight:F2}, experience={experienceWeight:F2}, education={educationWeight:F2}. Focus on required skills (including proficiency level), minimum experience (years and type), and relevant education. Compare the CV's capabilities with the job's requirements using the context analysis, dynamically inferring skills and experience from context without relying on a fixed synonym list.
-CV Context: {cvContext}
-Job Context: {jobContext}
-CV: {cv.FullCvJson}
-Job Description: {jobText}
-Initial Similarity: {totalSimilarity:F2}
-
-Response format:
-Similarity Score: [0-1]
-Reasoning: [Detailed explanation of how the CV meets or fails to meet job requirements, including specific skills, experience, and education]
-";
-
-                    var generationConfig = new { temperature = 0, topP = 1 };
-                    var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } }, generationConfig };
-                    var requestJsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-
-                    var response = await _retryPolicy.ExecuteAsync(async () => await _authenticatedClient.PostAsync(_geminiConfig.ChatEndpoint, requestJsonContent));
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        _logger.LogError("Gemini API error: {ErrorContent}", await response.Content.ReadAsStringAsync());
-                    }
-                    else
-                    {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        try
-                        {
-                            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
-                            var text = jsonResponse.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-                            text = Regex.Replace(text, @"^```json\n|\n```$", "");
-                            var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                            var scoreLine = lines.FirstOrDefault(l => l.StartsWith("Similarity Score:", StringComparison.OrdinalIgnoreCase));
-                            var reasoningLine = lines.FirstOrDefault(l => l.StartsWith("Reasoning:", StringComparison.OrdinalIgnoreCase));
-
-                            if (scoreLine != null && float.TryParse(scoreLine.Substring("Similarity Score:".Length).Trim(), out float s))
-                            {
-                                finalSimilarity = Math.Clamp(s, 0f, 1f);
-                                geminiReasoning = reasoningLine?.Substring("Reasoning:".Length).Trim() ?? "No reasoning provided";
-                                _logger.LogInformation("Gemini adjusted similarity to {FinalSimilarity:F2} with reasoning: {Reasoning}", finalSimilarity, geminiReasoning);
-                            }
-                            else
-                            {
-                                _logger.LogWarning("Invalid similarity score format from Gemini: {ScoreLine}", scoreLine);
-                            }
-                        }
-                        catch (JsonException ex)
-                        {
-                            _logger.LogError(ex, "Failed to parse similarity response: {ResponseContent}", responseContent);
-                        }
-                    }
+                    string geminiReasoning = "Similarity calculated based on vector cosine similarity with weighted criteria.";
 
                     return (true, string.Empty, finalSimilarity, similarityDescription, similaritySkills, similarityExperience, similarityEducation, geminiReasoning);
                 }

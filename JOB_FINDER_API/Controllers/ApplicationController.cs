@@ -1,6 +1,7 @@
 using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.Background;
 using JOB_FINDER_API.Models.Requests;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
@@ -91,9 +92,10 @@ namespace JOB_FINDER_API.Controllers
         [Authorize]
         [HttpPost("apply")]
         public async Task<IActionResult> Apply(
-           [FromForm] ApplyJobRequest request,
-           [FromServices] ICvSnapshotService cvSnapshotService,
-           [FromServices] CloudinaryService cloudinaryService)
+       [FromForm] ApplyJobRequest request,
+       [FromServices] ICvSnapshotService cvSnapshotService,
+       [FromServices] CloudinaryService cloudinaryService,
+       [FromServices] IBackgroundTaskQueue taskQueue)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
@@ -102,8 +104,6 @@ namespace JOB_FINDER_API.Controllers
             var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
             if (role != "candidate")
                 return Forbid("Only candidates can apply for jobs.");
-
-            _logger.LogInformation("User {UserId} started applying for Job {JobId}", userId, request.JobId);
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
@@ -126,81 +126,160 @@ namespace JOB_FINDER_API.Controllers
                         string.IsNullOrWhiteSpace(profile?.Province) ||
                         string.IsNullOrWhiteSpace(profile?.City))
                     {
-                        _logger.LogWarning("User {UserId} has incomplete profile for job application", userId);
-                        return BadRequest(new { Success = false, ErrorMessage = "Please update your personal information (full name, job title, phone, date of birth, province, city) before applying." });
+                        return BadRequest(new { Success = false, ErrorMessage = "Please update your personal information before applying." });
                     }
 
-                    // Process CV
-                    var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvAsync(request, userId, cloudinaryService, context);
-                    if (cv == null)
+                    // Kiểm tra và xử lý CV trong scope request
+                    CV cv;
+                    string uploadedCvUrl = null;
+                    CVData cvData = new CVData();
+                    string cvSummary = string.Empty;
+                    string error = string.Empty;
+
+                    var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+
+                    if (request.CvFile != null && request.CvFile.Length > 0)
                     {
-                        _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
-                        return BadRequest(new { Success = false, ErrorMessage = error });
+                        // Upload và trích xuất CV mới trong scope request
+                        uploadedCvUrl = await cloudinaryService.UploadCvAsync(request.CvFile);
+                        if (string.IsNullOrEmpty(uploadedCvUrl))
+                            return BadRequest(new { Success = false, ErrorMessage = "Failed to upload CV to Cloudinary" });
+
+                        string extractedText = string.Empty;
+                        try
+                        {
+                            using (var stream = request.CvFile.OpenReadStream())
+                            using (var pdfDocument = PdfDocument.Open(stream))
+                            {
+                                foreach (var page in pdfDocument.GetPages())
+                                {
+                                    extractedText += page.Text + "\n";
+                                }
+                            }
+                            extractedText = CleanExtractedText(extractedText);
+
+                            if (string.IsNullOrWhiteSpace(extractedText))
+                                return BadRequest(new { Success = false, ErrorMessage = "CV content is empty or unreadable" });
+
+                            var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
+                            if (!success)
+                                return BadRequest(new { Success = false, ErrorMessage = extractError });
+
+                            cvData = extractedCvData;
+                            cvSummary = extractedSummary;
+
+                            cv = new CV
+                            {
+                                UserId = userId,
+                                FileUrl = uploadedCvUrl,
+                                FullCvJson = JsonSerializer.Serialize(new
+                                {
+                                    Text = extractedText,
+                                    TranslatedText = string.Empty,
+                                    Summary = cvSummary,
+                                    CVData = cvData
+                                }, jsonOptions),
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow,
+                                Type = CvType.Apply
+                            };
+                            context.CVs.Add(cv);
+                            await context.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            return StatusCode(500, new { Success = false, ErrorMessage = $"PDF extraction failed: {ex.Message}" });
+                        }
                     }
-
-                    // Check job existence and validity
-                    var job = await context.Jobs.FindAsync(request.JobId);
-                    if (job == null)
+                    else if (request.CvId.HasValue)
                     {
-                        _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
-                        return NotFound(new { Success = false, ErrorMessage = "Job not found" });
-                    }
+                        cv = await context.CVs.FindAsync(request.CvId.Value);
+                        if (cv == null || cv.UserId != userId)
+                            return BadRequest(new { Success = false, ErrorMessage = "CV not found or does not belong to the user" });
+                        uploadedCvUrl = cv.FileUrl;
 
-                    if (job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
-                    {
-                        _logger.LogWarning("Job {JobId} is not active or deactivated for User {UserId}", request.JobId, userId);
-                        return BadRequest(new { Success = false, ErrorMessage = "Cannot apply to an inactive or deactivated job." });
-                    }
+                        var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
+                        if (!success)
+                            return BadRequest(new { Success = false, ErrorMessage = extractError });
 
-                    // Save application
-                    var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
-                    _logger.LogInformation("Application submitted successfully for User {UserId}, Job {JobId}", userId, request.JobId);
-
-                    // Summarize job
-                    string jobSummary = await SummarizeJobAsync(job, context);
-
-                    // Calculate similarity scores
-                    var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
-                    if (matchingResult.Success)
-                    {
-                        application.SimilarityScore = matchingResult.FinalSimilarity;
-                        application.SimilarityDescription = matchingResult.SimilarityDescription;
-                        application.SimilaritySkills = matchingResult.SimilaritySkills;
-                        application.SimilarityExperience = matchingResult.SimilarityExperience;
-                        application.SimilarityEducation = matchingResult.SimilarityEducation;
-                        await context.SaveChangesAsync();
-                        _logger.LogInformation("Saved similarity scores for Application {ApplicationId}: Total={Total:F2}, Description={Desc:F2}, Skills={Skills:F2}, Experience={Exp:F2}, Education={Edu:F2}",
-                            application.ApplicationId, matchingResult.FinalSimilarity, matchingResult.SimilarityDescription, matchingResult.SimilaritySkills, matchingResult.SimilarityExperience, matchingResult.SimilarityEducation);
+                        cvData = extractedCvData;
+                        cvSummary = extractedSummary;
                     }
                     else
                     {
-                        _logger.LogWarning("Similarity calculation failed for Application {ApplicationId}: {Error}", application.ApplicationId, matchingResult.ErrorMessage);
+                        cv = await context.CVs.FirstOrDefaultAsync(c => c.UserId == userId && c.Type == CvType.Apply);
+                        if (cv == null)
+                            return BadRequest(new { Success = false, ErrorMessage = "No CV found and no file uploaded" });
+                        uploadedCvUrl = cv.FileUrl;
+
+                        var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
+                        if (!success)
+                            return BadRequest(new { Success = false, ErrorMessage = extractError });
+
+                        cvData = extractedCvData;
+                        cvSummary = extractedSummary;
                     }
+
+                    // Check job
+                    var job = await context.Jobs.FindAsync(request.JobId);
+                    if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
+                        return BadRequest(new { Success = false, ErrorMessage = "Job not found or inactive" });
+
+                    // Lưu ứng dụng ngay lập tức
+                    var application = await SaveApplicationAsync(userId, request, cv, uploadedCvUrl, context);
+
+                    // Queue toàn bộ xử lý nặng vào background với dữ liệu đã xử lý
+                    taskQueue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using var innerScope = _serviceScopeFactory.CreateScope();
+                        var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                        var innerSemanticService = innerScope.ServiceProvider.GetRequiredService<SemanticMatchingService>();
+
+                        var innerJob = await innerContext.Jobs.FindAsync(request.JobId);
+                        if (innerJob == null || innerJob.Status != Job.JobStatus.active || innerJob.DeactivatedByAdmin) return;
+
+                        var innerApplication = await innerContext.Applications.FindAsync(application.ApplicationId);
+                        if (innerApplication == null) return;
+
+                        string jobSummary = await SummarizeJobAsync(innerJob, innerContext);
+
+                        var (jobVectorsSuccess, _, jobVectors, _) = await innerSemanticService.GenerateVectorsForCriteria(innerJob, $"{innerJob.Description}\n{innerJob.YourSkill}\n{innerJob.YourExperience}\n{innerJob.Education}", summarize: true);
+                        var (cvVectorsSuccess, _, cvVectors, _) = await innerSemanticService.GenerateVectorsForCVCriteria(cv, cv.FullCvJson, summarize: true);
+
+                        var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv, cvSummary, jobSummary);
+                        if (matchingResult.Success)
+                        {
+                            innerApplication.SimilarityScore = matchingResult.FinalSimilarity;
+                            innerApplication.SimilarityDescription = matchingResult.SimilarityDescription;
+                            innerApplication.SimilaritySkills = matchingResult.SimilaritySkills;
+                            innerApplication.SimilarityExperience = matchingResult.SimilarityExperience;
+                            innerApplication.SimilarityEducation = matchingResult.SimilarityEducation;
+                            await innerContext.SaveChangesAsync();
+                        }
+                    });
 
                     return Ok(new
                     {
                         Success = true,
-                        Message = "Application submitted successfully",
+                        Message = "Application submitted successfully. Processing in background.",
                         ApplicationId = application.ApplicationId,
-                        SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : (float?)null,
-                        SimilarityDescription = matchingResult.Success ? matchingResult.SimilarityDescription : (float?)null,
-                        SimilaritySkills = matchingResult.Success ? matchingResult.SimilaritySkills : (float?)null,
-                        SimilarityExperience = matchingResult.Success ? matchingResult.SimilarityExperience : (float?)null,
-                        SimilarityEducation = matchingResult.Success ? matchingResult.SimilarityEducation : (float?)null,
-                        CvSummary = cvSummary,
-                        JobSummary = jobSummary,
-                        GeminiReasoning = matchingResult.Success ? matchingResult.GeminiReasoning : null
+                        SimilarityScore = (float?)null,
+                        SimilarityDescription = (float?)null,
+                        SimilaritySkills = (float?)null,
+                        SimilarityExperience = (float?)null,
+                        SimilarityEducation = (float?)null,
+                        CvSummary = (string)null,
+                        JobSummary = (string)null,
+                        GeminiReasoning = (string)null
                     });
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing job application for User {UserId}, Job {JobId}", userId, request.JobId);
+                    _logger.LogError(ex, "Error processing application for user {UserId}", userId);
                     return StatusCode(500, new { Success = false, ErrorMessage = "An error occurred while processing your application." });
                 }
             }
         }
-
-
         private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvAsync(
             ApplyJobRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)
         {
@@ -554,7 +633,7 @@ namespace JOB_FINDER_API.Controllers
             if (companyProfile == null)
                 return NotFound("Company profile not found or user is not a company.");
 
-         
+
             var favorite = await context.UserFavoriteCompanies
                 .FirstOrDefaultAsync(f => f.UserId == candidateId && f.CompanyProfileId == companyProfile.CompanyProfileId);
 
@@ -760,116 +839,403 @@ namespace JOB_FINDER_API.Controllers
                 return Ok(new { userId, companyId, distinctJobCount = count });
             }
         }
+        //[Authorize]
+        //[HttpPost("try-match")]
+        //public async Task<IActionResult> TryMatch(
+        //[FromForm] TryMatchRequest request,
+        //[FromServices] ICvSnapshotService cvSnapshotService,
+        //[FromServices] CloudinaryService cloudinaryService,
+        //[FromServices] IBackgroundTaskQueue taskQueue)
+        //{
+        //    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //    if (!int.TryParse(userIdStr, out var userId))
+        //        return Unauthorized("Invalid user ID.");
+
+        //    var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
+        //    if (role != "candidate")
+        //        return Forbid("Only candidates can try to match jobs.");
+
+        //    using (var scope = _serviceScopeFactory.CreateScope())
+        //    {
+        //        var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+        //        try
+        //        {
+        //            // Kiểm tra job hợp lệ
+        //            var job = await context.Jobs.FindAsync(request.JobId);
+        //            if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
+        //                return BadRequest(new { Success = false, ErrorMessage = "Job not found or inactive" });
+
+        //            // Kiểm tra CV hợp lệ (chỉ kiểm tra cơ bản)
+        //            CV cv = null;
+        //            if (request.CvId.HasValue)
+        //            {
+        //                cv = await context.CVs.FirstOrDefaultAsync(c => c.CVId == request.CvId && c.UserId == userId);
+        //                if (cv == null)
+        //                    return BadRequest(new { Success = false, ErrorMessage = "CV not found" });
+        //            }
+        //            else if (request.CvFile == null || request.CvFile.Length == 0)
+        //            {
+        //                cv = await context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
+        //                if (cv == null)
+        //                    return BadRequest(new { Success = false, ErrorMessage = "No CV selected or uploaded" });
+        //            }
+
+        //            // Lưu bản ghi TryMatch trước để trả về ID ngay lập tức
+        //            var tryMatchRecord = new TryMatchRecord
+        //            {
+        //                UserId = userId,
+        //                JobId = request.JobId,
+        //                CvId = cv?.CVId,
+        //                Status = "Processing",
+        //                CreatedAt = DateTime.UtcNow
+        //            };
+        //            context.TryMatchRecords.Add(tryMatchRecord);
+        //            await context.SaveChangesAsync();
+
+        //            // Đẩy toàn bộ xử lý nặng vào background
+        //            taskQueue.QueueBackgroundWorkItem(async token =>
+        //            {
+        //                using var innerScope = _serviceScopeFactory.CreateScope();
+        //                var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+        //                var innerCloudinaryService = innerScope.ServiceProvider.GetRequiredService<CloudinaryService>();
+        //                var innerSemanticService = innerScope.ServiceProvider.GetRequiredService<SemanticMatchingService>();
+
+        //                // Xử lý CV
+        //                var (processedCv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvForTryMatchAsync(request, userId, innerCloudinaryService, innerContext);
+        //                if (processedCv == null)
+        //                {
+        //                    var record = await innerContext.TryMatchRecords.FindAsync(tryMatchRecord.TryMatchId);
+        //                    if (record != null)
+        //                    {
+        //                        record.Status = "Failed";
+
+        //                        await innerContext.SaveChangesAsync();
+        //                    }
+        //                    return;
+        //                }
+
+        //                // Tóm tắt job
+        //                var innerJob = await innerContext.Jobs.FindAsync(request.JobId);
+        //                if (innerJob == null || innerJob.Status != Job.JobStatus.active || innerJob.DeactivatedByAdmin)
+        //                    return;
+
+        //                string jobSummary = await SummarizeJobAsync(innerJob, innerContext);
+
+        //                // Tính toán similarity
+        //                var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, processedCv, cvSummary, jobSummary);
+        //                var suggestions = GenerateImprovementSuggestions(matchingResult, cvData, innerJob);
+
+        //                // Cập nhật bản ghi TryMatch
+        //                var innerRecord = await innerContext.TryMatchRecords.FindAsync(tryMatchRecord.TryMatchId);
+        //                if (innerRecord != null)
+        //                {
+        //                    innerRecord.CvId = processedCv.CVId;
+        //                    innerRecord.SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : null;
+        //                    innerRecord.Suggestions = JsonSerializer.Serialize(suggestions);
+        //                    innerRecord.CvSummary = cvSummary;
+        //                    innerRecord.JobSummary = jobSummary;
+        //                    innerRecord.Status = matchingResult.Success ? "Completed" : "Failed";
+
+        //                    await innerContext.SaveChangesAsync();
+        //                }
+        //            });
+
+        //            return Ok(new
+        //            {
+        //                Success = true,
+        //                Message = "Match attempt submitted successfully. Processing in background.",
+        //                TryMatchId = tryMatchRecord.TryMatchId
+        //            });
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _logger.LogError(ex, "Error processing try-match for User {UserId}, Job {JobId}", userId, request.JobId);
+        //            return StatusCode(500, new { Success = false, ErrorMessage = "An error occurred while processing your match attempt." });
+        //        }
+        //    }
+        //}
+
         [Authorize]
         [HttpPost("try-match")]
         public async Task<IActionResult> TryMatch(
-                   [FromForm] TryMatchRequest request,
-                   [FromServices] ICvSnapshotService cvSnapshotService,
-                   [FromServices] CloudinaryService cloudinaryService,
-                   [FromServices] IServiceScopeFactory serviceScopeFactory)
+            [FromForm] TryMatchRequest request,
+            [FromServices] ICvSnapshotService cvSnapshotService,
+            [FromServices] CloudinaryService cloudinaryService,
+            [FromServices] IBackgroundTaskQueue taskQueue,
+            [FromServices] NotificationService notificationService)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
+            {
+                _logger.LogWarning("Invalid user ID in token at {Time}.", DateTime.Now);
                 return Unauthorized("Invalid user ID.");
-            _logger.LogInformation("User {UserId} started trying match for Job {JobId}", userId, request.JobId);
+            }
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
+            if (role != "candidate")
+            {
+                _logger.LogWarning("User {UserId} is not a candidate at {Time}.", userId, DateTime.Now);
+                return Forbid("Only candidates can try to match jobs.");
+            }
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvForTryMatchAsync(request, userId, cloudinaryService, context);
-                if (cv == null)
+                try
                 {
-                    _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
-                    return BadRequest(new { Success = false, ErrorMessage = error });
-                }
+                    // Kiểm tra công việc hợp lệ
+                    var job = await context.Jobs.FindAsync(request.JobId);
+                    if (job == null)
+                    {
+                        _logger.LogWarning("Job {JobId} not found for User {UserId} at {Time}.", request.JobId, userId, DateTime.Now);
+                        return BadRequest(new { Success = false, ErrorMessage = "Job not found." });
+                    }
+                    if (job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
+                    {
+                        _logger.LogWarning("Job {JobId} is inactive or deactivated for User {UserId} at {Time}.", request.JobId, userId, DateTime.Now);
+                        return BadRequest(new { Success = false, ErrorMessage = "Job is inactive or deactivated." });
+                    }
 
-                var job = await context.Jobs.FindAsync(request.JobId);
-                if (job == null)
-                {
-                    _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
-                    return NotFound(new { Success = false, ErrorMessage = "Job not found" });
-                }
+                    // Xử lý CV trong scope request
+                    CV cv = null;
+                    string uploadedCvUrl = null;
+                    CVData cvData = new CVData();
+                    string cvSummary = string.Empty;
+                    string error = string.Empty;
 
-                string jobSummary = await SummarizeJobAsync(job, context);
+                    var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
-                var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
-                if (!matchingResult.Success)
-                {
-                    return BadRequest(new { Success = false, ErrorMessage = matchingResult.ErrorMessage });
-                }
+                    if (request.CvFile != null && request.CvFile.Length > 0)
+                    {
+                        // Upload và trích xuất CV mới
+                        uploadedCvUrl = await cloudinaryService.UploadCvAsync(request.CvFile);
+                        if (string.IsNullOrEmpty(uploadedCvUrl))
+                        {
+                            _logger.LogWarning("Failed to upload CV for User {UserId}, Job {JobId} at {Time}.", userId, request.JobId, DateTime.Now);
+                            return BadRequest(new { Success = false, ErrorMessage = "Failed to upload CV to Cloudinary." });
+                        }
 
-                var suggestions = GenerateImprovementSuggestions(matchingResult, cvData, job);
+                        string extractedText = string.Empty;
+                        try
+                        {
+                            using (var stream = request.CvFile.OpenReadStream())
+                            using (var pdfDocument = PdfDocument.Open(stream))
+                            {
+                                foreach (var page in pdfDocument.GetPages())
+                                {
+                                    extractedText += page.Text + "\n";
+                                }
+                            }
+                            extractedText = CleanExtractedText(extractedText);
 
-                using (var innerScope = _serviceScopeFactory.CreateScope())
-                {
-                    var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                            if (string.IsNullOrWhiteSpace(extractedText))
+                            {
+                                _logger.LogWarning("CV content is empty or unreadable for User {UserId}, Job {JobId} at {Time}.", userId, request.JobId, DateTime.Now);
+                                return BadRequest(new { Success = false, ErrorMessage = "CV content is empty or unreadable." });
+                            }
+
+                            var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
+                            if (!success)
+                            {
+                                _logger.LogWarning("CV extraction failed for User {UserId}, Job {JobId} at {Time}: {Error}", userId, request.JobId, DateTime.Now, extractError);
+                                return BadRequest(new { Success = false, ErrorMessage = extractError });
+                            }
+
+                            cvData = extractedCvData;
+                            cvSummary = extractedSummary;
+
+                            cv = new CV
+                            {
+                                UserId = userId,
+                                FileUrl = uploadedCvUrl,
+                                FullCvJson = JsonSerializer.Serialize(new
+                                {
+                                    Text = extractedText,
+                                    TranslatedText = string.Empty,
+                                    Summary = cvSummary,
+                                    CVData = cvData
+                                }, jsonOptions),
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow,
+                                Type = CvType.Apply
+                            };
+                            context.CVs.Add(cv);
+                            await context.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "PDF extraction failed for User {UserId}, Job {JobId} at {Time}.", userId, request.JobId, DateTime.Now);
+                            return StatusCode(500, new { Success = false, ErrorMessage = $"PDF extraction failed: {ex.Message}" });
+                        }
+                    }
+                    else if (request.CvId.HasValue)
+                    {
+                        cv = await context.CVs.FirstOrDefaultAsync(c => c.CVId == request.CvId && c.UserId == userId);
+                        if (cv == null)
+                        {
+                            _logger.LogWarning("CV {CvId} not found or does not belong to User {UserId} at {Time}.", request.CvId, userId, DateTime.Now);
+                            return BadRequest(new { Success = false, ErrorMessage = "CV not found or does not belong to the user." });
+                        }
+                        uploadedCvUrl = cv.FileUrl;
+
+                        var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
+                        if (!success)
+                        {
+                            _logger.LogWarning("CV extraction failed for User {UserId}, Job {JobId} at {Time}: {Error}", userId, request.JobId, DateTime.Now, extractError);
+                            return BadRequest(new { Success = false, ErrorMessage = extractError });
+                        }
+
+                        cvData = extractedCvData;
+                        cvSummary = extractedSummary;
+                    }
+                    else
+                    {
+                        cv = await context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
+                        if (cv == null)
+                        {
+                            _logger.LogWarning("No CV selected or uploaded for User {UserId} at {Time}.", userId, DateTime.Now);
+                            return BadRequest(new { Success = false, ErrorMessage = "No CV selected or uploaded." });
+                        }
+                        uploadedCvUrl = cv.FileUrl;
+
+                        var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(cv);
+                        if (!success)
+                        {
+                            _logger.LogWarning("CV extraction failed for User {UserId}, Job {JobId} at {Time}: {Error}", userId, request.JobId, DateTime.Now, extractError);
+                            return BadRequest(new { Success = false, ErrorMessage = extractError });
+                        }
+
+                        cvData = extractedCvData;
+                        cvSummary = extractedSummary;
+                    }
+
+                    // Kiểm tra bản ghi TryMatch đang xử lý
+                    var existingRecord = await context.TryMatchRecords
+                        .FirstOrDefaultAsync(r => r.UserId == userId && r.JobId == request.JobId &&
+                            r.CvId == (cv != null ? cv.CVId : null) && r.Status == "Processing");
+                    if (existingRecord != null)
+                    {
+                        _logger.LogWarning("A try-match request is already processing for User {UserId}, Job {JobId}, CV {CvId} at {Time}.",
+                            userId, request.JobId, cv?.CVId, DateTime.Now);
+                        return BadRequest(new { Success = false, ErrorMessage = "A try-match request is already being processed for this job and CV." });
+                    }
+
+                    // Tạo bản ghi TryMatch
                     var tryMatchRecord = new TryMatchRecord
                     {
                         UserId = userId,
                         JobId = request.JobId,
-                        CvId = cv.CVId,
-                        SimilarityScore = matchingResult.FinalSimilarity,
-                        Suggestions = JsonSerializer.Serialize(suggestions),
+                        CvId = cv?.CVId,
+                        Status = "Processing",
                         CreatedAt = DateTime.UtcNow,
-                        CvSummary = cvSummary,
-                        JobSummary = jobSummary
+                        UpdatedAt = DateTime.UtcNow
                     };
-                    innerContext.TryMatchRecords.Add(tryMatchRecord);
-                    await innerContext.SaveChangesAsync();
-                }
+                    context.TryMatchRecords.Add(tryMatchRecord);
+                    await context.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    Success = true,
-                    Message = "Match attempt successful",
-                    SimilarityScore = matchingResult.FinalSimilarity,
-                    SimilarityDescription = matchingResult.SimilarityDescription,
-                    SimilaritySkills = matchingResult.SimilaritySkills,
-                    SimilarityExperience = matchingResult.SimilarityExperience,
-                    SimilarityEducation = matchingResult.SimilarityEducation,
-                    CvSummary = cvSummary,
-                    JobSummary = jobSummary,
-                    Suggestions = suggestions
-                });
-            }
-        }
-
-        [Authorize]
-        [HttpGet("my-try-match-history")]
-        public async Task<IActionResult> MyTryMatchHistory()
-        {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out var userId))
-                return Unauthorized("Invalid user ID.");
-            _logger.LogInformation("Fetching try match history for User {UserId} at {DateTime}", userId, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
-
-            using (var scope = _serviceScopeFactory.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var tryMatchRecords = await context.TryMatchRecords
-                    .Where(r => r.UserId == userId)
-                    .Include(r => r.Job)
-                    .Include(r => r.CV)
-                    .Select(r => new
+                    // Gửi thông báo
+                    try
                     {
-                        TryMatchId = r.TryMatchId,
-                        JobId = r.JobId,
-                        JobTitle = r.Job.Title,
-                        CvId = r.CvId,
-                        CvFileUrl = r.CV.FileUrl,
-                        SimilarityScore = r.SimilarityScore,
-                        Suggestions = r.Suggestions,
-                        CreatedAt = r.CreatedAt,
-                        CvSummary = r.CvSummary,
-                        JobSummary = r.JobSummary
-                    })
-                    .OrderByDescending(r => r.CreatedAt)
-                    .ToListAsync();
+                        await notificationService.CreateTryMatchNotification(tryMatchRecord, request.JobId, job.Title);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send notification for TryMatch {TryMatchId}, User {UserId}, Job {JobId} at {Time}.",
+                            tryMatchRecord.TryMatchId, userId, request.JobId, DateTime.Now);
+                        // Tiếp tục xử lý dù thông báo thất bại
+                    }
 
-                return Ok(tryMatchRecords);
+                    // Xếp hàng tác vụ nền
+                    taskQueue.QueueBackgroundWorkItem(async token =>
+                    {
+                        using var innerScope = _serviceScopeFactory.CreateScope();
+                        var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                        var innerCloudinaryService = innerScope.ServiceProvider.GetRequiredService<CloudinaryService>();
+                        var innerSemanticService = innerScope.ServiceProvider.GetRequiredService<SemanticMatchingService>();
+                        var innerNotificationService = innerScope.ServiceProvider.GetRequiredService<NotificationService>();
+
+                        try
+                        {
+                            // Lấy bản ghi TryMatch
+                            var record = await innerContext.TryMatchRecords.FindAsync(tryMatchRecord.TryMatchId);
+                            if (record == null)
+                            {
+                                _logger.LogError("TryMatch record {TryMatchId} not found during background processing at {Time}.", tryMatchRecord.TryMatchId, DateTime.Now);
+                                return;
+                            }
+
+                            // Cập nhật CV nếu cần
+                            if (cv != null && record.CvId != cv.CVId)
+                            {
+                                record.CvId = cv.CVId;
+                                await innerContext.SaveChangesAsync();
+                            }
+
+                            // Kiểm tra công việc
+                            var innerJob = await innerContext.Jobs.FindAsync(request.JobId);
+                            if (innerJob == null || innerJob.Status != Job.JobStatus.active || innerJob.DeactivatedByAdmin)
+                            {
+                                record.Status = "Failed";
+                                record.ErrorMessage = "Job not found or inactive.";
+                                record.CvSummary = "Job validation failed";
+                                record.UpdatedAt = DateTime.UtcNow;
+                                await innerContext.SaveChangesAsync();
+                                await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob?.Title ?? job.Title);
+                                _logger.LogWarning("Job {JobId} not found or inactive for TryMatch {TryMatchId} at {Time}.", request.JobId, tryMatchRecord.TryMatchId, DateTime.Now);
+                                return;
+                            }
+
+                            // Tóm tắt công việc và tính toán độ tương đồng
+                            string jobSummary = await SummarizeJobAsync(innerJob, innerContext);
+                            var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv, cvSummary, jobSummary);
+                            var suggestions = GenerateImprovementSuggestions(matchingResult, cvData, innerJob);
+
+                            // Cập nhật bản ghi TryMatch
+                            record.SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : null;
+                            record.Suggestions = suggestions != null ? JsonSerializer.Serialize(suggestions) : null;
+                            record.CvSummary = cvSummary;
+                            record.JobSummary = jobSummary;
+                            record.Status = matchingResult.Success ? "Completed" : "Failed";
+                            record.ErrorMessage = matchingResult.Success ? null : "Failed to calculate similarity.";
+                            record.UpdatedAt = DateTime.UtcNow;
+                            await innerContext.SaveChangesAsync();
+                            await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
+                            _logger.LogInformation("TryMatch {TryMatchId} completed successfully for User {UserId}, Job {JobId} at {Time}.",
+                                tryMatchRecord.TryMatchId, userId, request.JobId, DateTime.Now);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error processing try-match in background for User {UserId}, Job {JobId} at {Time}. Details: {Message}, InnerException: {InnerException}",
+                                userId, request.JobId, DateTime.Now, ex.Message, ex.InnerException?.Message);
+                            var record = await innerContext.TryMatchRecords.FindAsync(tryMatchRecord.TryMatchId);
+                            if (record != null)
+                            {
+                                record.Status = "Failed";
+                                record.ErrorMessage = $"Background processing error: {ex.Message}";
+                                record.CvSummary = "Error during processing";
+                                record.JobSummary = "Error during processing";
+                                record.UpdatedAt = DateTime.UtcNow;
+                                await innerContext.SaveChangesAsync();
+                                await innerNotificationService.CreateTryMatchNotification(record, request.JobId, job.Title);
+                            }
+                        }
+                    });
+
+                    return Ok(new
+                    {
+                        Success = true,
+                        Message = "Match attempt submitted successfully. Processing in background.",
+                        TryMatchId = tryMatchRecord.TryMatchId
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing try-match for User {UserId}, Job {JobId} at {Time}. Details: {Message}, InnerException: {InnerException}",
+                        userId, request.JobId, DateTime.Now, ex.Message, ex.InnerException?.Message);
+                    return StatusCode(500, new { Success = false, ErrorMessage = $"An error occurred while processing your match attempt: {ex.Message}" });
+                }
             }
         }
-
         private async Task<(CV Cv, string UploadedCvUrl, CVData CvData, string CvSummary, string Error)> ProcessCvForTryMatchAsync(
               TryMatchRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)
         {
@@ -1019,5 +1385,102 @@ namespace JOB_FINDER_API.Controllers
             return suggestions.Any() ? suggestions : new List<string> { "Your CV is well-aligned with the job. No major changes needed!" };
         }
 
+
+        [Authorize]
+        [HttpGet("try-match-details/{tryMatchId}")]
+        public async Task<IActionResult> GetTryMatchDetail(int tryMatchId)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+            {
+                _logger.LogWarning("Invalid user ID in token at {Time}.", DateTime.Now);
+                return Unauthorized("Invalid user ID.");
+            }
+
+            _logger.LogInformation("Fetching try-match details for TryMatchId {TryMatchId} by User {UserId} at {Time}.", tryMatchId, userId, DateTime.Now);
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                try
+                {
+                    var tryMatchRecord = await context.TryMatchRecords
+                        .Where(r => r.TryMatchId == tryMatchId && r.UserId == userId)
+                        .Include(r => r.Job)
+                        .Include(r => r.CV)
+                        .FirstOrDefaultAsync();
+
+                    if (tryMatchRecord == null)
+                    {
+                        _logger.LogWarning("TryMatch record {TryMatchId} not found or does not belong to User {UserId} at {Time}.", tryMatchId, userId, DateTime.Now);
+                        return NotFound(new { Success = false, ErrorMessage = "Try-match record not found or access denied." });
+                    }
+
+                    var suggestions = !string.IsNullOrEmpty(tryMatchRecord.Suggestions)
+                        ? JsonSerializer.Deserialize<List<string>>(tryMatchRecord.Suggestions)
+                        : new List<string>();
+
+                    var result = new
+                    {
+                        TryMatchId = tryMatchRecord.TryMatchId,
+                        JobId = tryMatchRecord.JobId,
+                        JobTitle = tryMatchRecord.Job?.Title,
+                        CvId = tryMatchRecord.CvId,
+                        CvFileUrl = tryMatchRecord.CV?.FileUrl,
+                        SimilarityScore = tryMatchRecord.SimilarityScore,
+                        Suggestions = suggestions,
+                        CvSummary = tryMatchRecord.CvSummary,
+                        JobSummary = tryMatchRecord.JobSummary,
+                        Status = tryMatchRecord.Status,
+                        ErrorMessage = tryMatchRecord.ErrorMessage,
+                        CreatedAt = tryMatchRecord.CreatedAt,
+                        UpdatedAt = tryMatchRecord.UpdatedAt
+                    };
+
+                    return Ok(new { Success = true, Data = result });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error fetching try-match details for TryMatchId {TryMatchId}, User {UserId} at {Time}. Details: {Message}", tryMatchId, userId, DateTime.Now, ex.Message);
+                    return StatusCode(500, new { Success = false, ErrorMessage = "An error occurred while fetching try-match details." });
+                }
+            }
+        }
+
+        [Authorize]
+        [HttpGet("my-try-match-history")]
+        public async Task<IActionResult> MyTryMatchHistory()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+            _logger.LogInformation("Fetching try match history for User {UserId} at {DateTime}", userId, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                var tryMatchRecords = await context.TryMatchRecords
+                    .Where(r => r.UserId == userId)
+                    .Include(r => r.Job)
+                    .Include(r => r.CV)
+                    .Select(r => new
+                    {
+                        TryMatchId = r.TryMatchId,
+                        JobId = r.JobId,
+                        JobTitle = r.Job.Title,
+                        CvId = r.CvId,
+                        CvFileUrl = r.CV.FileUrl,
+                        SimilarityScore = r.SimilarityScore,
+                        Suggestions = r.Suggestions,
+                        CreatedAt = r.CreatedAt,
+                        CvSummary = r.CvSummary,
+                        JobSummary = r.JobSummary
+                    })
+                    .OrderByDescending(r => r.CreatedAt)
+                    .ToListAsync();
+
+                return Ok(tryMatchRecords);
+            }
+        }
     }
 }

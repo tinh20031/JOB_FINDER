@@ -569,12 +569,10 @@ namespace JOB_FINDER_API.Controllers
             return tokenHandler.WriteToken(token);
         }
 
-        // Update the login-google endpoint to use consistent casing
+      
         [HttpGet("login-google")]
         public IActionResult LoginWithGoogle()
         {
-            // Don't use Url.Action as it might not construct URLs correctly
-            // Instead, use an absolute URL:
             var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google-response/";
 
             var properties = new AuthenticationProperties
@@ -589,7 +587,7 @@ namespace JOB_FINDER_API.Controllers
             return Challenge(properties, "Google");
         }
 
-        //bản gốc dùng được
+
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse()
         {
@@ -618,6 +616,7 @@ namespace JOB_FINDER_API.Controllers
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == email);
 
+            string firebaseUid = null;
             if (user == null)
             {
                 // Create new user with Candidate role
@@ -627,11 +626,29 @@ namespace JOB_FINDER_API.Controllers
                     return Redirect($"{baseUrl}/auth/error?message={Uri.EscapeDataString("User role not found")}");
                 }
 
+                // Tạo người dùng trong Firebase
+                try
+                {
+                    var userRecordArgs = new UserRecordArgs
+                    {
+                        Email = email,
+                        DisplayName = name,
+                        EmailVerified = true // Google đã xác minh email
+                    };
+                    var userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(userRecordArgs);
+                    firebaseUid = userRecord.Uid;
+                }
+                catch (FirebaseAuthException ex)
+                {
+                    return Redirect($"{baseUrl}/auth/error?message={Uri.EscapeDataString($"Failed to create user in Firebase: {ex.Message}")}");
+                }
+
                 user = new User
                 {
                     FullName = name,
                     Email = email,
                     RoleId = candidateRole.RoleId,
+                    FirebaseUid = firebaseUid,  
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsActive = true,
@@ -642,7 +659,7 @@ namespace JOB_FINDER_API.Controllers
                 _dbContext.Users.Add(user);
                 await _dbContext.SaveChangesAsync();
 
-                // Create CandidateProfile for new user
+
                 var candidateProfile = new CandidateProfile
                 {
                     UserId = user.UserId ?? 0
@@ -650,24 +667,28 @@ namespace JOB_FINDER_API.Controllers
                 _dbContext.CandidateProfiles.Add(candidateProfile);
                 await _dbContext.SaveChangesAsync();
 
-                // Refresh user to include the role
+              
                 user = await _dbContext.Users
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == email);
             }
+            else
+            {
+              
+                firebaseUid = user.FirebaseUid;
+            }
 
-            // Generate JWT token
+            
             var token = GenerateJwtToken(user);
 
-            // Sign out of the temporary External cookie
+            
             await HttpContext.SignOutAsync("External");
 
-            // Redirect to frontend with token and role
-            return Redirect($"{baseUrl}/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}");
+       
+            return Redirect($"{baseUrl}/auth/callback?token={Uri.EscapeDataString(token)}&role={Uri.EscapeDataString(user.Role.RoleName)}&firebaseUid={Uri.EscapeDataString(firebaseUid ?? "")}");
         }
 
 
-    
 
         [HttpPost("forgot-password/request")]
         public async Task<IActionResult> RequestForgotPassword([FromBody] ForgotPasswordRequestDto dto)

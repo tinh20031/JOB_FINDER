@@ -11,12 +11,18 @@ namespace JOB_FINDER_API.Models
         public string? Link { get; set; }
         public NotificationType Type { get; set; }
         public bool IsRead { get; set; } = false;
+        public int TryMatchId { get; set; } 
+        public string? Status { get; set; }
+        public float? SimilarityScore { get; set; }
+        public string? Suggestions { get; set; }
+        public string? CvSummary { get; set; }
+        public string? JobSummary { get; set; }
+        public string? ErrorMessage { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
         public User? User { get; set; }
-
         public enum NotificationType
         {
             NewJob = 1,
@@ -26,7 +32,8 @@ namespace JOB_FINDER_API.Models
             JobRejected = 5,
             NewJobApplication = 6,
             CompanyFavorited = 7,      
-            JobFavorited = 8
+            JobFavorited = 8,
+                TryMatchUpdate = 9 
         }
     }
 }

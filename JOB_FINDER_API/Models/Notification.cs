@@ -15,8 +15,7 @@ namespace JOB_FINDER_API.Models
         public string? Status { get; set; }
         public float? SimilarityScore { get; set; }
         public string? Suggestions { get; set; }
-        public string? CvSummary { get; set; }
-        public string? JobSummary { get; set; }
+   
         public string? ErrorMessage { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

@@ -1039,8 +1039,7 @@ namespace JOB_FINDER_API.Controllers
                             // Update TryMatch record and send notification
                             record.SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : null;
                             record.Suggestions = suggestions != null ? JsonSerializer.Serialize(suggestions) : null;
-                            record.CvSummary = cvData != null ? $"{cvData.Description}\nSkills: {string.Join(", ", cvData.Skills)}\nExperience: {cvData.Experience}\nEducation: {cvData.Education}" : null;
-                        
+
                             record.Status = matchingResult.Success ? "Completed" : "Failed";
                             record.ErrorMessage = matchingResult.Success ? null : "Failed to calculate similarity.";
                             record.UpdatedAt = DateTime.UtcNow;
@@ -1251,7 +1250,7 @@ namespace JOB_FINDER_API.Controllers
             // 5. Overall
             if (matchingResult.FinalSimilarity < 0.5)
             {
-                string suggestion = $"Your CV has low compatibility with the job (score: {matchingResult.FinalSimilarity:F2}). Consider tailoring your CV to better fit the job requirements and exploring additional training.";
+                string suggestion = $"Your CV has low compatibility with the job (score: {matchingResult.FinalSimilarity * 100:F0}%). Consider tailoring your CV to better fit the job requirements and exploring additional training.";
                 if (!string.IsNullOrEmpty(matchingResult.GeminiReasoning))
                     suggestion += $" Additional feedback: {matchingResult.GeminiReasoning}.";
                 suggestions.Add(suggestion);
@@ -1304,8 +1303,6 @@ namespace JOB_FINDER_API.Controllers
                         CvFileUrl = tryMatchRecord.CV?.FileUrl,
                         SimilarityScore = tryMatchRecord.SimilarityScore,
                         Suggestions = suggestions,
-                        CvSummary = tryMatchRecord.CvSummary,
-                        JobSummary = tryMatchRecord.JobSummary,
                         Status = tryMatchRecord.Status,
                         ErrorMessage = tryMatchRecord.ErrorMessage,
                         CreatedAt = tryMatchRecord.CreatedAt,
@@ -1348,8 +1345,7 @@ namespace JOB_FINDER_API.Controllers
                         SimilarityScore = r.SimilarityScore,
                         Suggestions = r.Suggestions,
                         CreatedAt = r.CreatedAt,
-                        CvSummary = r.CvSummary,
-                        JobSummary = r.JobSummary
+                       
                     })
                     .OrderByDescending(r => r.CreatedAt)
                     .ToListAsync();

@@ -9,13 +9,12 @@
         public int JobId { get; set; }
         public int? CvId { get; set; }
         public float? SimilarityScore { get; set; }
-        public string? Suggestions { get; set; } // Nullable
+        public string? Suggestions { get; set; } 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public string? Status { get; set; } // Nullable
-        public string? ErrorMessage { get; set; } // Nullable
-        public string? CvSummary { get; set; } // Nullable
-        public string? JobSummary { get; set; } // Nullable
+        public string? Status { get; set; } 
+        public string? ErrorMessage { get; set; } 
+       
 
         [JsonIgnore]
         public User User { get; set; }

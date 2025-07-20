@@ -562,6 +562,8 @@ namespace JOB_FINDER_API.Services
             }
         }
 
+        
+
         public async Task CreateTryMatchNotification(TryMatchRecord tryMatchRecord, int jobId, string jobTitle)
         {
             try
@@ -584,10 +586,15 @@ namespace JOB_FINDER_API.Services
                     _ => $"Try-match update for job: {jobTitle}"
                 };
 
+                // Tách logic định dạng SimilarityScore ra ngoài switch expression
+                string similarityScoreText = tryMatchRecord.SimilarityScore.HasValue
+                    ? $"{tryMatchRecord.SimilarityScore.Value * 100:F0}%"
+                    : "N/A";
+
                 string message = tryMatchRecord.Status switch
                 {
                     "Processing" => $"Your try-match request for job '{jobTitle}' is being processed.",
-                    "Completed" => $"Your try-match request for job '{jobTitle}' completed successfully. Similarity Score: {tryMatchRecord.SimilarityScore?.ToString("F2") ?? "N/A"}.",
+                    "Completed" => $"Your try-match request for job '{jobTitle}' completed successfully. Similarity Score: {similarityScoreText}.",
                     "Failed" => $"Your try-match request for job '{jobTitle}' failed: {tryMatchRecord.ErrorMessage ?? "Unknown error."}",
                     _ => $"Your try-match request for job '{jobTitle}' has an update."
                 };
@@ -598,25 +605,21 @@ namespace JOB_FINDER_API.Services
                     Title = title,
                     Message = message,
                     Link = tryMatchUrl,
-                    Type = Notification.NotificationType.TryMatchUpdate, 
+                    Type = Notification.NotificationType.TryMatchUpdate,
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow,
                     TryMatchId = tryMatchRecord.TryMatchId,
                     Status = tryMatchRecord.Status,
-                    SimilarityScore = tryMatchRecord.SimilarityScore,
+                    SimilarityScore = tryMatchRecord.SimilarityScore, // Lưu giá trị gốc (0 đến 1)
                     Suggestions = tryMatchRecord.Suggestions,
-                    CvSummary = tryMatchRecord.CvSummary,
-                    JobSummary = tryMatchRecord.JobSummary,
                     ErrorMessage = tryMatchRecord.ErrorMessage
                 };
 
-                // Lưu thông báo vào cơ sở dữ liệu
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation($"Try-match notification created for user {tryMatchRecord.UserId}, TryMatchId {tryMatchRecord.TryMatchId}");
 
-                // Gửi thông báo thời gian thực qua SignalR
                 try
                 {
                     await _notificationHubContext.Clients
@@ -635,8 +638,6 @@ namespace JOB_FINDER_API.Services
                 throw;
             }
         }
-
-
 
     }
 }

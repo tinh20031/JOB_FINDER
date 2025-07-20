@@ -61,6 +61,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(cvs);
         }
 
+        [Authorize]
         [HttpPost]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] CreateCVRequest request)
@@ -99,8 +100,6 @@ namespace JOB_FINDER_API.Controllers
             }
 
             string extractedText = string.Empty;
-            string cvSummary = string.Empty;
-            CVData cvData = new CVData();
             try
             {
                 using (var stream = request.File.OpenReadStream())
@@ -119,46 +118,42 @@ namespace JOB_FINDER_API.Controllers
                     return BadRequest("CV content is empty or unreadable.");
                 }
 
-                var (success, extractError, extractedCvData, extractedSummary) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
+                var (success, extractError, extractedCvData) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
                 if (!success)
                 {
                     _logger.LogError("Failed to extract CV data for UserId {UserId}: {Error}", userId, extractError);
                     return BadRequest($"Failed to extract CV data: {extractError}");
                 }
 
-                cvData = extractedCvData;
-                cvSummary = extractedSummary;
+                var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+                var fullCvJson = JsonSerializer.Serialize(new
+                {
+                    Text = extractedText,
+                    TranslatedText = string.Empty,
+                    CVData = extractedCvData
+                }, jsonOptions);
+
+                var cv = new CV
+                {
+                    UserId = request.UserId,
+                    FileUrl = fileUrl,
+                    FullCvJson = fullCvJson,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    Type = CvType.Upload
+                };
+
+                _context.CVs.Add(cv);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("CV created successfully for UserId {UserId}, CVId {CVId}", userId, cv.CVId);
+
+                return CreatedAtAction(nameof(Get), new { id = cv.CVId }, cv);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "PDF extraction failed for UserId {UserId}", userId);
                 return BadRequest($"PDF extraction failed: {ex.Message}");
             }
-
-            var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-            var fullCvJson = JsonSerializer.Serialize(new
-            {
-                Text = extractedText,
-                TranslatedText = string.Empty,
-                Summary = cvSummary,
-                CVData = cvData
-            }, jsonOptions);
-
-            var cv = new CV
-            {
-                UserId = request.UserId,
-                FileUrl = fileUrl,
-                FullCvJson = fullCvJson,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Type = CvType.Upload
-            };
-
-            _context.CVs.Add(cv);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("CV created successfully for UserId {UserId}, CVId {CVId}", userId, cv.CVId);
-
-            return CreatedAtAction(nameof(Get), new { id = cv.CVId }, cv);
         }
 
         [HttpPut("{id}")]

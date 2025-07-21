@@ -644,46 +644,6 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        [HttpGet("auth/callback")]
-        public async Task<IActionResult> OAuthCallback(string code, string state, [FromServices] IOptions<GeminiConfig> geminiConfig)
-        {
-            if (string.IsNullOrEmpty(code))
-            {
-                _logger.LogWarning("Invalid authorization code received");
-                return BadRequest("Invalid authorization code.");
-            }
-
-            var client = new HttpClient();
-            var requestContent = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("client_id", geminiConfig.Value.ClientId),
-                new KeyValuePair<string, string>("client_secret", geminiConfig.Value.ClientSecret),
-                new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("redirect_uri", geminiConfig.Value.RedirectUri ?? "http://localhost:5194/auth/callback"),
-                new KeyValuePair<string, string>("grant_type", "authorization_code")
-            });
-
-            var response = await client.PostAsync("https://oauth2.googleapis.com/token", requestContent);
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var tokenData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
-                var accessToken = tokenData["access_token"];
-                var refreshToken = tokenData["refresh_token"];
-
-                HttpContext.Session.SetString("AccessToken", accessToken);
-                HttpContext.Session.SetString("RefreshToken", refreshToken);
-                _logger.LogInformation("OAuth callback successful, tokens stored in session");
-
-                return Redirect("http://localhost:5194/success");
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _logger.LogError("Token retrieval error: {ErrorContent}", errorContent);
-                return StatusCode(500, "Unable to retrieve token from Google.");
-            }
-        }
 
         [HttpGet("jobs-applied-by-user-in-company")]
         public async Task<IActionResult> GetJobsAppliedByUserInCompany(int userId, int companyId)

@@ -586,15 +586,12 @@ namespace JOB_FINDER_API.Services
                     _ => $"Try-match update for job: {jobTitle}"
                 };
 
-                // Tách logic định dạng SimilarityScore ra ngoài switch expression
-                string similarityScoreText = tryMatchRecord.SimilarityScore.HasValue
-                    ? $"{tryMatchRecord.SimilarityScore.Value * 100:F0}%"
-                    : "N/A";
+           
 
                 string message = tryMatchRecord.Status switch
                 {
                     "Processing" => $"Your try-match request for job '{jobTitle}' is being processed.",
-                    "Completed" => $"Your try-match request for job '{jobTitle}' completed successfully. Similarity Score: {similarityScoreText}.",
+                    "Completed" => $"Your try-match request for job '{jobTitle}' completed successfully. Similarity Score: {tryMatchRecord.SimilarityScore}.",
                     "Failed" => $"Your try-match request for job '{jobTitle}' failed: {tryMatchRecord.ErrorMessage ?? "Unknown error."}",
                     _ => $"Your try-match request for job '{jobTitle}' has an update."
                 };

@@ -155,31 +155,19 @@ Text:
                 return (false, string.Empty, Array.Empty<string>(), string.Empty);
             }
 
-            if (_preprocessCache.TryGetValue(text, out var cachedResult))
-            {
-                _logger.LogInformation("Reusing cached preprocessing result for text: Length={Length}", text.Length);
-                return (true, cachedResult.CleanedText, cachedResult.WeightedTerms, cachedResult.ContextAnalysis);
-            }
+            var normalizedText = NormalizeText(text);
+            _logger.LogInformation("Preprocessing text with Gemini API: Length={Length}", normalizedText.Length);
 
-            int maxCacheSize = _configuration.GetValue<int>("Gemini:MaxCacheSize", 1000);
-            if (_preprocessCache.Count >= maxCacheSize)
-            {
-                var oldestKey = _preprocessCache.OrderBy(x => x.Value.CleanedText.Length).First().Key;
-                _preprocessCache.Remove(oldestKey);
-                _logger.LogInformation("Removed oldest cache entry to maintain size limit: {MaxCacheSize}", maxCacheSize);
-            }
-
-            string cleanedText = text;
+            string cleanedText = normalizedText;
             string[] weightedTerms = Array.Empty<string>();
             string contextAnalysis = string.Empty;
 
             int minTextLength = _configuration.GetValue<int>("Gemini:MinTextLengthForAnalysis", 100);
-            if (text.Length < minTextLength)
+            if (normalizedText.Length < minTextLength)
             {
-                _logger.LogInformation("Short text detected (Length={Length}), assigning default weights", text.Length);
-                weightedTerms = text.Split(' ').Select(s => $"{s} *0.5").ToArray();
+                _logger.LogInformation("Short text detected (Length={Length}), assigning default weights", normalizedText.Length);
+                weightedTerms = normalizedText.Split(' ').Select(s => $"{s} *0.5").ToArray();
                 contextAnalysis = "Short text, no deep context analysis";
-                _preprocessCache[text] = (cleanedText, weightedTerms, contextAnalysis);
                 return (true, cleanedText, weightedTerms, contextAnalysis);
             }
 
@@ -188,10 +176,11 @@ Text:
                 await EnsureValidToken();
                 var prompt = $@"Preprocess this text for semantic analysis in a job matching context (supporting multiple languages, e.g., English, Vietnamese):
 - Clean the text by removing irrelevant details (e.g., contact info, formatting) based on configurable rules.
-- Identify key weighted terms with their importance (e.g., term *weight, weight from 0.5 to 1.0). Dynamically infer skills and suggest related terms or synonyms based on context (e.g., infer C# from .NET usage, PHP from web development mentions) without relying on a fixed synonym list.
+- Identify key weighted terms with their importance (e.g., term *weight, weight from 0.5 to 0.5 to 1.0). Dynamically infer skills and suggest related terms or synonyms based on context (e.g., infer C# from .NET usage, JavaScript from React.js, SQL from database mentions). Prioritize skills matching common job requirements (e.g., C#, JavaScript, SQL, RESTful API, DevOps).
 - Analyze context: identify technical skill proficiency levels (e.g., Java (senior), Python (junior)), soft skills (e.g., teamwork, communication), experience type (e.g., project-based, theoretical), education, and relevance to job matching.
+- For short texts (<100 characters), infer related skills based on context (e.g., .NET implies C#, React.js implies JavaScript) and assign weights >= 0.8 for inferred skills.
 Text:
-{text}
+{normalizedText}
 
 Response format:
 Cleaned Text: [cleaned text]
@@ -210,7 +199,7 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
                 if (string.IsNullOrWhiteSpace(responseText))
                 {
                     _logger.LogWarning("Empty response from Gemini for text preprocessing");
-                    return (false, text, Array.Empty<string>(), string.Empty);
+                    return (false, normalizedText, Array.Empty<string>(), string.Empty);
                 }
 
                 var responseLines = responseText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -239,13 +228,12 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
                     }).ToArray();
                 }
 
-                _preprocessCache[text] = (cleanedText, weightedTerms, contextAnalysis);
                 return (true, cleanedText, weightedTerms, contextAnalysis);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error preprocessing text with Gemini");
-                return (false, text, Array.Empty<string>(), string.Empty);
+                return (false, normalizedText, Array.Empty<string>(), string.Empty);
             }
         }
 
@@ -388,9 +376,10 @@ CV text:
                 return (false, "Input text is empty", new float[0]);
             }
 
+            var normalizedText = NormalizeText(text);
             await EnsureValidToken();
 
-            var (success, cleanedText, weightedTerms, _) = await PreprocessTextWithGeminiAsync(text);
+            var (success, cleanedText, weightedTerms, _) = await PreprocessTextWithGeminiAsync(normalizedText);
             if (!success)
             {
                 _logger.LogWarning("Failed to preprocess text: {Error}", cleanedText);
@@ -736,23 +725,101 @@ CV text:
             normB = (float)Math.Sqrt(normB);
             return normA * normB > 0 ? dotProduct / (normA * normB) : 0f;
         }
+        public async Task<List<string>> GenerateImprovementSuggestions(
+            Job job,
+            CV cv,
+            float similarityDescription,
+            float similaritySkills,
+            float similarityExperience,
+            float similarityEducation,
+            float descriptionMaxScore,
+            float skillsMaxScore,
+            float experienceMaxScore,
+            float educationMaxScore)
+        {
+            var suggestions = new List<string>();
 
-        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv)
+         
+            const float descriptionThreshold = 0.4f; 
+            const float skillsThreshold = 0.5f; 
+            const float experienceThreshold = 0.4f; 
+            const float educationThreshold = 0.6f; 
+            const float totalThreshold = 0.5f; 
+
+            
+            float normalizedDescription = descriptionMaxScore > 0 ? similarityDescription / descriptionMaxScore : 0f;
+            float normalizedSkills = skillsMaxScore > 0 ? similaritySkills / skillsMaxScore : 0f;
+            float normalizedExperience = experienceMaxScore > 0 ? similarityExperience / experienceMaxScore : 0f;
+            float normalizedEducation = educationMaxScore > 0 ? similarityEducation / educationMaxScore : 0f;
+            float totalSimilarity = (descriptionMaxScore + skillsMaxScore + experienceMaxScore + educationMaxScore) > 0
+                ? (similarityDescription + similaritySkills + similarityExperience + similarityEducation) /
+                  (descriptionMaxScore + skillsMaxScore + experienceMaxScore + educationMaxScore)
+                : 0f;
+
+         
+            if (normalizedDescription < descriptionThreshold)
+            {
+                suggestions.Add("Revise your **description** to better align with the job's requirements.");
+            }
+
+         
+            if (normalizedSkills < skillsThreshold)
+            {
+                suggestions.Add("Enhance your **skills** section to better match the job's technical demands.");
+            }
+
+          
+            if (normalizedExperience < experienceThreshold)
+            {
+                suggestions.Add("Strengthen your **experience** section to highlight relevant roles or projects.");
+            }
+
+          
+            if (normalizedEducation < educationThreshold)
+            {
+                suggestions.Add("Update your **education** details to better reflect the job's qualifications.");
+            }
+
+            
+            if (totalSimilarity < totalThreshold)
+            {
+                suggestions.Add("Tailor your **CV** to improve overall alignment with the job's requirements.");
+            }
+
+            
+            return suggestions.Any() ? suggestions : new List<string> { "Your **CV** is **well-aligned** with the job requirements. No major changes needed!" };
+        }
+        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv)
         {
             if (job == null || cv == null)
             {
                 _logger.LogWarning("CalculateTotalSimilarity called with null job or CV");
-                return (false, "Invalid job or CV", 0f, 0f, 0f, 0f, 0f, string.Empty);
+                return (false, "Invalid job or CV", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, string.Empty);
             }
 
             _logger.LogInformation("Extracting job content - Description: {Description}, YourSkill: {YourSkill}, YourExperience: {YourExperience}, Education: {Education}",
                 job.Description, job.YourSkill, job.YourExperience, job.Education);
             _logger.LogInformation("Extracting CV content from FullCvJson: {FullCvJson}", cv.FullCvJson);
 
+          
             float descriptionWeight = job.DescriptionWeight;
             float skillsWeight = job.SkillsWeight;
             float experienceWeight = job.ExperienceWeight;
             float educationWeight = job.EducationWeight;
+
+         
+            float totalWeight = descriptionWeight + skillsWeight + experienceWeight + educationWeight;
+            if (Math.Abs(totalWeight) < 0.0001f)
+            {
+                _logger.LogWarning("Total weight is zero for Job {JobId}", job.JobId);
+                return (false, "Total weight cannot be zero.", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, "Invalid weights");
+            }
+
+         
+            float descriptionMaxScore = descriptionWeight * 100f;
+            float skillsMaxScore = skillsWeight * 100f;
+            float experienceMaxScore = experienceWeight * 100f;
+            float educationMaxScore = educationWeight * 100f;
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
@@ -764,70 +831,51 @@ CV text:
                     if (!jobVectorsSuccess)
                     {
                         _logger.LogError("Failed to generate job vectors: {Error}", jobVectorsError);
-                        return (false, jobVectorsError, 0f, 0f, 0f, 0f, 0f, string.Empty);
+                        return (false, jobVectorsError, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, jobVectorsError);
                     }
 
                     var (cvVectorsSuccess, cvVectorsError, cvVectors, cvContext) = await GenerateVectorsForCVCriteria(cv, cv.FullCvJson);
                     if (!cvVectorsSuccess)
                     {
                         _logger.LogError("Failed to generate CV vectors: {Error}", cvVectorsError);
-                        return (false, cvVectorsError, 0f, 0f, 0f, 0f, 0f, string.Empty);
+                        return (false, cvVectorsError, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, cvVectorsError);
                     }
 
                     if (jobVectors.Length != 4 || cvVectors.Length != 4)
                     {
                         _logger.LogError("Invalid vector array length: JobVectors={JobLength}, CVVectors={CVLength}", jobVectors.Length, cvVectors.Length);
-                        return (false, "Invalid vector array length", 0f, 0f, 0f, 0f, 0f, string.Empty);
+                        return (false, "Invalid vector array length", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, "Invalid vector array length");
                     }
 
-                    var similarities = new float[4];
-                    for (int i = 0; i < 4; i++)
-                    {
-                        similarities[i] = CalculateSimilarityWithContext(
-                            jobVectors[i],
-                            cvVectors[i],
-                            i switch
-                            {
-                                0 => descriptionWeight,
-                                1 => skillsWeight,
-                                2 => experienceWeight,
-                                3 => educationWeight,
-                                _ => 0f
-                            }
-                        );
-                    }
+                   
+                    float similarityDescription = CalculateCosineSimilarity(jobVectors[0], cvVectors[0]) * descriptionMaxScore;
+                    float similaritySkills = CalculateCosineSimilarity(jobVectors[1], cvVectors[1]) * skillsMaxScore;
+                    float similarityExperience = CalculateCosineSimilarity(jobVectors[2], cvVectors[2]) * experienceMaxScore;
+                    float similarityEducation = CalculateCosineSimilarity(jobVectors[3], cvVectors[3]) * educationMaxScore;
 
-                    float similarityDescription = Math.Clamp(similarities[0], 0f, 1f);
-                    float similaritySkills = Math.Clamp(similarities[1], 0f, 1f);
-                    float similarityExperience = Math.Clamp(similarities[2], 0f, 1f);
-                    float similarityEducation = Math.Clamp(similarities[3], 0f, 1f);
+                  
+                    float finalSimilarity = similarityDescription + similaritySkills + similarityExperience + similarityEducation;
 
-                    float totalSimilarity = similarityDescription + similaritySkills + similarityExperience + similarityEducation;
-                    totalSimilarity = Math.Clamp(totalSimilarity / 4, 0f, 1f); // Average the components
+               
+                    similarityDescription = Math.Clamp(similarityDescription, 0f, descriptionMaxScore);
+                    similaritySkills = Math.Clamp(similaritySkills, 0f, skillsMaxScore);
+                    similarityExperience = Math.Clamp(similarityExperience, 0f, experienceMaxScore);
+                    similarityEducation = Math.Clamp(similarityEducation, 0f, educationMaxScore);
+                    finalSimilarity = Math.Clamp(finalSimilarity, 0f, 100f);
 
-                    _logger.LogInformation("Similarity Scores for Job {JobId}: Description={Description:F2}, Skills={Skills:F2}, Experience={Experience:F2}, Education={Education:F2}, Total={Total:F2}",
-                        job.JobId, similarityDescription, similaritySkills, similarityExperience, similarityEducation, totalSimilarity);
+                    string geminiReasoning = $"Similarity calculated based on vector cosine similarity. Scores: Description {similarityDescription:F1}/{descriptionMaxScore:F1}, Skills {similaritySkills:F1}/{skillsMaxScore:F1}, Experience {similarityExperience:F1}/{experienceMaxScore:F1}, Education {similarityEducation:F1}/{educationMaxScore:F1}, Total {finalSimilarity:F1}/100";
 
-                    string geminiReasoning = "Similarity calculated based on vector cosine similarity of job and CV fields (Description, Skills, Experience, Education).";
+                    _logger.LogInformation("Similarity Scores for Job {JobId}: Description={Description:F1}/{DescriptionMax:F1}, Skills={Skills:F1}/{SkillsMax:F1}, Experience={Experience:F1}/{ExperienceMax:F1}, Education={Education:F1}/{EducationMax:F1}, Total={Total:F1}/100",
+                        job.JobId, similarityDescription, descriptionMaxScore, similaritySkills, skillsMaxScore, similarityExperience, experienceMaxScore, similarityEducation, educationMaxScore, finalSimilarity);
 
-                    return (true, string.Empty, totalSimilarity, similarityDescription, similaritySkills, similarityExperience, similarityEducation, geminiReasoning);
+                    return (true, string.Empty, finalSimilarity, similarityDescription, similaritySkills, similarityExperience, similarityEducation, descriptionMaxScore, skillsMaxScore, experienceMaxScore, educationMaxScore, geminiReasoning);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in CalculateTotalSimilarity for Job {JobId}: {Error}", job?.JobId, ex.Message);
-                    return (false, $"Similarity calculation failed: {ex.Message}", 0f, 0f, 0f, 0f, 0f, string.Empty);
+                    return (false, $"Similarity calculation failed: {ex.Message}", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, ex.Message);
                 }
             }
-        }
-
-        private string PreprocessText(string text)
-        {
-            text = Regex.Replace(text, @"\\u[0-9A-Fa-f]{4}", "");
-            text = Regex.Replace(text, @"[\uF000-\uF0FF?]", "");
-            text = Regex.Replace(text, @"<[^>]+>|[\r\n]+", " ");
-            text = Regex.Replace(text, @"CONTACT.*?(?=\w+|$)", "", RegexOptions.IgnoreCase);
-            text = Regex.Replace(text, @"\s+", " ").Trim();
-            return text;
         }
 
         private bool IsValidJson(string text)
@@ -917,7 +965,12 @@ CV text:
             }
             return string.Join("; ", experienceLines.Distinct().Take(5));
         }
-
+        private string NormalizeText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+            return Regex.Replace(text.Trim().ToLower(), @"\s+", " ");
+        }
         private string ExtractEducationFallback(string text)
         {
             var educationLines = new List<string>();

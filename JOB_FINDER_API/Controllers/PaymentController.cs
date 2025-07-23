@@ -677,7 +677,7 @@ namespace JOB_FINDER_API.Controllers
         public IActionResult Cancel()
         {
             // Redirect user to the cancelled payment page
-            return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment/cancelled");
+            return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment-cancelled");
         }
 
         [HttpGet("cancel/{orderCode}")]
@@ -692,7 +692,7 @@ namespace JOB_FINDER_API.Controllers
                 if (payment == null)
                 {
                     _logger.LogWarning($"Payment not found for order: {orderCode}");
-                    return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment/cancelled?error=payment-not-found");
+                    return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment-cancelled?error=payment-not-found");
                 }
 
                 // Only update status if payment is still pending
@@ -728,12 +728,12 @@ namespace JOB_FINDER_API.Controllers
                 }
 
                 // Redirect to the cancelled payment page
-                return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment/cancelled?orderCode={orderCode}");
+                return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment-cancelled?orderCode={orderCode}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error processing payment cancellation: {ex.Message}");
-                return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment/cancelled?error=processing-error&orderCode={orderCode}");
+                return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment-cancelled?error=processing-error&orderCode={orderCode}");
             }
         }
     }

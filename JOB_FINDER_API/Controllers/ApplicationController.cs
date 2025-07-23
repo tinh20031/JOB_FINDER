@@ -1262,6 +1262,24 @@ namespace JOB_FINDER_API.Controllers
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                 try
                 {
+                    var user = await context.Users
+               .Include(u => u.CandidateProfile)
+               .FirstOrDefaultAsync(u => u.UserId == userId);
+
+                    if (user == null)
+                        return Unauthorized("User not found.");
+
+                    var profile = user.CandidateProfile;
+                    if (string.IsNullOrWhiteSpace(user.FullName) ||
+                        string.IsNullOrWhiteSpace(profile?.JobTitle) ||
+                        string.IsNullOrWhiteSpace(user.Phone) ||
+                        profile?.Dob == null ||
+                        string.IsNullOrWhiteSpace(profile?.Province) ||
+                        string.IsNullOrWhiteSpace(profile?.City))
+                    {
+                        return BadRequest(new { Success = false, Message = "Please update your personal information before applying." });
+                    }
+
                     // Check job validity
                     var job = await context.Jobs.FindAsync(request.JobId);
                     if (job == null)

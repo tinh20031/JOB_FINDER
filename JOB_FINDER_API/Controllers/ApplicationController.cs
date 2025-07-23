@@ -760,7 +760,7 @@ namespace JOB_FINDER_API.Controllers
                 return Ok(new { userId, companyId, distinctJobCount = count });
             }
         }
-        [Authorize]
+        /*[Authorize]
         [HttpPost("try-match")]
         public async Task<IActionResult> TryMatch(
                    [FromForm] TryMatchRequest request,
@@ -830,6 +830,132 @@ namespace JOB_FINDER_API.Controllers
                     CvSummary = cvSummary,
                     JobSummary = jobSummary,
                     Suggestions = suggestions
+                });
+            }
+        }*/
+        // Trong file ApplicationController.cs, cập nhật phương thức TryMatch để kiểm tra subscription
+        [Authorize]
+        [HttpPost("try-match")]
+        public async Task<IActionResult> TryMatch(
+     [FromForm] TryMatchRequest request,
+     [FromServices] ICvSnapshotService cvSnapshotService,
+     [FromServices] CloudinaryService cloudinaryService,
+     [FromServices] IServiceScopeFactory serviceScopeFactory)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+            _logger.LogInformation("User {UserId} started trying match for Job {JobId}", userId, request.JobId);
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+
+                // Check user subscription and try-match limits
+                var activeSubscription = await context.CandidateSubscriptions
+                    .Where(s => s.UserId == userId && s.IsActive) // Removed EndDate condition
+                    .Include(s => s.SubscriptionType)
+                    .OrderByDescending(s => s.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (activeSubscription == null)
+                {
+                    // Check if user has ever used a try-match before
+                    var tryMatchCount = await context.TryMatchRecords
+                        .Where(r => r.UserId == userId)
+                        .CountAsync();
+
+                    if (tryMatchCount > 0)
+                    {
+                        return BadRequest(new
+                        {
+                            Success = false,
+                            ErrorMessage = "You have used up all your free Try-Match attempts. Please purchase a plan to continue using it.",
+                            RequiresSubscription = true
+                        });
+                    }
+
+                    // If this is the user's first try-match, continue without a subscription
+                    _logger.LogInformation("User {UserId} is using their free try-match attempt", userId);
+                }
+                else if (activeSubscription.RemainingTryMatches <= 0)
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        ErrorMessage = "You have used up all the Try-Match attempts in your current package. Please upgrade your package to get more attempts.",
+                        RequiresUpgrade = true,
+                        CurrentSubscription = new
+                        {
+                            PackageName = activeSubscription.SubscriptionType.Name,
+                            RemainingTryMatches = activeSubscription.RemainingTryMatches
+                        }
+                    });
+                }
+
+                var (cv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvForTryMatchAsync(request, userId, cloudinaryService, context);
+                if (cv == null)
+                {
+                    _logger.LogError("Failed to process CV for User {UserId}: {Error}", userId, error);
+                    return BadRequest(new { Success = false, ErrorMessage = error });
+                }
+
+                var job = await context.Jobs.FindAsync(request.JobId);
+                if (job == null)
+                {
+                    _logger.LogWarning("Job {JobId} not found for User {UserId}", request.JobId, userId);
+                    return NotFound(new { Success = false, ErrorMessage = "Job not found" });
+                }
+
+                string jobSummary = await SummarizeJobAsync(job, context);
+
+                var matchingResult = await _semanticMatchingService.CalculateTotalSimilarity(job, cv, cvSummary, jobSummary);
+                if (!matchingResult.Success)
+                {
+                    return BadRequest(new { Success = false, ErrorMessage = matchingResult.ErrorMessage });
+                }
+
+                var suggestions = GenerateImprovementSuggestions(matchingResult, cvData, job);
+
+                using (var innerScope = _serviceScopeFactory.CreateScope())
+                {
+                    var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                    var tryMatchRecord = new TryMatchRecord
+                    {
+                        UserId = userId,
+                        JobId = request.JobId,
+                        CvId = cv.CVId,
+                        SimilarityScore = matchingResult.FinalSimilarity,
+                        Suggestions = JsonSerializer.Serialize(suggestions),
+                        CreatedAt = DateTime.UtcNow,
+                        CvSummary = cvSummary,
+                        JobSummary = jobSummary
+                    };
+                    innerContext.TryMatchRecords.Add(tryMatchRecord);
+
+                    // Decrease the remaining try-matches if user has a subscription
+                    if (activeSubscription != null)
+                    {
+                        activeSubscription.RemainingTryMatches--;
+                        activeSubscription.UpdatedAt = DateTime.UtcNow;
+                    }
+
+                    await innerContext.SaveChangesAsync();
+                }
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Match attempt successful",
+                    SimilarityScore = matchingResult.FinalSimilarity,
+                    SimilarityDescription = matchingResult.SimilarityDescription,
+                    SimilaritySkills = matchingResult.SimilaritySkills,
+                    SimilarityExperience = matchingResult.SimilarityExperience,
+                    SimilarityEducation = matchingResult.SimilarityEducation,
+                    CvSummary = cvSummary,
+                    JobSummary = jobSummary,
+                    Suggestions = suggestions,
+                    RemainingTryMatches = activeSubscription?.RemainingTryMatches
                 });
             }
         }

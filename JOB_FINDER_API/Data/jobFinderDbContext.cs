@@ -36,6 +36,9 @@ namespace JOB_FINDER_API.Data
         public DbSet<JobView> JobViews { get; set; }
         public DbSet<TryMatchRecord> TryMatchRecords { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<SubscriptionType> SubscriptionTypes { get; set; }
+        public DbSet<CandidateSubscription> CandidateSubscriptions { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
 
         private static DateTime GetVietnamTime()
@@ -281,6 +284,43 @@ namespace JOB_FINDER_API.Data
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Add default subscription packages
+            modelBuilder.Entity<SubscriptionType>().HasData(
+                new SubscriptionType
+                {
+                    SubscriptionTypeId = 1,
+                    PackageType = SubscriptionPackageType.Free,
+                    Name = "Free",
+                    Description = "Free package with 1 try-match",
+                    Price = 0,
+                    TryMatchLimit = 1,
+                    DurationInDays = 0,
+                    IsActive = true
+                },
+                new SubscriptionType
+                {
+                    SubscriptionTypeId = 2,
+                    PackageType = SubscriptionPackageType.Basic,
+                    Name = "Basic",
+                    Description = "Basic package with 3 try-matches",
+                    Price = 2000, // 99,000 VND
+                    TryMatchLimit = 3,
+                    DurationInDays = 30,
+                    IsActive = true
+                },
+                new SubscriptionType
+                {
+                    SubscriptionTypeId = 3,
+                    PackageType = SubscriptionPackageType.Premium,
+                    Name = "Premium",
+                    Description = "Premium package with 7 try-matches",
+                    Price = 3000, // 199,000 VND
+                    TryMatchLimit = 7,
+                    DurationInDays = 30,
+                    IsActive = true
+                }
+            );
+
         }
     }
 }

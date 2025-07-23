@@ -1873,7 +1873,6 @@ namespace JOB_FINDER_API.Controllers
                 return Ok(tryMatchRecords);
             }
         }
-
         [Authorize]
         [HttpPost("export-applications")]
         public async Task<IActionResult> ExportApplications([FromBody] ExportApplicationsRequest request)
@@ -1962,7 +1961,8 @@ namespace JOB_FINDER_API.Controllers
                                     }
 
                                     var fileBytes = await response.Content.ReadAsByteArrayAsync();
-                                    var fileName = $"CV_Application_{app.ApplicationId}.pdf";
+                                    // Extract filename from ResumeUrl (e.g., from "https://cloudinary.com/resume/john_doe_cv.pdf")
+                                    var fileName = Path.GetFileName(new Uri(app.ResumeUrl).AbsolutePath) ?? $"CV_Application_{app.ApplicationId}.pdf";
                                     var entry = zipArchive.CreateEntry(fileName, CompressionLevel.Optimal);
                                     using (var entryStream = entry.Open())
                                     {

@@ -591,7 +591,7 @@ namespace JOB_FINDER_API.Services
                 string message = tryMatchRecord.Status switch
                 {
                     "Processing" => $"Your try-match request for job '{jobTitle}' is being processed.",
-                    "Completed" => $"Your try-match request for job '{jobTitle}' completed successfully. Similarity Score: {tryMatchRecord.SimilarityScore}.",
+                    "Completed" => $"Your try-match request for job '{jobTitle}' completed successfully. Similarity Score: {(int)Math.Round(tryMatchRecord.SimilarityScore ?? 0)}.",
                     "Failed" => $"Your try-match request for job '{jobTitle}' failed: {tryMatchRecord.ErrorMessage ?? "Unknown error."}",
                     _ => $"Your try-match request for job '{jobTitle}' has an update."
                 };

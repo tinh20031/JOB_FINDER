@@ -109,10 +109,10 @@ namespace JOB_FINDER_API.Controllers
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                string tempCvPath = null; // Khai báo tempCvPath ở đây để sử dụng trong cả try và catch
+                string tempCvPath = null; 
                 try
                 {
-                    // Check user profile completeness
+                    
                     var user = await context.Users
                         .Include(u => u.CandidateProfile)
                         .FirstOrDefaultAsync(u => u.UserId == userId);
@@ -131,12 +131,12 @@ namespace JOB_FINDER_API.Controllers
                         return BadRequest(new { Success = false, Message = "Please update your personal information before applying." });
                     }
 
-                    // Check job
+                    
                     var job = await context.Jobs.FindAsync(request.JobId);
                     if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
                         return BadRequest(new { Success = false, Message = "Job not found or inactive" });
 
-                    // Save temporary CV file if uploaded
+                  
                     if (request.CvFile != null && request.CvFile.Length > 0)
                     {
                         tempCvPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".pdf");
@@ -154,7 +154,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                     }
 
-                    // Save application immediately without CvId
+                    
                     var application = new Application
                     {
                         UserId = userId,
@@ -169,7 +169,7 @@ namespace JOB_FINDER_API.Controllers
                     await context.SaveChangesAsync();
                     _logger.LogInformation("Application {ApplicationId} created for UserId {UserId}, JobId {JobId}", application.ApplicationId, userId, request.JobId);
 
-                    // Queue CV processing and similarity calculation in the background
+                  
                     taskQueue.QueueBackgroundWorkItem(async token =>
                     {
                         using var innerScope = _serviceScopeFactory.CreateScope();
@@ -187,7 +187,6 @@ namespace JOB_FINDER_API.Controllers
                                 return;
                             }
 
-                            // Process CV in background
                             CV cv = null;
                             string uploadedCvUrl = null;
                             CVData cvData = new CVData();
@@ -195,11 +194,11 @@ namespace JOB_FINDER_API.Controllers
 
                             if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                             {
-                                // Recreate IFormFile from temporary file
+                               
                                 using var stream = new FileStream(tempCvPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                                 var formFile = new FormFile(stream, 0, stream.Length, null, Path.GetFileName(tempCvPath));
 
-                                // Upload CV to Cloudinary
+                               
                                 uploadedCvUrl = await innerCloudinaryService.UploadCvAsync(formFile);
                                 if (string.IsNullOrEmpty(uploadedCvUrl))
                                 {
@@ -207,7 +206,7 @@ namespace JOB_FINDER_API.Controllers
                                     return;
                                 }
 
-                                // Extract text from PDF
+                              
                                 string extractedText = string.Empty;
                                 try
                                 {
@@ -236,7 +235,7 @@ namespace JOB_FINDER_API.Controllers
 
                                     cvData = extractedCvData;
 
-                                    // Save CV to database
+                                   
                                     cv = new CV
                                     {
                                         UserId = userId,
@@ -254,7 +253,7 @@ namespace JOB_FINDER_API.Controllers
                                     innerContext.CVs.Add(cv);
                                     await innerContext.SaveChangesAsync();
 
-                                    // Update application with CvId and ResumeUrl
+                                   
                                     innerApplication.CvId = cv.CVId;
                                     innerApplication.ResumeUrl = uploadedCvUrl;
                                 }
@@ -282,7 +281,7 @@ namespace JOB_FINDER_API.Controllers
                                 }
                                 cvData = extractedCvData;
 
-                                // Update application with CvId and ResumeUrl
+                               
                                 innerApplication.CvId = cv.CVId;
                                 innerApplication.ResumeUrl = uploadedCvUrl;
                             }
@@ -304,7 +303,7 @@ namespace JOB_FINDER_API.Controllers
                                 }
                                 cvData = extractedCvData;
 
-                                // Update application with CvId and ResumeUrl
+                               
                                 innerApplication.CvId = cv.CVId;
                                 innerApplication.ResumeUrl = uploadedCvUrl;
                             }
@@ -367,7 +366,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                         finally
                         {
-                            // Clean up temporary file
+                           
                             if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                             {
                                 try
@@ -397,7 +396,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Clean up temporary file on main thread failure
+                   
                     if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                     {
                         try

@@ -1,4 +1,4 @@
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using FirebaseAdmin;
 using FireSharp.Config;
 using FireSharp.Interfaces;
@@ -30,6 +30,16 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 var isProduction = builder.Environment.IsProduction();
+
+// Khởi tạo PayOS
+var payOS = new Net.payOS.PayOS(
+    builder.Configuration["PayOS:ClientId"] ?? throw new Exception("PayOS ClientId not found"),
+    builder.Configuration["PayOS:ApiKey"] ?? throw new Exception("PayOS ApiKey not found"),
+    builder.Configuration["PayOS:ChecksumKey"] ?? throw new Exception("PayOS ChecksumKey not found")
+);
+builder.Services.AddSingleton(payOS);
+builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 
 // Create keys directory if it doesn't exist
 var keysDirectory = new DirectoryInfo("/app/keys");

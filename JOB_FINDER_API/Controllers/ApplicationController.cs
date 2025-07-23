@@ -131,12 +131,12 @@ namespace JOB_FINDER_API.Controllers
                         return BadRequest(new { Success = false, Message = "Please update your personal information before applying." });
                     }
 
-                    
-                    var job = await context.Jobs.FindAsync(request.JobId);
-                    if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
-                        return BadRequest(new { Success = false, Message = "Job not found or inactive" });
 
-                  
+                    var job = await context.Jobs.FindAsync(request.JobId);
+                    if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin || job.IsExpired())
+                        return BadRequest(new { Success = false, Message = "The job posting has expired" });
+
+
                     if (request.CvFile != null && request.CvFile.Length > 0)
                     {
                         tempCvPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".pdf");

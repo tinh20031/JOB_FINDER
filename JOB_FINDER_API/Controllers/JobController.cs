@@ -1,4 +1,5 @@
 ﻿using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
 using JOB_FINDER_API.Models.filter;
@@ -6,6 +7,7 @@ using JOB_FINDER_API.Models.Requests;
 using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -20,23 +22,33 @@ namespace JOB_FINDER_API.Controllers
         private readonly EmailService _emailService;
         private readonly NotificationService _notificationService;
         private readonly ILogger<JobController> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly IHubContext<NotificationHub> _notificationHubContext;
 
-        public JobController(JobFinderDbContext context, EmailService emailService, NotificationService notificationService, ILogger<JobController> logger)
+        public JobController(
+            JobFinderDbContext context,
+            EmailService emailService,
+            NotificationService notificationService,
+            ILogger<JobController> logger,
+            IConfiguration configuration,
+           IHubContext<NotificationHub> notificationHubContext)
         {
             _context = context;
             _emailService = emailService;
             _notificationService = notificationService;
             _logger = logger;
+            _configuration = configuration;
+            _notificationHubContext = notificationHubContext;
         }
 
-        // Get current time in Vietnam timezone
+
         private static DateTime GetVietnamTime()
         {
             var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
         }
 
-        // GET: api/Job
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetJobs(
             [FromQuery] string role = "candidate",
@@ -137,7 +149,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(result);
         }
 
-        // GET: api/Job/{id}
+
         [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<object>> GetJob(int id)
@@ -231,7 +243,7 @@ namespace JOB_FINDER_API.Controllers
             });
         }
 
-        // POST: api/Job/create
+
         [HttpPost("create")]
         public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateRequest dto)
         {
@@ -325,7 +337,7 @@ namespace JOB_FINDER_API.Controllers
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
         }
 
-        // PUT: api/Job/{id}
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody] JobUpdateRequest dto)
         {
@@ -404,7 +416,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Job/{id}
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteJob(int id)
         {
@@ -421,7 +433,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        // GET: api/Job/filter
+
         [HttpGet("filter")]
         public async Task<ActionResult<IEnumerable<Job>>> FilterJobs([FromQuery] JobFilterParams filter)
         {
@@ -468,7 +480,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(jobs);
         }
 
-        // PUT: api/Job/{id}/status
+
         [Authorize]
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateJobStatus(int id, [FromQuery] Job.JobStatus newStatus)
@@ -601,7 +613,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        // PUT: api/Job/{id}/lock
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/lock")]
         public async Task<IActionResult> LockJob(int id, [FromQuery] bool isLock)
@@ -622,7 +634,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(isLock ? "Job has been locked by admin." : "Job has been unlocked by admin.");
         }
 
-        // GET: api/Job/{id}/view
+
         [AllowAnonymous]
         [HttpGet("{id}/view")]
         public async Task<IActionResult> ViewJob(int id)
@@ -726,7 +738,7 @@ namespace JOB_FINDER_API.Controllers
             });
         }
 
-        // Deactivate expired jobs
+
         private async Task AutoDeactivateExpiredJobs()
         {
             var now = GetVietnamTime();
@@ -746,5 +758,46 @@ namespace JOB_FINDER_API.Controllers
                 _logger.LogInformation($"Deactivated {expiredJobs.Count} expired jobs");
             }
         }
+
+        [HttpGet("notify-upcoming-start-new")]
+        public async Task<IActionResult> NotifyUpcomingStartNew(int daysBefore = 2)
+        {
+            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+            var cutoffDate = now.AddDays(daysBefore);
+
+            var upcomingJobs = await _context.Jobs
+                .Where(j => j.TimeStart >= now && j.TimeStart <= cutoffDate && !j.DeactivatedByAdmin)
+                .Include(j => j.Company)
+                .ToListAsync();
+
+            if (!upcomingJobs.Any())
+            {
+                _logger.LogInformation("No jobs found with upcoming start dates within {0} days.", daysBefore);
+                return Ok(new { Success = true, Message = "No upcoming start dates to notify.", Count = 0, Jobs = new object[0] });
+            }
+
+            var jobsData = upcomingJobs
+                .Where(job => job.Company != null)
+                .Select(job => new
+                {
+                    JobId = job.JobId,
+                    Title = job.Title,
+                    DaysRemaining = (job.TimeStart.Date - now.Date).Days,
+                    Link = $"{_configuration["AppSettings:BaseUrl"]}/job-single-v3/{job.JobId}"
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                Success = true,
+                Message = $"Notified {jobsData.Count} jobs with upcoming start dates.",
+                Count = jobsData.Count,
+                Jobs = jobsData
+            });
+        }
     }
 }
+
+
+
+    

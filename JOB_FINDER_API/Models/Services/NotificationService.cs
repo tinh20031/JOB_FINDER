@@ -561,5 +561,80 @@ namespace JOB_FINDER_API.Services
                 _logger.LogError($"Stack trace: {ex.StackTrace}");
             }
         }
+
+        
+
+        public async Task CreateTryMatchNotification(TryMatchRecord tryMatchRecord, int jobId, string jobTitle)
+        {
+            try
+            {
+                _logger.LogInformation($"Creating try-match notification for user {tryMatchRecord.UserId}, TryMatchId {tryMatchRecord.TryMatchId}");
+
+                string baseUrl = _configuration["AppSettings:BaseUrl"];
+                if (string.IsNullOrEmpty(baseUrl))
+                {
+                    _logger.LogError("BaseUrl is not configured in appsettings.json.");
+                    throw new InvalidOperationException("BaseUrl is not configured in appsettings.json.");
+                }
+                string tryMatchUrl = $"{baseUrl}/try-match-details/{tryMatchRecord.TryMatchId}";
+
+                string title = tryMatchRecord.Status switch
+                {
+                    "Processing" => $"Try-match request started for job: {jobTitle}",
+                    "Completed" => $"Try-match completed for job: {jobTitle}",
+                    "Failed" => $"Try-match failed for job: {jobTitle}",
+                    _ => $"Try-match update for job: {jobTitle}"
+                };
+
+           
+
+                string message = tryMatchRecord.Status switch
+                {
+                    "Processing" => $"Your try-match request for job '{jobTitle}' is being processed.",
+                    "Completed" => $"Your try-match request for job '{jobTitle}' completed successfully. Similarity Score: {(int)Math.Round(tryMatchRecord.SimilarityScore ?? 0)}.",
+                    "Failed" => $"Your try-match request for job '{jobTitle}' failed: {tryMatchRecord.ErrorMessage ?? "Unknown error."}",
+                    _ => $"Your try-match request for job '{jobTitle}' has an update."
+                };
+
+                var notification = new Notification
+                {
+                    UserId = tryMatchRecord.UserId,
+                    Title = title,
+                    Message = message,
+                    Link = tryMatchUrl,
+                    Type = Notification.NotificationType.TryMatchUpdate,
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow,
+                    TryMatchId = tryMatchRecord.TryMatchId,
+                    Status = tryMatchRecord.Status,
+                    SimilarityScore = tryMatchRecord.SimilarityScore, // Lưu giá trị gốc (0 đến 1)
+                    Suggestions = tryMatchRecord.Suggestions,
+                    ErrorMessage = tryMatchRecord.ErrorMessage
+                };
+
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Try-match notification created for user {tryMatchRecord.UserId}, TryMatchId {tryMatchRecord.TryMatchId}");
+
+                try
+                {
+                    await _notificationHubContext.Clients
+                        .Group($"User_{tryMatchRecord.UserId}")
+                        .SendAsync("ReceiveNotification", notification);
+                    _logger.LogInformation($"Real-time try-match notification sent to user {tryMatchRecord.UserId}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error sending SignalR try-match notification: {ex.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in CreateTryMatchNotification: {ex.Message}, StackTrace: {ex.StackTrace}");
+                throw;
+            }
+        }
+      
     }
 }

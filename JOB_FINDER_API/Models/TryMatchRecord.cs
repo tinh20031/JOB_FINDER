@@ -7,22 +7,22 @@
         public int TryMatchId { get; set; }
         public int UserId { get; set; }
         public int JobId { get; set; }
-        public int CvId { get; set; }
-        public float SimilarityScore { get; set; }
-        public string Suggestions { get; set; }
+        public int? CvId { get; set; }
+        public float? SimilarityScore { get; set; }
+        public string? Suggestions { get; set; } 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public string CvSummary { get; set; }
-        public string JobSummary { get; set; }
-        [JsonIgnore] 
+        public string? Status { get; set; } 
+        public string? ErrorMessage { get; set; }
+     
+
+        [JsonIgnore]
         public User User { get; set; }
 
         [JsonIgnore]
         public Job Job { get; set; }
 
-
         [JsonIgnore]
         public CV CV { get; set; }
     }
 }
-

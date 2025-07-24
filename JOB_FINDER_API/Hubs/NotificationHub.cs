@@ -47,5 +47,6 @@ namespace JOB_FINDER_API.Hubs
             _logger.LogInformation($"Client disconnected from NotificationHub: {Context.ConnectionId}, Exception: {exception?.Message ?? "none"}");
             await base.OnDisconnectedAsync(exception);
         }
+        
     }
 }

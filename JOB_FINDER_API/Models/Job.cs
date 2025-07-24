@@ -45,8 +45,7 @@ namespace JOB_FINDER_API.Models
         public Level? Level { get; set; }
         [JsonIgnore]
         public JobType? JobType { get; set; }
-        //[JsonIgnore]
-        //public ExperienceLevel? ExperienceLevel { get; set; }
+       
         [JsonIgnore]
         public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
         [JsonIgnore]

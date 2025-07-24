@@ -46,7 +46,8 @@ namespace JOB_FINDER_API.Controllers
                 HighlightProjects = profile.HighlightProjects,
                 Certificates = profile.Certificates,
                 Awards = profile.Awards,
-                ForeignLanguages = profile.ForeignLanguages
+                ForeignLanguages = profile.ForeignLanguages,
+                VideoUrl = profile.VideoUrl
             });
         }
 

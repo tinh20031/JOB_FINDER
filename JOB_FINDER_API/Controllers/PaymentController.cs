@@ -113,16 +113,23 @@ namespace JOB_FINDER_API.Controllers
                 return Unauthorized("Invalid user ID");
 
             var subscription = await _context.CandidateSubscriptions
-                .Where(s => s.UserId == userId && s.IsActive) // Removed EndDate condition
+                .Where(s => s.UserId == userId && s.IsActive) 
                 .Include(s => s.SubscriptionType)
                 .OrderByDescending(s => s.CreatedAt)
                 .FirstOrDefaultAsync();
 
             if (subscription == null)
             {
-                // Get the free subscription type to show what they could have
+                // Get the free subscription type
                 var freeSubscription = await _context.SubscriptionTypes
                     .FirstOrDefaultAsync(s => s.PackageType == SubscriptionPackageType.Free);
+
+                // Check if user has used their free try-match
+                var tryMatchCount = await _context.TryMatchRecords
+                    .Where(r => r.UserId == userId)
+                    .CountAsync();
+
+                int remainingFreeMatches = tryMatchCount == 0 ? 1 : 0;
 
                 return Ok(new
                 {
@@ -131,7 +138,8 @@ namespace JOB_FINDER_API.Controllers
                     {
                         freeSubscription.Name,
                         freeSubscription.Description,
-                        freeSubscription.TryMatchLimit
+                        freeSubscription.TryMatchLimit,
+                        RemainingFreeMatches = remainingFreeMatches 
                     } : null
                 });
             }

@@ -28,19 +28,25 @@ namespace JOB_FINDER_API.Controllers
         private readonly ILogger<ApplicationController> _logger;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
+        private readonly NotificationService _notificationService;
+        private readonly EmailService _emailService;
 
         public ApplicationController(
             IServiceScopeFactory serviceScopeFactory,
             SemanticMatchingService semanticMatchingService,
             ILogger<ApplicationController> logger,
             IConfiguration configuration,
-            HttpClient httpClient)
+            HttpClient httpClient,
+             NotificationService notificationService,
+             EmailService emailService)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _semanticMatchingService = semanticMatchingService;
             _logger = logger;
             _configuration = configuration;
             _httpClient = httpClient;
+            _notificationService = notificationService;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -1117,121 +1123,7 @@ namespace JOB_FINDER_API.Controllers
                 return Ok(new { userId, companyId, distinctJobCount = count });
             }
         }
-        //[Authorize]
-        //[HttpPost("try-match")]
-        //public async Task<IActionResult> TryMatch(
-        //[FromForm] TryMatchRequest request,
-        //[FromServices] ICvSnapshotService cvSnapshotService,
-        //[FromServices] CloudinaryService cloudinaryService,
-        //[FromServices] IBackgroundTaskQueue taskQueue)
-        //{
-        //    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //    if (!int.TryParse(userIdStr, out var userId))
-        //        return Unauthorized("Invalid user ID.");
-
-        //    var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
-        //    if (role != "candidate")
-        //        return Forbid("Only candidates can try to match jobs.");
-
-        //    using (var scope = _serviceScopeFactory.CreateScope())
-        //    {
-        //        var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-        //        try
-        //        {
-        //            // Kiểm tra job hợp lệ
-        //            var job = await context.Jobs.FindAsync(request.JobId);
-        //            if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin)
-        //                return BadRequest(new { Success = false, ErrorMessage = "Job not found or inactive" });
-
-        //            // Kiểm tra CV hợp lệ (chỉ kiểm tra cơ bản)
-        //            CV cv = null;
-        //            if (request.CvId.HasValue)
-        //            {
-        //                cv = await context.CVs.FirstOrDefaultAsync(c => c.CVId == request.CvId && c.UserId == userId);
-        //                if (cv == null)
-        //                    return BadRequest(new { Success = false, ErrorMessage = "CV not found" });
-        //            }
-        //            else if (request.CvFile == null || request.CvFile.Length == 0)
-        //            {
-        //                cv = await context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
-        //                if (cv == null)
-        //                    return BadRequest(new { Success = false, ErrorMessage = "No CV selected or uploaded" });
-        //            }
-
-        //            // Lưu bản ghi TryMatch trước để trả về ID ngay lập tức
-        //            var tryMatchRecord = new TryMatchRecord
-        //            {
-        //                UserId = userId,
-        //                JobId = request.JobId,
-        //                CvId = cv?.CVId,
-        //                Status = "Processing",
-        //                CreatedAt = DateTime.UtcNow
-        //            };
-        //            context.TryMatchRecords.Add(tryMatchRecord);
-        //            await context.SaveChangesAsync();
-
-        //            // Đẩy toàn bộ xử lý nặng vào background
-        //            taskQueue.QueueBackgroundWorkItem(async token =>
-        //            {
-        //                using var innerScope = _serviceScopeFactory.CreateScope();
-        //                var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-        //                var innerCloudinaryService = innerScope.ServiceProvider.GetRequiredService<CloudinaryService>();
-        //                var innerSemanticService = innerScope.ServiceProvider.GetRequiredService<SemanticMatchingService>();
-
-        //                // Xử lý CV
-        //                var (processedCv, uploadedCvUrl, cvData, cvSummary, error) = await ProcessCvForTryMatchAsync(request, userId, innerCloudinaryService, innerContext);
-        //                if (processedCv == null)
-        //                {
-        //                    var record = await innerContext.TryMatchRecords.FindAsync(tryMatchRecord.TryMatchId);
-        //                    if (record != null)
-        //                    {
-        //                        record.Status = "Failed";
-
-        //                        await innerContext.SaveChangesAsync();
-        //                    }
-        //                    return;
-        //                }
-
-        //                // Tóm tắt job
-        //                var innerJob = await innerContext.Jobs.FindAsync(request.JobId);
-        //                if (innerJob == null || innerJob.Status != Job.JobStatus.active || innerJob.DeactivatedByAdmin)
-        //                    return;
-
-        //                string jobSummary = await SummarizeJobAsync(innerJob, innerContext);
-
-        //                // Tính toán similarity
-        //                var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, processedCv, cvSummary, jobSummary);
-        //                var suggestions = GenerateImprovementSuggestions(matchingResult, cvData, innerJob);
-
-        //                // Cập nhật bản ghi TryMatch
-        //                var innerRecord = await innerContext.TryMatchRecords.FindAsync(tryMatchRecord.TryMatchId);
-        //                if (innerRecord != null)
-        //                {
-        //                    innerRecord.CvId = processedCv.CVId;
-        //                    innerRecord.SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : null;
-        //                    innerRecord.Suggestions = JsonSerializer.Serialize(suggestions);
-        //                    innerRecord.CvSummary = cvSummary;
-        //                    innerRecord.JobSummary = jobSummary;
-        //                    innerRecord.Status = matchingResult.Success ? "Completed" : "Failed";
-
-        //                    await innerContext.SaveChangesAsync();
-        //                }
-        //            });
-
-        //            return Ok(new
-        //            {
-        //                Success = true,
-        //                Message = "Match attempt submitted successfully. Processing in background.",
-        //                TryMatchId = tryMatchRecord.TryMatchId
-        //            });
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            _logger.LogError(ex, "Error processing try-match for User {UserId}, Job {JobId}", userId, request.JobId);
-        //            return StatusCode(500, new { Success = false, ErrorMessage = "An error occurred while processing your match attempt." });
-        //        }
-        //    }
-        //}
+     
 
         [Authorize]
         [HttpPost("try-match")]
@@ -2011,5 +1903,155 @@ namespace JOB_FINDER_API.Controllers
                 }
             }
         }
+
+        [Authorize]
+        [HttpPut("confirm/{applicationId}")]
+        public async Task<IActionResult> ConfirmApplication(int applicationId, [FromBody] ConfirmApplicationRequest request)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+            {
+                _logger.LogWarning("Invalid user ID in token at {Time}.", DateTime.Now);
+                return Unauthorized("Invalid user ID.");
+            }
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
+            if (role != "company")
+            {
+                _logger.LogWarning("User {UserId} is not authorized to confirm applications at {Time}.", userId, DateTime.Now);
+                return Forbid("Only companies can confirm applications.");
+            }
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                try
+                {
+                    // Find the application with related job and user
+                    var application = await context.Applications
+                        .Include(a => a.Job)
+                        .Include(a => a.User)
+                        .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
+
+                    if (application == null)
+                    {
+                        _logger.LogWarning("Application {ApplicationId} not found for User {UserId} at {Time}.", applicationId, userId, DateTime.Now);
+                        return NotFound(new { Success = false, Message = "Application not found." });
+                    }
+
+                    // Verify that the job belongs to the company
+                    if (application.Job.CompanyId != userId)
+                    {
+                        _logger.LogWarning("User {UserId} attempted to confirm Application {ApplicationId} for Job {JobId} not owned by them at {Time}.", userId, applicationId, application.JobId, DateTime.Now);
+                        return Forbid("You are not authorized to confirm applications for this job.");
+                    }
+
+                    // Validate the requested status
+                    if (!Enum.IsDefined(typeof(ApplicationStatus), request.Status))
+                    {
+                        _logger.LogWarning("Invalid application status {Status} for Application {ApplicationId} by User {UserId} at {Time}.", request.Status, applicationId, userId, DateTime.Now);
+                        return BadRequest(new { Success = false, Message = "Invalid application status." });
+                    }
+
+                    // Prevent redundant status updates
+                    if (application.Status == request.Status)
+                    {
+                        _logger.LogWarning("Application {ApplicationId} already has status {Status} for User {UserId} at {Time}.", applicationId, request.Status, userId, DateTime.Now);
+                        return BadRequest(new { Success = false, Message = $"Application already has status {request.Status}." });
+                    }
+
+                    // Update application status
+                    application.Status = request.Status;
+                    application.UpdatedAt = DateTime.UtcNow;
+
+                    context.Applications.Update(application);
+                    await context.SaveChangesAsync();
+
+                    // Prepare notification and email content
+                    string baseUrl = _configuration["AppSettings:BaseUrl"];
+                    if (string.IsNullOrEmpty(baseUrl))
+                    {
+                        _logger.LogError("BaseUrl is not configured in appsettings.json for Application {ApplicationId} at {Time}.", applicationId, DateTime.Now);
+                        throw new InvalidOperationException("BaseUrl is not configured in appsettings.json.");
+                    }
+
+                    string title = request.Status switch
+                    {
+                        ApplicationStatus.Accepted => $"Update on Your Application for {application.Job.Title}",
+                        ApplicationStatus.Rejected => $"Update on Your Application for {application.Job.Title}",
+                        _ => $"Update on Your Application for {application.Job.Title}"
+                    };
+
+                    string message = request.Status switch
+                    {
+                        ApplicationStatus.Accepted => $"Dear candidate, we are delighted to inform you that your application for the {application.Job.Title} position has been shortlisted for the next stage. We will contact you soon with further details.",
+                        ApplicationStatus.Rejected => $"Dear candidate, thank you for applying for the {application.Job.Title} position. After careful consideration, we have decided to pursue other candidates whose qualifications more closely align with our current needs. We appreciate your interest and wish you success in your job search.",
+                        _ => $"Dear candidate, your application for the {application.Job.Title} position has been updated to '{request.Status}'. Please check your application dashboard for more details."
+                    };
+
+                    // Send real-time notification to candidate
+                    try
+                    {
+                        await _notificationService.SendDirectNotification(
+                            application.UserId,
+                            title,
+                            message,
+                            null, // No link provided
+                            Notification.NotificationType.ApplicationStatusUpdate
+                        );
+                        _logger.LogInformation("Notification sent to User {UserId} for Application {ApplicationId} status update to {Status} at {Time}.", application.UserId, applicationId, request.Status, DateTime.Now);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send notification for Application {ApplicationId} to User {UserId} at {Time}.", applicationId, application.UserId, DateTime.Now);
+                    }
+
+                    // Send email to candidate
+                    if (!string.IsNullOrEmpty(application.User?.Email))
+                    {
+                        string emailBody = $@"
+                    <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+                        <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+                            <h2 style='color: #2d8cf0;'>{title}</h2>
+                            <p>{message}</p>
+                            <p><strong>Job:</strong> {application.Job.Title}</p>
+                            <p><strong>Status:</strong> {request.Status}</p>
+                            <p>Best regards,<br>Job Finder Team</p>
+                        </div>
+                    </div>
+                ";
+
+                        try
+                        {
+                            _emailService.SendEmail(
+                                application.User.Email,
+                                title,
+                                emailBody,
+                                true
+                            );
+                            _logger.LogInformation("Email sent to {Email} for Application {ApplicationId} status update to {Status} at {Time}.", application.User.Email, applicationId, request.Status, DateTime.Now);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send email for Application {ApplicationId} to {Email} at {Time}.", applicationId, application.User.Email, DateTime.Now);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No email address found for User {UserId} for Application {ApplicationId} at {Time}.", application.UserId, applicationId, DateTime.Now);
+                    }
+
+                    _logger.LogInformation("Application {ApplicationId} status updated to {Status} by User {UserId} at {Time}.", applicationId, request.Status, userId, DateTime.Now);
+                    return Ok(new { Success = true, Message = $"Application status updated to {request.Status}." });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error confirming application {ApplicationId} for User {UserId} at {Time}.", applicationId, userId, DateTime.Now);
+                    return StatusCode(500, new { Success = false, Message = "An error occurred while confirming the application." });
+                }
+            }
+        }
+
+
     }
 }

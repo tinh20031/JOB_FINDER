@@ -2051,7 +2051,72 @@ namespace JOB_FINDER_API.Controllers
                 }
             }
         }
+        [HttpGet("unique-applicants-by-job")]
+        public async Task<IActionResult> GetUniqueApplicantsByJob()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+            {
+                _logger.LogWarning("Invalid user ID in token at {Time}.", DateTime.Now);
+                return Unauthorized("Invalid user ID.");
+            }
 
+            var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
+            if (role != "company" && role != "admin")
+            {
+                _logger.LogWarning("User {UserId} is not authorized to view unique applicants at {Time}.", userId, DateTime.Now);
+                return Forbid("Only companies or admins can view unique applicants.");
+            }
+
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                try
+                {
+                    IQueryable<Job> query = context.Jobs;
+
+                    if (role == "company")
+                    {
+                        var company = await context.Users
+                            .Include(u => u.CompanyProfile)
+                            .FirstOrDefaultAsync(u => u.UserId == userId);
+                        if (company?.CompanyProfile == null)
+                        {
+                            _logger.LogWarning("Company profile not found for User {UserId} at {Time}.", userId, DateTime.Now);
+                            return BadRequest(new { Success = false, Message = "Company profile not found." });
+                        }
+                        query = query.Where(j => j.CompanyId == userId);
+                    }
+
+                    var jobData = await query
+                        .Select(j => new
+                        {
+                            JobId = j.JobId,
+                            Title = j.Title,
+                            UniqueApplicants = context.Applications
+                                .Where(a => a.JobId == j.JobId)
+                                .Select(a => a.UserId)
+                                .Distinct()
+                                .Count()
+                        })
+                        .ToListAsync();
+
+                    if (!jobData.Any())
+                    {
+                        _logger.LogWarning("No jobs or applicants found for User {UserId} at {Time}.", userId, DateTime.Now);
+                        return NotFound(new { Success = false, Message = "No jobs or applicants found." });
+                    }
+
+                    _logger.LogInformation("Fetched unique applicants by job for User {UserId} at {Time}.", userId, DateTime.Now);
+                    return Ok(new { Success = true, Data = jobData });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error fetching unique applicants by job for User {UserId} at {Time}.", userId, DateTime.Now);
+                    return StatusCode(500, new { Success = false, Message = "An error occurred while fetching unique applicants." });
+                }
+            }
+        }
 
     }
 }

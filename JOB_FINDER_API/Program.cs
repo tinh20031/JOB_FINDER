@@ -311,7 +311,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.EnableFilter());
 }
 
-app.UseHangfireDashboard("/hangfire");
+
 
 app.UseCors("AllowReactApp");
 

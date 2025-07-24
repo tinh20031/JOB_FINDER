@@ -32,7 +32,8 @@ namespace JOB_FINDER_API.Models
             NewJobApplication = 6,
             CompanyFavorited = 7,      
             JobFavorited = 8,
-                TryMatchUpdate = 9 
+            TryMatchUpdate = 9,
+            UpcomingStart = 10
         }
     }
 }

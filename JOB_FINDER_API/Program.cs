@@ -1,8 +1,11 @@
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using FirebaseAdmin;
 using FireSharp.Config;
 using FireSharp.Interfaces;
 using Google.Apis.Auth.OAuth2;
+using Hangfire;
+using Hangfire.SqlServer;
+using JOB_FINDER_API.Controllers;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
@@ -20,6 +23,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Polly;
@@ -32,20 +36,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 var isProduction = builder.Environment.IsProduction();
 
-// Create keys directory if it doesn't exist
 var keysDirectory = new DirectoryInfo("/app/keys");
 if (!keysDirectory.Exists)
 {
     keysDirectory.Create();
 }
 
-// Configure data protection with key encryption
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(keysDirectory)
     .SetApplicationName("JobFinderApp")
     .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
-// Initialize Firebase
 string firebaseJsonPath = Path.Combine(builder.Environment.ContentRootPath, "Configs", "job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json");
 try
 {
@@ -61,7 +62,6 @@ catch (Exception ex)
     throw;
 }
 
-// Register Firebase Client
 builder.Services.AddSingleton<IFirebaseClient>(sp =>
 {
     IFirebaseConfig config = new FirebaseConfig
@@ -72,22 +72,18 @@ builder.Services.AddSingleton<IFirebaseClient>(sp =>
     return new FireSharp.FirebaseClient(config);
 });
 
-// Register Polly Retry Policy
 builder.Services.AddSingleton<IAsyncPolicy<HttpResponseMessage>>(GetRetryPolicy());
 
-// Configure HttpClient for SemanticMatchingService with Polly
+
 builder.Services.AddHttpClient<SemanticMatchingService>()
     .AddPolicyHandler(GetRetryPolicy());
 
-// Add HttpClient for general use (from thanhtung)
 builder.Services.AddHttpClient();
 
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
 
-// Custom services
 builder.Services.AddScoped<ICvSnapshotService, CvSnapshotService>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
@@ -95,11 +91,13 @@ builder.Services.AddScoped<ProfileStrengthService>();
 builder.Services.AddScoped<SemanticMatchingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<ApplyPercentageCalculator>();
-builder.Services.AddScoped<NotificationService>(); 
+builder.Services.AddScoped<NotificationService>();
+
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<JobStatusService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueuedHostedService>();
+builder.Services.AddHostedService<UpcomingJobNotificationService>();
 
 builder.Services.AddScoped<VideoService>();
 builder.Services.AddLogging(config =>
@@ -108,7 +106,6 @@ builder.Services.AddLogging(config =>
     config.AddDebug();
 });
 
-// Configurations
 builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("Gemini"));
 builder.Services.AddScoped<Client>(sp => new Client("https://your-supabase-url/supabase", "your-supabase-key"));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
@@ -118,7 +115,6 @@ var account = new Account(cloudinarySettings.CloudName, cloudinarySettings.ApiKe
 var cloudinary = new Cloudinary(account);
 builder.Services.AddSingleton(cloudinary);
 
-// Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "JobFinder API", Version = "v1" });
@@ -160,14 +156,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Routing
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
-    // options.LowercaseQueryStrings = true; // Commented out as in thanhtung
 });
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", builder =>
@@ -184,11 +177,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// DbContext
 builder.Services.AddDbContext<JobFinderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -197,7 +188,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Authentication & JWT & Google
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -305,7 +295,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-// Authorization
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -321,6 +310,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.EnableFilter());
 }
+
+app.UseHangfireDashboard("/hangfire");
 
 app.UseCors("AllowReactApp");
 
@@ -341,7 +332,6 @@ app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();
 
-// Define Retry Policy (from HEAD)
 static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
 {
     return HttpPolicyExtensions

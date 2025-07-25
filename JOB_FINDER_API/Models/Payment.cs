@@ -30,6 +30,9 @@ namespace JOB_FINDER_API.Models
         [Required]
         public string PaymentProvider { get; set; } = "PayOS";
 
+        [StringLength(50)]
+        public string PaymentType { get; set; } = "CandidateSubscription";
+
         public decimal Amount { get; set; }
 
         public PaymentStatus Status { get; set; }

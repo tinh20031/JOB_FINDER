@@ -967,7 +967,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        [HttpGet("matching_job/{jobId}")]
+        /*[HttpGet("matching_job/{jobId}")]
         public async Task<IActionResult> GetApplicationsmatchingByJob(int jobId)
         {
             _logger.LogInformation("Fetching applications for Job {JobId}", jobId);
@@ -1010,7 +1010,125 @@ namespace JOB_FINDER_API.Controllers
 
                 return Ok(applications);
             }
+        }*/
+        [HttpGet("matching_job/{jobId}")]
+        public async Task<IActionResult> GetApplicationsmatchingByJob(int jobId)
+        {
+            _logger.LogInformation("Fetching applications for Job {JobId}", jobId);
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+
+                try
+                {
+                    // Get job details to check the company ID
+                    var job = await context.Jobs.FindAsync(jobId);
+                    if (job == null)
+                        return NotFound("Job not found.");
+
+                    var companyId = job.CompanyId;
+
+                    // Get company subscription tier to determine limits
+                    var subscription = await context.CompanySubscriptions
+                        .Where(s => s.UserId == companyId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                        .Include(s => s.SubscriptionType)
+                        .OrderByDescending(s => s.EndDate)
+                        .FirstOrDefaultAsync();
+
+                    // Default values for Free tier
+                    string subscriptionTier = "Free";
+                    int cvDisplayLimit = 5;
+
+                    if (subscription != null)
+                    {
+                        subscriptionTier = subscription.SubscriptionType.Name;
+                        cvDisplayLimit = subscription.SubscriptionType.CvMatchLimit;
+
+                        if (subscription.SubscriptionType.PackageType == CompanySubscriptionPackageType.Premium)
+                        {
+                            // Premium tier has no limit
+                            cvDisplayLimit = int.MaxValue;
+                        }
+                    }
+                    else
+                    {
+                        // Try to fetch default Free tier settings
+                        var freeTier = await context.CompanySubscriptionTypes
+                            .FirstOrDefaultAsync(t => t.PackageType == CompanySubscriptionPackageType.Free);
+
+                        if (freeTier != null)
+                        {
+                            cvDisplayLimit = freeTier.CvMatchLimit;
+                        }
+                    }
+
+                    // Get all applications sorted by similarity score
+                    var applications = await context.Applications
+                        .Where(a => a.JobId == jobId)
+                        .Include(a => a.User)
+                        .Include(a => a.Job)
+                        .OrderByDescending(a => a.SimilarityScore)
+                        .ToListAsync();
+
+                    // Apply limits based on subscription tier
+                    var limitedApplications = applications.Take(cvDisplayLimit).ToList();
+
+                    var result = limitedApplications.Select(a => new
+                    {
+                        ApplicationId = a.ApplicationId,
+                        a.UserId,
+                        a.JobId,
+                        a.Status,
+                        a.SubmittedAt,
+                        a.CoverLetter,
+                        a.ResumeUrl,
+                        a.SimilarityScore,
+                        SimilarityDescription = a.SimilarityDescription.HasValue && a.Job != null ? $"{a.SimilarityDescription:F1}/{a.Job.DescriptionWeight * 100:F1}" : null,
+                        SimilaritySkills = a.SimilaritySkills.HasValue && a.Job != null ? $"{a.SimilaritySkills:F1}/{a.Job.SkillsWeight * 100:F1}" : null,
+                        SimilarityExperience = a.SimilarityExperience.HasValue && a.Job != null ? $"{a.SimilarityExperience:F1}/{a.Job.ExperienceWeight * 100:F1}" : null,
+                        SimilarityEducation = a.SimilarityEducation.HasValue && a.Job != null ? $"{a.SimilarityEducation:F1}/{a.Job.EducationWeight * 100:F1}" : null,
+                        User = new
+                        {
+                            a.User.UserId,
+                            a.User.FullName
+                        },
+                        Job = new
+                        {
+                            a.Job.JobId,
+                            a.Job.Title,
+                            a.Job.Description,
+                            a.Job.Quantity
+                        }
+                    }).ToList();
+
+                    var responseMessage = $"Displaying top {Math.Min(cvDisplayLimit, applications.Count)} CV applications " +
+                                       $"based on your {subscriptionTier} subscription tier. " +
+                                       $"Total applications: {applications.Count}.";
+
+                    if (applications.Count > limitedApplications.Count)
+                    {
+                        responseMessage += $" Upgrade your subscription to see all {applications.Count} applications.";
+                    }
+
+                    return Ok(new
+                    {
+                        SubscriptionTier = subscriptionTier,
+                        JobPostLimit = subscriptionTier == "Premium" ? "Unlimited" : (subscriptionTier == "Basic" ? "10" : "2"),
+                        CvDisplayLimit = subscriptionTier == "Premium" ? "Unlimited" : (subscriptionTier == "Basic" ? "10" : "5"),
+                        Applications = result,
+                        TotalApplications = applications.Count,
+                        DisplayedApplications = limitedApplications.Count,
+                        Message = responseMessage
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error retrieving matching applications for Job {JobId}", jobId);
+                    return StatusCode(500, "An error occurred while retrieving matching applications.");
+                }
+            }
         }
+
         [HttpGet("jobs-applied-by-user-in-company")]
         public async Task<IActionResult> GetJobsAppliedByUserInCompany(int userId, int companyId)
         {

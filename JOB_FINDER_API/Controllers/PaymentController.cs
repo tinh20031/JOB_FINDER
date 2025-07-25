@@ -342,103 +342,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        /*[HttpPost("webhook")]
-        public async Task<IActionResult> PayOsWebhook([FromBody] WebhookType webhookData)
-        {
-            try
-            {
-                // Verify webhook data with PayOS
-                WebhookData data = _payOS.verifyPaymentWebhookData(webhookData);
-
-                if (data == null)
-                {
-                    _logger.LogWarning("Invalid webhook data");
-                    return Unauthorized("Invalid webhook data");
-                }
-
-                // Convert numeric order code to string for database lookup
-                string orderCodeStr = $"SUB-{data.orderCode}";
-
-                // Find the payment by order code/transaction code
-                var payment = await _context.Payments
-                    .FirstOrDefaultAsync(p => p.TransactionCode == orderCodeStr);
-
-                if (payment == null)
-                {
-                    _logger.LogWarning($"Payment not found for order: {orderCodeStr}");
-                    return NotFound("Payment not found");
-                }
-
-                if (payment.Status == PaymentStatus.Completed)
-                {
-                    // Payment already processed
-                    return Ok(new { message = "Payment already processed" });
-                }
-
-                // Process the payment - update status and create/update subscription
-                await ProcessSuccessfulPayment(payment);
-
-                return Ok(new { message = "Webhook processed successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error processing webhook: {ex.Message}");
-                return StatusCode(500, "Error processing webhook");
-            }
-        }
-
-        [Authorize]
-        [HttpGet("payment-status/{orderCode}")]
-        public async Task<IActionResult> CheckPaymentStatus(string orderCode)
-        {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out var userId))
-                return Unauthorized("Invalid user ID");
-
-            var payment = await _context.Payments
-                .Where(p => p.TransactionCode == orderCode && p.UserId == userId)
-                .FirstOrDefaultAsync();
-
-            if (payment == null)
-                return NotFound("Payment not found");
-
-            try
-            {
-                // Extract numeric part from order code
-                string numericPart = orderCode.Replace("SUB-", "");
-                if (!long.TryParse(numericPart, out long numericOrderCode))
-                {
-                    return BadRequest("Invalid order code format");
-                }
-
-                // Check payment status from PayOS API
-                PaymentLinkInformation paymentInfo = await _payOS.getPaymentLinkInformation(numericOrderCode);
-
-                // Update payment status if needed
-                if (paymentInfo.status == "PAID" && payment.Status != PaymentStatus.Completed)
-                {
-                    // Process the payment
-                    await ProcessSuccessfulPayment(payment);
-                }
-
-                return Ok(new
-                {
-                    Success = true,
-                    OrderCode = orderCode,
-                    Status = payment.Status.ToString(),
-                    Amount = payment.Amount,
-                    PayOsStatus = paymentInfo.status,
-                    CreatedAt = payment.CreatedAt,
-                    UpdatedAt = payment.UpdatedAt
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error checking payment status: {ex.Message}");
-                return StatusCode(500, "Error checking payment status");
-            }
-        }*/
-        // Only updating the relevant methods in PaymentController.cs
+       
 
         [HttpPost("webhook")]
         public async Task<IActionResult> PayOsWebhook([FromBody] WebhookType webhookData)
@@ -532,7 +436,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        [Authorize]
+        /*[Authorize]
         [HttpGet("payment-status/{orderCode}")]
         public async Task<IActionResult> CheckPaymentStatus(string orderCode)
         {
@@ -623,6 +527,172 @@ namespace JOB_FINDER_API.Controllers
             {
                 _logger.LogError(ex, $"Error checking payment status: {ex.Message}");
                 return StatusCode(500, "Error checking payment status");
+            }
+        }*/
+        // Modify this endpoint - remove the [Authorize] attribute temporarily and add detailed logging
+        // [Authorize] - Comment this out temporarily
+        [HttpGet("payment-status/{orderCode}")]
+        public async Task<IActionResult> CheckPaymentStatus(string orderCode)
+        {
+            _logger.LogInformation($"Payment status check requested for order: {orderCode}");
+
+            // Allow checking without authentication for debugging
+            int? userId = null;
+            try
+            {
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdStr, out var parsedUserId))
+                {
+                    userId = parsedUserId;
+                    _logger.LogInformation($"Authenticated user ID: {userId}");
+                }
+                else
+                {
+                    _logger.LogWarning("User not authenticated or ID not available");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Error getting user ID: {ex.Message}");
+            }
+
+            // Format the order code with SUB- prefix if needed
+            string formattedOrderCode = orderCode;
+            if (!orderCode.StartsWith("SUB-"))
+            {
+                formattedOrderCode = $"SUB-{orderCode}";
+            }
+
+            _logger.LogInformation($"Looking up payment with order code: {formattedOrderCode}");
+
+            // Try to find the payment with more flexible criteria
+            var query = _context.Payments.AsQueryable();
+
+            // Add orderCode conditions
+            query = query.Where(p => p.TransactionCode == formattedOrderCode || p.TransactionCode == orderCode);
+
+            // Add userId condition if available
+            if (userId.HasValue)
+            {
+                query = query.Where(p => p.UserId == userId.Value);
+            }
+
+            var payment = await query.FirstOrDefaultAsync();
+
+            if (payment == null)
+            {
+                _logger.LogWarning($"Payment not found for order: {formattedOrderCode}");
+                return NotFound(new { error = "Payment not found", orderCode = formattedOrderCode });
+            }
+
+            try
+            {
+                // Extract numeric part from order code
+                string numericPart = payment.TransactionCode.Replace("SUB-", "");
+                if (!long.TryParse(numericPart, out long numericOrderCode))
+                {
+                    _logger.LogWarning($"Invalid order code format: {payment.TransactionCode}");
+                    return BadRequest(new { error = "Invalid order code format", orderCode = payment.TransactionCode });
+                }
+
+                _logger.LogInformation($"Checking PayOS status for order: {numericOrderCode}");
+
+                // Check payment status from PayOS API
+                PaymentLinkInformation paymentInfo;
+                try
+                {
+                    paymentInfo = await _payOS.getPaymentLinkInformation(numericOrderCode);
+                    _logger.LogInformation($"PayOS status for {payment.TransactionCode}: {paymentInfo.status}");
+                }
+                catch (Exception payosEx)
+                {
+                    _logger.LogError(payosEx, $"Error checking PayOS status: {payosEx.Message}");
+                    // Return current payment info without PayOS status
+                    return Ok(new
+                    {
+                        Success = true,
+                        OrderCode = payment.TransactionCode,
+                        Status = payment.Status.ToString(),
+                        Amount = payment.Amount,
+                        PayOsStatus = "ERROR_CHECKING",
+                        PayOsError = payosEx.Message,
+                        CreatedAt = payment.CreatedAt,
+                        UpdatedAt = payment.UpdatedAt
+                    });
+                }
+
+                // Update payment status if needed
+                if (paymentInfo.status == "PAID" && payment.Status != PaymentStatus.Completed)
+                {
+                    _logger.LogInformation($"Updating payment status to Completed for order: {payment.TransactionCode}");
+
+                    payment.Status = PaymentStatus.Completed;
+                    payment.UpdatedAt = DateTime.UtcNow;
+
+                    // Get subscription package
+                    var subscriptionType = await _context.SubscriptionTypes
+                        .FindAsync(payment.SubscriptionTypeId);
+
+                    if (subscriptionType != null)
+                    {
+                        // Check if user has an active subscription
+                        var existingSubscription = await _context.CandidateSubscriptions
+                            .Where(s => s.UserId == payment.UserId && s.IsActive)
+                            .OrderByDescending(s => s.CreatedAt)
+                            .FirstOrDefaultAsync();
+
+                        if (existingSubscription != null)
+                        {
+                            // Update existing subscription - just add more TryMatches
+                            existingSubscription.RemainingTryMatches += subscriptionType.TryMatchLimit;
+                            existingSubscription.UpdatedAt = DateTime.UtcNow;
+                            existingSubscription.EndDate = DateTime.UtcNow.AddYears(10);
+
+                            _logger.LogInformation($"Updated existing subscription for user {payment.UserId}, added {subscriptionType.TryMatchLimit} try matches");
+                        }
+                        else
+                        {
+                            // Create new subscription with no practical expiration
+                            var subscription = new CandidateSubscription
+                            {
+                                UserId = payment.UserId,
+                                SubscriptionTypeId = payment.SubscriptionTypeId,
+                                StartDate = DateTime.UtcNow,
+                                EndDate = DateTime.UtcNow.AddYears(10), // Far future date
+                                IsActive = true,
+                                RemainingTryMatches = subscriptionType.TryMatchLimit,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+
+                            _context.CandidateSubscriptions.Add(subscription);
+                            _logger.LogInformation($"Created new subscription for user {payment.UserId} with {subscriptionType.TryMatchLimit} try matches");
+                        }
+
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation($"Changes saved successfully for order: {payment.TransactionCode}");
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Subscription type not found: {payment.SubscriptionTypeId}");
+                    }
+                }
+
+                return Ok(new
+                {
+                    Success = true,
+                    OrderCode = payment.TransactionCode,
+                    Status = payment.Status.ToString(),
+                    Amount = payment.Amount,
+                    PayOsStatus = paymentInfo.status,
+                    CreatedAt = payment.CreatedAt,
+                    UpdatedAt = payment.UpdatedAt
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error checking payment status: {ex.Message}");
+                return StatusCode(500, new { error = "Error checking payment status", message = ex.Message });
             }
         }
 

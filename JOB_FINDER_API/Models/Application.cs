@@ -5,7 +5,6 @@ namespace JOB_FINDER_API.Models
     public enum ApplicationStatus
     {
         Pending,
-        Interview,
         Rejected,
         Accepted    
     }

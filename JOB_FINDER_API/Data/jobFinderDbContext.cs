@@ -36,6 +36,11 @@ namespace JOB_FINDER_API.Data
         public DbSet<JobView> JobViews { get; set; }
         public DbSet<TryMatchRecord> TryMatchRecords { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<SubscriptionType> SubscriptionTypes { get; set; }
+        public DbSet<CandidateSubscription> CandidateSubscriptions { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<CompanySubscriptionType> CompanySubscriptionTypes { get; set; }
+        public DbSet<CompanySubscription> CompanySubscriptions { get; set; }
 
 
         private static DateTime GetVietnamTime()
@@ -281,6 +286,90 @@ namespace JOB_FINDER_API.Data
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Add default candidate subscription packages
+            modelBuilder.Entity<SubscriptionType>().HasData(
+                new SubscriptionType
+                {
+                    SubscriptionTypeId = 1,
+                    PackageType = SubscriptionPackageType.Free,
+                    Name = "Free",
+                    Description = "Free package with 1 try-match",
+                    Price = 0,
+                    TryMatchLimit = 1,
+                    DurationInDays = 0,
+                    IsActive = true
+                },
+                new SubscriptionType
+                {
+                    SubscriptionTypeId = 2,
+                    PackageType = SubscriptionPackageType.Basic,
+                    Name = "Basic",
+                    Description = "Basic package with 3 try-matches",
+                    Price = 2000, // 99,000 VND
+                    TryMatchLimit = 3,
+                    DurationInDays = 30,
+                    IsActive = true
+                },
+                new SubscriptionType
+                {
+                    SubscriptionTypeId = 3,
+                    PackageType = SubscriptionPackageType.Premium,
+                    Name = "Premium",
+                    Description = "Premium package with 7 try-matches",
+                    Price = 3000, // 199,000 VND
+                    TryMatchLimit = 7,
+                    DurationInDays = 30,
+                    IsActive = true
+                }
+            );
+
+            // Add company subscription packages
+            modelBuilder.Entity<CompanySubscriptionType>().HasData(
+                new CompanySubscriptionType
+                {
+                    CompanySubscriptionTypeId = 1,
+                    PackageType = CompanySubscriptionPackageType.Free,
+                    Name = "Free",
+                    Description = "Free tier with basic features",
+                    Price = 0,
+                    JobPostLimit = 2,
+                    CvMatchLimit = 5,
+                    DurationInDays = 30,
+                    IsActive = true,
+                    CreatedAt = GetVietnamTime(),
+                    UpdatedAt = GetVietnamTime()
+                },
+                new CompanySubscriptionType
+                {
+                    CompanySubscriptionTypeId = 2,
+                    PackageType = CompanySubscriptionPackageType.Basic,
+                    Name = "Basic",
+                    Description = "Basic tier with extended features",
+                    Price = 2000,
+                    JobPostLimit = 10,
+                    CvMatchLimit = 10,
+                    DurationInDays = 30,
+                    IsActive = true,
+                    CreatedAt = GetVietnamTime(),
+                    UpdatedAt = GetVietnamTime()
+                },
+                new CompanySubscriptionType
+                {
+                    CompanySubscriptionTypeId = 3,
+                    PackageType = CompanySubscriptionPackageType.Premium,
+                    Name = "Premium",
+                    Description = "Premium tier with unlimited features",
+                    Price = 3000,
+                    JobPostLimit = int.MaxValue,
+                    CvMatchLimit = int.MaxValue,
+                    DurationInDays = 30,
+                    IsActive = true,
+                    CreatedAt = GetVietnamTime(),
+                    UpdatedAt = GetVietnamTime()
+                }
+            );
+
         }
     }
 }

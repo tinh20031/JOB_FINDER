@@ -16,7 +16,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using UglyToad.PdfPig;
- 
+
 namespace JOB_FINDER_API.Controllers
 {
     [ApiController]
@@ -115,10 +115,10 @@ namespace JOB_FINDER_API.Controllers
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                string tempCvPath = null; 
+                string tempCvPath = null;
                 try
                 {
-                    
+
                     var user = await context.Users
                         .Include(u => u.CandidateProfile)
                         .FirstOrDefaultAsync(u => u.UserId == userId);
@@ -160,7 +160,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                     }
 
-                    
+
                     var application = new Application
                     {
                         UserId = userId,
@@ -175,7 +175,7 @@ namespace JOB_FINDER_API.Controllers
                     await context.SaveChangesAsync();
                     _logger.LogInformation("Application {ApplicationId} created for UserId {UserId}, JobId {JobId}", application.ApplicationId, userId, request.JobId);
 
-                  
+
                     taskQueue.QueueBackgroundWorkItem(async token =>
                     {
                         using var innerScope = _serviceScopeFactory.CreateScope();
@@ -200,11 +200,11 @@ namespace JOB_FINDER_API.Controllers
 
                             if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                             {
-                               
+
                                 using var stream = new FileStream(tempCvPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                                 var formFile = new FormFile(stream, 0, stream.Length, null, Path.GetFileName(tempCvPath));
 
-                               
+
                                 uploadedCvUrl = await innerCloudinaryService.UploadCvAsync(formFile);
                                 if (string.IsNullOrEmpty(uploadedCvUrl))
                                 {
@@ -212,7 +212,7 @@ namespace JOB_FINDER_API.Controllers
                                     return;
                                 }
 
-                              
+
                                 string extractedText = string.Empty;
                                 try
                                 {
@@ -241,7 +241,7 @@ namespace JOB_FINDER_API.Controllers
 
                                     cvData = extractedCvData;
 
-                                   
+
                                     cv = new CV
                                     {
                                         UserId = userId,
@@ -259,7 +259,7 @@ namespace JOB_FINDER_API.Controllers
                                     innerContext.CVs.Add(cv);
                                     await innerContext.SaveChangesAsync();
 
-                                   
+
                                     innerApplication.CvId = cv.CVId;
                                     innerApplication.ResumeUrl = uploadedCvUrl;
                                 }
@@ -287,7 +287,7 @@ namespace JOB_FINDER_API.Controllers
                                 }
                                 cvData = extractedCvData;
 
-                               
+
                                 innerApplication.CvId = cv.CVId;
                                 innerApplication.ResumeUrl = uploadedCvUrl;
                             }
@@ -309,7 +309,7 @@ namespace JOB_FINDER_API.Controllers
                                 }
                                 cvData = extractedCvData;
 
-                               
+
                                 innerApplication.CvId = cv.CVId;
                                 innerApplication.ResumeUrl = uploadedCvUrl;
                             }
@@ -372,7 +372,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                         finally
                         {
-                           
+
                             if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                             {
                                 try
@@ -402,7 +402,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 catch (Exception ex)
                 {
-                   
+
                     if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                     {
                         try
@@ -671,7 +671,7 @@ namespace JOB_FINDER_API.Controllers
             return (cv, uploadedCvUrl, cvData, error);
         }
 
- 
+
 
         private async Task<Application> SaveApplicationAsync(int userId, ApplyJobRequest request, CV cv, string resumeUrl, JobFinderDbContext context)
         {
@@ -952,7 +952,7 @@ namespace JOB_FINDER_API.Controllers
                         a.SubmittedAt,
                         a.CoverLetter,
                         a.ResumeUrl,
-                       
+
                         User = new
                         {
                             a.User.UserId,
@@ -973,7 +973,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        [HttpGet("matching_job/{jobId}")]
+        /*[HttpGet("matching_job/{jobId}")]
         public async Task<IActionResult> GetApplicationsmatchingByJob(int jobId)
         {
             _logger.LogInformation("Fetching applications for Job {JobId}", jobId);
@@ -993,7 +993,7 @@ namespace JOB_FINDER_API.Controllers
                         a.SubmittedAt,
                         a.CoverLetter,
                         a.ResumeUrl,
-                       a.SimilarityScore,
+                        a.SimilarityScore,
                         SimilarityDescription = a.SimilarityDescription.HasValue && a.Job != null ? $"{a.SimilarityDescription:F1}/{a.Job.DescriptionWeight * 100:F1}" : null,
                         SimilaritySkills = a.SimilaritySkills.HasValue && a.Job != null ? $"{a.SimilaritySkills:F1}/{a.Job.SkillsWeight * 100:F1}" : null,
                         SimilarityExperience = a.SimilarityExperience.HasValue && a.Job != null ? $"{a.SimilarityExperience:F1}/{a.Job.ExperienceWeight * 100:F1}" : null,
@@ -1016,7 +1016,125 @@ namespace JOB_FINDER_API.Controllers
 
                 return Ok(applications);
             }
+        }*/
+        [HttpGet("matching_job/{jobId}")]
+        public async Task<IActionResult> GetApplicationsmatchingByJob(int jobId)
+        {
+            _logger.LogInformation("Fetching applications for Job {JobId}", jobId);
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+
+                try
+                {
+                    // Get job details to check the company ID
+                    var job = await context.Jobs.FindAsync(jobId);
+                    if (job == null)
+                        return NotFound("Job not found.");
+
+                    var companyId = job.CompanyId;
+
+                    // Get company subscription tier to determine limits
+                    var subscription = await context.CompanySubscriptions
+                        .Where(s => s.UserId == companyId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                        .Include(s => s.SubscriptionType)
+                        .OrderByDescending(s => s.EndDate)
+                        .FirstOrDefaultAsync();
+
+                    // Default values for Free tier
+                    string subscriptionTier = "Free";
+                    int cvDisplayLimit = 5;
+
+                    if (subscription != null)
+                    {
+                        subscriptionTier = subscription.SubscriptionType.Name;
+                        cvDisplayLimit = subscription.SubscriptionType.CvMatchLimit;
+
+                        if (subscription.SubscriptionType.PackageType == CompanySubscriptionPackageType.Premium)
+                        {
+                            // Premium tier has no limit
+                            cvDisplayLimit = int.MaxValue;
+                        }
+                    }
+                    else
+                    {
+                        // Try to fetch default Free tier settings
+                        var freeTier = await context.CompanySubscriptionTypes
+                            .FirstOrDefaultAsync(t => t.PackageType == CompanySubscriptionPackageType.Free);
+
+                        if (freeTier != null)
+                        {
+                            cvDisplayLimit = freeTier.CvMatchLimit;
+                        }
+                    }
+
+                    // Get all applications sorted by similarity score
+                    var applications = await context.Applications
+                        .Where(a => a.JobId == jobId)
+                        .Include(a => a.User)
+                        .Include(a => a.Job)
+                        .OrderByDescending(a => a.SimilarityScore)
+                        .ToListAsync();
+
+                    // Apply limits based on subscription tier
+                    var limitedApplications = applications.Take(cvDisplayLimit).ToList();
+
+                    var result = limitedApplications.Select(a => new
+                    {
+                        ApplicationId = a.ApplicationId,
+                        a.UserId,
+                        a.JobId,
+                        a.Status,
+                        a.SubmittedAt,
+                        a.CoverLetter,
+                        a.ResumeUrl,
+                        a.SimilarityScore,
+                        SimilarityDescription = a.SimilarityDescription.HasValue && a.Job != null ? $"{a.SimilarityDescription:F1}/{a.Job.DescriptionWeight * 100:F1}" : null,
+                        SimilaritySkills = a.SimilaritySkills.HasValue && a.Job != null ? $"{a.SimilaritySkills:F1}/{a.Job.SkillsWeight * 100:F1}" : null,
+                        SimilarityExperience = a.SimilarityExperience.HasValue && a.Job != null ? $"{a.SimilarityExperience:F1}/{a.Job.ExperienceWeight * 100:F1}" : null,
+                        SimilarityEducation = a.SimilarityEducation.HasValue && a.Job != null ? $"{a.SimilarityEducation:F1}/{a.Job.EducationWeight * 100:F1}" : null,
+                        User = new
+                        {
+                            a.User.UserId,
+                            a.User.FullName
+                        },
+                        Job = new
+                        {
+                            a.Job.JobId,
+                            a.Job.Title,
+                            a.Job.Description,
+                            a.Job.Quantity
+                        }
+                    }).ToList();
+
+                    var responseMessage = $"Displaying top {Math.Min(cvDisplayLimit, applications.Count)} CV applications " +
+                                       $"based on your {subscriptionTier} subscription tier. " +
+                                       $"Total applications: {applications.Count}.";
+
+                    if (applications.Count > limitedApplications.Count)
+                    {
+                        responseMessage += $" Upgrade your subscription to see all {applications.Count} applications.";
+                    }
+
+                    return Ok(new
+                    {
+                        SubscriptionTier = subscriptionTier,
+                        JobPostLimit = subscriptionTier == "Premium" ? "Unlimited" : (subscriptionTier == "Basic" ? "10" : "2"),
+                        CvDisplayLimit = subscriptionTier == "Premium" ? "Unlimited" : (subscriptionTier == "Basic" ? "10" : "5"),
+                        Applications = result,
+                        TotalApplications = applications.Count,
+                        DisplayedApplications = limitedApplications.Count,
+                        Message = responseMessage
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error retrieving matching applications for Job {JobId}", jobId);
+                    return StatusCode(500, "An error occurred while retrieving matching applications.");
+                }
+            }
         }
+
         [HttpGet("jobs-applied-by-user-in-company")]
         public async Task<IActionResult> GetJobsAppliedByUserInCompany(int userId, int companyId)
         {
@@ -1132,13 +1250,15 @@ namespace JOB_FINDER_API.Controllers
                 [FromServices] ICvSnapshotService cvSnapshotService,
                 [FromServices] CloudinaryService cloudinaryService,
                 [FromServices] IBackgroundTaskQueue taskQueue,
-                [FromServices] NotificationService notificationService)
+                [FromServices] NotificationService notificationService,
+                [FromServices] IServiceScopeFactory serviceScopeFactory)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
             {
                 _logger.LogWarning("Invalid user ID in token at {Time}.", DateTime.Now);
                 return Unauthorized("Invalid user ID.");
+                _logger.LogInformation("User {UserId} started trying match for Job {JobId}", userId, request.JobId);
             }
 
             var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
@@ -1151,6 +1271,47 @@ namespace JOB_FINDER_API.Controllers
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                // Check user subscription and try-match limits
+                var activeSubscription = await context.CandidateSubscriptions
+                    .Where(s => s.UserId == userId && s.IsActive) // Removed EndDate condition
+                    .Include(s => s.SubscriptionType)
+                    .OrderByDescending(s => s.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (activeSubscription == null)
+                {
+                    // Check if user has ever used a try-match before
+                    var tryMatchCount = await context.TryMatchRecords
+                        .Where(r => r.UserId == userId)
+                        .CountAsync();
+
+                    if (tryMatchCount > 0)
+                    {
+                        return BadRequest(new
+                        {
+                            Success = false,
+                            ErrorMessage = "You have used up all your free Try-Match attempts. Please purchase a plan to continue using it.",
+                            RequiresSubscription = true
+                        });
+                    }
+
+                    // If this is the user's first try-match, continue without a subscription
+                    _logger.LogInformation("User {UserId} is using their free try-match attempt", userId);
+                }
+                else if (activeSubscription.RemainingTryMatches <= 0)
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        ErrorMessage = "You have used up all the Try-Match attempts in your current package. Please upgrade your package to get more attempts.",
+                        RequiresUpgrade = true,
+                        CurrentSubscription = new
+                        {
+                            PackageName = activeSubscription.SubscriptionType.Name,
+                            RemainingTryMatches = activeSubscription.RemainingTryMatches
+                        }
+                    });
+                }
                 try
                 {
                     var user = await context.Users
@@ -1196,8 +1357,8 @@ namespace JOB_FINDER_API.Controllers
                         request.CvId = existingCv.CVId;
                     }
 
-                  
-                 
+
+
                     if (request.CvFile != null && request.CvFile.Length > 0)
                     {
                         tempCvPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".pdf");
@@ -1246,7 +1407,7 @@ namespace JOB_FINDER_API.Controllers
                         Status = "Processing",
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                      
+
                     };
                     context.TryMatchRecords.Add(tryMatchRecord);
                     await context.SaveChangesAsync();
@@ -1272,7 +1433,7 @@ namespace JOB_FINDER_API.Controllers
                         var innerNotificationService = innerScope.ServiceProvider.GetRequiredService<NotificationService>();
                         Job innerJob = null;
 
-                    
+
                         try
                         {
                             using var transaction = await innerContext.Database.BeginTransactionAsync();
@@ -1293,7 +1454,7 @@ namespace JOB_FINDER_API.Controllers
                                     record.Status = "Failed";
                                     record.ErrorMessage = "Job not found or inactive.";
                                     record.UpdatedAt = DateTime.UtcNow;
-                                 
+
                                     await innerContext.SaveChangesAsync();
                                     await transaction.CommitAsync();
                                     try
@@ -1328,7 +1489,7 @@ namespace JOB_FINDER_API.Controllers
                                         record.Status = "Failed";
                                         record.ErrorMessage = "Unable to upload CV to Cloudinary.";
                                         record.UpdatedAt = DateTime.UtcNow;
-                                      
+
                                         await innerContext.SaveChangesAsync();
                                         await transaction.CommitAsync();
                                         await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1355,7 +1516,7 @@ namespace JOB_FINDER_API.Controllers
                                             record.Status = "Failed";
                                             record.ErrorMessage = "CV content is empty or unreadable.";
                                             record.UpdatedAt = DateTime.UtcNow;
-                                          
+
                                             await innerContext.SaveChangesAsync();
                                             await transaction.CommitAsync();
                                             await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1370,7 +1531,7 @@ namespace JOB_FINDER_API.Controllers
                                             record.Status = "Failed";
                                             record.ErrorMessage = extractError;
                                             record.UpdatedAt = DateTime.UtcNow;
-                                        
+
                                             await innerContext.SaveChangesAsync();
                                             await transaction.CommitAsync();
                                             await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1404,7 +1565,7 @@ namespace JOB_FINDER_API.Controllers
                                         record.Status = "Failed";
                                         record.ErrorMessage = $"PDF extraction failed: {ex.Message}";
                                         record.UpdatedAt = DateTime.UtcNow;
-                                      
+
                                         await innerContext.SaveChangesAsync();
                                         await transaction.CommitAsync();
                                         await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1420,7 +1581,7 @@ namespace JOB_FINDER_API.Controllers
                                         record.Status = "Failed";
                                         record.ErrorMessage = "CV not found or does not belong to the user.";
                                         record.UpdatedAt = DateTime.UtcNow;
-                                    
+
                                         await innerContext.SaveChangesAsync();
                                         await transaction.CommitAsync();
                                         await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1435,7 +1596,7 @@ namespace JOB_FINDER_API.Controllers
                                         record.Status = "Failed";
                                         record.ErrorMessage = extractError;
                                         record.UpdatedAt = DateTime.UtcNow;
-                                    
+
                                         await innerContext.SaveChangesAsync();
                                         await transaction.CommitAsync();
                                         await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1452,7 +1613,7 @@ namespace JOB_FINDER_API.Controllers
                                         record.Status = "Failed";
                                         record.ErrorMessage = "No CV found.";
                                         record.UpdatedAt = DateTime.UtcNow;
-                                      
+
                                         await innerContext.SaveChangesAsync();
                                         await transaction.CommitAsync();
                                         await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1467,7 +1628,7 @@ namespace JOB_FINDER_API.Controllers
                                         record.Status = "Failed";
                                         record.ErrorMessage = extractError;
                                         record.UpdatedAt = DateTime.UtcNow;
-                                      
+
                                         await innerContext.SaveChangesAsync();
                                         await transaction.CommitAsync();
                                         await innerNotificationService.CreateTryMatchNotification(record, request.JobId, innerJob.Title);
@@ -1490,7 +1651,7 @@ namespace JOB_FINDER_API.Controllers
                                 record.Status = matchingResult.Success ? "Completed" : "Failed";
                                 record.ErrorMessage = matchingResult.Success ? null : matchingResult.ErrorMessage;
                                 record.UpdatedAt = DateTime.UtcNow;
-                              
+
                                 await innerContext.SaveChangesAsync();
                                 await transaction.CommitAsync();
 
@@ -1517,7 +1678,7 @@ namespace JOB_FINDER_API.Controllers
                                     record.Status = "Failed";
                                     record.ErrorMessage = $"Background processing error: {ex.Message}";
                                     record.UpdatedAt = DateTime.UtcNow;
-                                  
+
                                     await innerContext.SaveChangesAsync();
                                     try
                                     {
@@ -1774,7 +1935,7 @@ namespace JOB_FINDER_API.Controllers
                         SimilarityScore = r.SimilarityScore,
                         Suggestions = r.Suggestions,
                         CreatedAt = r.CreatedAt,
-                       
+
                     })
                     .OrderByDescending(r => r.CreatedAt)
                     .ToListAsync();

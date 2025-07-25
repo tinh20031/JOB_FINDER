@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cronos;
+using Nest;
 
 namespace JOB_FINDER_API.Models.Services
 {
@@ -29,7 +30,7 @@ namespace JOB_FINDER_API.Models.Services
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var cron = CronExpression.Parse("0 0 * * *", CronFormat.Standard); // Chạy lúc 00:00 AM hàng ngày
+                var cron = Cronos.CronExpression.Parse("0 0 * * *", CronFormat.Standard); // Chạy lúc 00:00 AM hàng ngày
                 var utcNow = DateTime.UtcNow;
                 var nextRunUtc = cron.GetNextOccurrence(utcNow);
                 if (nextRunUtc.HasValue)

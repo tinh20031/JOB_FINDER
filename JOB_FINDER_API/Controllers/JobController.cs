@@ -244,7 +244,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
-        [HttpPost("create")]
+        /*[HttpPost("create")]
         public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateRequest dto)
         {
             if (!ModelState.IsValid)
@@ -335,6 +335,185 @@ namespace JOB_FINDER_API.Controllers
             }
 
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
+        }*/
+        // Add this method to JobController.cs to check subscription limits
+        private async Task<(bool CanPost, string Message, CompanySubscriptionType Tier)> CheckJobPostingLimit(int companyId)
+        {
+            // Get active job count for this company
+            var activeJobCount = await _context.Jobs
+                .CountAsync(j => j.CompanyId == companyId &&
+                        (j.Status == Job.JobStatus.active || j.Status == Job.JobStatus.pending));
+
+            // Check if company has an active subscription
+            var subscription = await _context.CompanySubscriptions
+                .Where(s => s.UserId == companyId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                .Include(s => s.SubscriptionType)
+                .OrderByDescending(s => s.EndDate)
+                .FirstOrDefaultAsync();
+
+            // If no subscription, use Free tier limits
+            if (subscription == null)
+            {
+                var freeTier = await _context.CompanySubscriptionTypes
+                    .FirstOrDefaultAsync(t => t.PackageType == CompanySubscriptionPackageType.Free);
+
+                int limit = freeTier?.JobPostLimit ?? 2; // Default Free tier limit is 2 jobs
+
+                if (activeJobCount >= limit)
+                {
+                    return (false,
+                        $"You've reached the job posting limit for the Free tier ({limit} jobs). " +
+                        "Please upgrade your subscription to post more jobs.",
+                        freeTier);
+                }
+
+                return (true,
+                    $"You can post this job. You have posted {activeJobCount} out of {limit} jobs allowed in your Free tier.",
+                    freeTier);
+            }
+
+            // Company has a subscription
+            var tierLimit = subscription.SubscriptionType.JobPostLimit;
+
+            // Premium tier has unlimited job posts
+            if (subscription.SubscriptionType.PackageType == CompanySubscriptionPackageType.Premium)
+            {
+                return (true,
+                    "You have a Premium subscription with unlimited job posts.",
+                    subscription.SubscriptionType);
+            }
+
+            // Check if within limits for Basic tier
+            if (activeJobCount >= tierLimit)
+            {
+                return (false,
+                    $"You've reached the job posting limit for your {subscription.SubscriptionType.Name} " +
+                    $"tier ({tierLimit} jobs). Please upgrade your subscription to post more jobs.",
+                    subscription.SubscriptionType);
+            }
+
+            return (true,
+                $"You can post this job. You have posted {activeJobCount} out of {tierLimit} jobs " +
+                $"allowed in your {subscription.SubscriptionType.Name} tier.",
+                subscription.SubscriptionType);
+        }
+
+        // Modify the CreateJob method to check job posting limits
+        [HttpPost("create")]
+        public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateRequest dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Check if company can post more jobs based on their subscription
+            var (canPost, message, tier) = await CheckJobPostingLimit(dto.CompanyId);
+            if (!canPost)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = message,
+                    SubscriptionTier = tier.Name,
+                    JobPostLimit = tier.JobPostLimit,
+                    UpgradeRequired = true
+                });
+            }
+
+            // Continue with regular job creation...
+            if (dto.Quantity < 1)
+                return BadRequest("Quantity must be at least 1.");
+
+            if (float.IsNaN(dto.DescriptionWeight) || float.IsNaN(dto.SkillsWeight) ||
+                float.IsNaN(dto.ExperienceWeight) || float.IsNaN(dto.EducationWeight))
+                return BadRequest("Weights cannot be NaN.");
+
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Minimum and maximum salary must be provided if salary is not negotiable.");
+            if (dto.TimeEnd <= dto.TimeStart)
+                return BadRequest("End time must be after start time.");
+            if (dto.ExpiryDate <= GetVietnamTime())
+                return BadRequest("Expiry date must be in the future.");
+
+            var job = new Job
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                Education = dto.Education,
+                YourSkill = dto.YourSkill,
+                YourExperience = dto.YourExperience,
+                CompanyId = dto.CompanyId,
+                IndustryId = dto.IndustryId,
+                ExpiryDate = dto.ExpiryDate,
+                LevelId = dto.LevelId,
+                JobTypeId = dto.JobTypeId,
+                Quantity = dto.Quantity,
+                TimeStart = dto.TimeStart,
+                TimeEnd = dto.TimeEnd,
+                ProvinceName = dto.ProvinceName,
+                AddressDetail = dto.AddressDetail,
+                CreatedAt = GetVietnamTime(),
+                UpdatedAt = GetVietnamTime(),
+                Status = Job.JobStatus.pending,
+                IsSalaryNegotiable = dto.IsSalaryNegotiable,
+                MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
+                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary,
+                DescriptionWeight = dto.DescriptionWeight / 100f,
+                SkillsWeight = dto.SkillsWeight / 100f,
+                ExperienceWeight = dto.ExperienceWeight / 100f,
+                EducationWeight = dto.EducationWeight / 100f
+            };
+
+            _context.Jobs.Add(job);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation($"Created new job #{job.JobId} with title: {job.Title}");
+
+            if (dto.skillInputs != null && dto.skillInputs.Any())
+            {
+                foreach (var input in dto.skillInputs)
+                {
+                    int skillId;
+                    if (input.SkillId.HasValue)
+                    {
+                        skillId = input.SkillId.Value;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
+                    {
+                        var existingSkill = await _context.Skills
+                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+                        if (existingSkill != null)
+                        {
+                            skillId = existingSkill.SkillId;
+                        }
+                        else
+                        {
+                            var newSkill = new Skill { SkillName = input.SkillName };
+                            _context.Skills.Add(newSkill);
+                            await _context.SaveChangesAsync();
+                            skillId = newSkill.SkillId;
+                            _logger.LogInformation($"Created new skill: {input.SkillName} with ID: {skillId}");
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Added skills to job #{job.JobId}");
+            }
+
+            return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, new
+            {
+                Job = job,
+                SubscriptionInfo = new
+                {
+                    SubscriptionTier = tier.Name,
+                    JobPostLimit = tier.JobPostLimit,
+                    Message = message
+                }
+            });
         }
 
 

@@ -52,7 +52,8 @@ namespace JOB_FINDER_API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetJobs(
             [FromQuery] string role = "candidate",
-            [FromQuery] int? companyId = null)
+            [FromQuery] int? companyId = null,
+            [FromQuery] bool? onlyTrending = null)
         {
             var now = GetVietnamTime();
             var query = _context.Jobs
@@ -61,8 +62,13 @@ namespace JOB_FINDER_API.Controllers
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
-                // XÓA: .Include(j => j.ExperienceLevel)
                 .AsQueryable();
+
+            // Apply trending filter if specified
+            if (onlyTrending.HasValue && onlyTrending.Value)
+            {
+                query = query.Where(j => j.IsTrending);
+            }
 
             if (role == "candidate")
             {
@@ -84,13 +90,93 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Invalid role parameter.");
             }
 
-            var jobs = await query.ToListAsync();
+            // If only trending jobs, order by view count
+            if (onlyTrending.HasValue && onlyTrending.Value)
+            {
+                // Join with job views to get the count
+                var jobsWithViews = await query
+                    .Select(j => new
+                    {
+                        Job = j,
+                        ViewCount = j.JobViews.Count()
+                    })
+                    .OrderByDescending(x => x.ViewCount)
+                    .ToListAsync();
+
+                var result = jobsWithViews.Select(x => new
+                {
+                    x.Job.JobId,
+                    x.Job.Title,
+                    x.Job.Description,
+                    x.Job.Education,
+                    x.Job.YourSkill,
+                    x.Job.YourExperience,
+                    x.Job.CompanyId,
+                    Company = x.Job.Company == null ? null : new
+                    {
+                        x.Job.Company.UserId,
+                        x.Job.Company.FullName,
+                        x.Job.Company.Email,
+                        CompanyName = x.Job.Company.CompanyProfile?.CompanyName,
+                        Location = x.Job.Company.CompanyProfile?.Location,
+                        UrlCompanyLogo = x.Job.Company.CompanyProfile?.UrlCompanyLogo
+                    },
+                    x.Job.IndustryId,
+                    Industry = x.Job.Industry == null ? null : new
+                    {
+                        x.Job.Industry.IndustryId,
+                        x.Job.Industry.IndustryName
+                    },
+                    x.Job.ExpiryDate,
+                    x.Job.LevelId,
+                    Level = x.Job.Level == null ? null : new
+                    {
+                        x.Job.Level.LevelId,
+                        x.Job.Level.LevelName
+                    },
+                    x.Job.JobTypeId,
+                    JobType = x.Job.JobType == null ? null : new
+                    {
+                        x.Job.JobType.JobTypeId,
+                        x.Job.JobType.JobTypeName
+                    },
+                    x.Job.Quantity,
+                    x.Job.TimeStart,
+                    x.Job.TimeEnd,
+                    x.Job.Status,
+                    x.Job.ProvinceName,
+                    x.Job.AddressDetail,
+                    x.Job.IsSalaryNegotiable,
+                    x.Job.MinSalary,
+                    x.Job.MaxSalary,
+                    x.Job.CreatedAt,
+                    x.Job.UpdatedAt,
+                    Skills = x.Job.JobSkills.Select(js => new
+                    {
+                        js.SkillId,
+                        js.Skill.SkillName
+                    }).ToList(),
+                    x.Job.DescriptionWeight,
+                    x.Job.SkillsWeight,
+                    x.Job.ExperienceWeight,
+                    x.Job.EducationWeight,
+                    IsTrending = x.Job.IsTrending,
+                    ViewCount = x.ViewCount,
+                    DeactivatedByAdmin = x.Job.DeactivatedByAdmin
+                });
+
+                return Ok(result);
+            }
+            else
+            {
+                var jobs = await query.ToListAsync();
 
             var result = jobs.Select(job => new
             {
                 job.JobId,
                 job.Title,
                 job.Description,
+                IsTrending = job.IsTrending,
                 job.Education,
                 job.YourSkill,
                 job.YourExperience,
@@ -147,6 +233,7 @@ namespace JOB_FINDER_API.Controllers
             });
 
             return Ok(result);
+            }
         }
 
 
@@ -336,7 +423,7 @@ namespace JOB_FINDER_API.Controllers
 
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
         }*/
-        // Add this method to JobController.cs to check subscription limits
+                // Add this method to JobController.cs to check subscription limits
         private async Task<(bool CanPost, string Message, CompanySubscriptionType Tier)> CheckJobPostingLimit(int companyId)
         {
             // Get active job count for this company
@@ -462,7 +549,24 @@ namespace JOB_FINDER_API.Controllers
                 ExperienceWeight = dto.ExperienceWeight / 100f,
                 EducationWeight = dto.EducationWeight / 100f
             };
+            // Cập nhật RemainingJobPosts trong CompanySubscription
+            var subscription = await _context.CompanySubscriptions
+                .Where(s => s.UserId == dto.CompanyId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                .OrderByDescending(s => s.CreatedAt)
+                .FirstOrDefaultAsync();
 
+            if (subscription != null)
+            {
+                // Trừ 1 từ RemainingJobPosts
+                subscription.RemainingJobPosts = Math.Max(0, subscription.RemainingJobPosts - 1);
+                subscription.UpdatedAt = DateTime.UtcNow;
+                _logger.LogInformation($"Decreased remaining job posts for company {dto.CompanyId} to {subscription.RemainingJobPosts}");
+            }
+            else
+            {
+                // Với gói Free, vẫn tạo job nhưng không cần giảm số dư
+                _logger.LogInformation($"Company {dto.CompanyId} using Free tier or no active subscription. Job created without deducting from subscription.");
+            }
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
             _logger.LogInformation($"Created new job #{job.JobId} with title: {job.Title}");
@@ -516,6 +620,566 @@ namespace JOB_FINDER_API.Controllers
             });
         }
 
+        // Add this method to your JobController class
+        [HttpPost("trending")]
+        [Authorize(Roles = "Company")]
+        public async Task<ActionResult<Job>> CreateTrendingJob([FromBody] JobCreateRequest dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var companyId))
+                return Unauthorized("Invalid user ID");
+
+            // Verify the company ID matches the requesting user
+            if (dto.CompanyId != companyId)
+                return BadRequest("Company ID mismatch");
+
+            // Check if company has an active subscription
+            var subscription = await _context.CompanySubscriptions
+                .Where(s => s.UserId == companyId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                .Include(s => s.SubscriptionType)
+                .OrderByDescending(s => s.EndDate)
+                .FirstOrDefaultAsync();
+
+            // If no subscription or free tier, return error
+            if (subscription == null)
+            {
+                var freeTier = await _context.CompanySubscriptionTypes
+                    .FirstOrDefaultAsync(t => t.PackageType == CompanySubscriptionPackageType.Free);
+
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Trending jobs require a Basic or Premium subscription. Free tier doesn't include trending jobs.",
+                    SubscriptionTier = "Free",
+                    TrendingJobLimit = 0,
+                    UpgradeRequired = true
+                });
+            }
+
+            // Check if subscription allows trending jobs
+            if (subscription.SubscriptionType.TrendingJobLimit <= 0)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = $"Your {subscription.SubscriptionType.Name} subscription doesn't include trending job features.",
+                    SubscriptionTier = subscription.SubscriptionType.Name,
+                    TrendingJobLimit = 0,
+                    UpgradeRequired = true
+                });
+            }
+
+            // Check if company has remaining trending job posts
+            if (subscription.RemainingTrendingJobPosts <= 0)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "You have used all your trending job posts. Please purchase more or upgrade your subscription.",
+                    SubscriptionTier = subscription.SubscriptionType.Name,
+                    RemainingTrendingJobs = 0,
+                    UpgradeRequired = true
+                });
+            }
+
+            // Count current active trending jobs
+            var activeTrendingJobs = await _context.Jobs
+                .CountAsync(j => j.CompanyId == companyId &&
+                              j.IsTrending &&
+                              (j.Status == Job.JobStatus.active || j.Status == Job.JobStatus.pending));
+
+            if (activeTrendingJobs >= subscription.SubscriptionType.TrendingJobLimit)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = $"You have reached the maximum limit of {subscription.SubscriptionType.TrendingJobLimit} active trending jobs for your subscription tier.",
+                    SubscriptionTier = subscription.SubscriptionType.Name,
+                    CurrentTrendingJobs = activeTrendingJobs,
+                    MaxTrendingJobs = subscription.SubscriptionType.TrendingJobLimit
+                });
+            }
+
+            // Basic validation
+            if (dto.Quantity < 1)
+                return BadRequest("Quantity must be at least 1.");
+
+            if (float.IsNaN(dto.DescriptionWeight) || float.IsNaN(dto.SkillsWeight) ||
+                float.IsNaN(dto.ExperienceWeight) || float.IsNaN(dto.EducationWeight))
+                return BadRequest("Weights cannot be NaN.");
+
+            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
+                return BadRequest("Minimum and maximum salary must be provided if salary is not negotiable.");
+
+            if (dto.TimeEnd <= dto.TimeStart)
+                return BadRequest("End time must be after start time.");
+
+            if (dto.ExpiryDate <= GetVietnamTime())
+                return BadRequest("Expiry date must be in the future.");
+
+            // Create the job as trending
+            var job = new Job
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                Education = dto.Education,
+                YourSkill = dto.YourSkill,
+                YourExperience = dto.YourExperience,
+                CompanyId = dto.CompanyId,
+                IndustryId = dto.IndustryId,
+                ExpiryDate = dto.ExpiryDate,
+                LevelId = dto.LevelId,
+                JobTypeId = dto.JobTypeId,
+                Quantity = dto.Quantity,
+                TimeStart = dto.TimeStart,
+                TimeEnd = dto.TimeEnd,
+                ProvinceName = dto.ProvinceName,
+                AddressDetail = dto.AddressDetail,
+                CreatedAt = GetVietnamTime(),
+                UpdatedAt = GetVietnamTime(),
+                Status = Job.JobStatus.pending,
+                IsSalaryNegotiable = dto.IsSalaryNegotiable,
+                MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
+                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary,
+                DescriptionWeight = dto.DescriptionWeight / 100f,
+                SkillsWeight = dto.SkillsWeight / 100f,
+                ExperienceWeight = dto.ExperienceWeight / 100f,
+                EducationWeight = dto.EducationWeight / 100f,
+                IsTrending = true // Mark as trending job
+            };
+
+            _context.Jobs.Add(job);
+
+            // Deduct trending job post count
+            subscription.RemainingTrendingJobPosts--;
+            subscription.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation($"Created new trending job #{job.JobId} with title: {job.Title}");
+
+            // Handle skills same as regular job creation
+            if (dto.skillInputs != null && dto.skillInputs.Any())
+            {
+                foreach (var input in dto.skillInputs)
+                {
+                    int skillId;
+                    if (input.SkillId.HasValue)
+                    {
+                        skillId = input.SkillId.Value;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
+                    {
+                        var existingSkill = await _context.Skills
+                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
+                        if (existingSkill != null)
+                        {
+                            skillId = existingSkill.SkillId;
+                        }
+                        else
+                        {
+                            var newSkill = new Skill { SkillName = input.SkillName };
+                            _context.Skills.Add(newSkill);
+                            await _context.SaveChangesAsync();
+                            skillId = newSkill.SkillId;
+                            _logger.LogInformation($"Created new skill: {input.SkillName} with ID: {skillId}");
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
+                }
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Added skills to trending job #{job.JobId}");
+            }
+
+            return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, new
+            {
+                Job = job,
+                IsTrending = true,
+                SubscriptionInfo = new
+                {
+                    SubscriptionTier = subscription.SubscriptionType.Name,
+                    RemainingTrendingJobs = subscription.RemainingTrendingJobPosts,
+                    MaxTrendingJobs = subscription.SubscriptionType.TrendingJobLimit
+                }
+            });
+        }
+
+        /* [HttpGet("trending")]
+         public async Task<ActionResult<IEnumerable<object>>> GetTrendingJobs(
+     [FromQuery] string role = "candidate",
+     [FromQuery] int? companyId = null,
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10)
+         {
+             var now = GetVietnamTime();
+             var query = _context.Jobs
+                 .Where(j => j.IsTrending == true) // Filter to only trending jobs
+                 .Include(j => j.Industry)
+                 .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                 .Include(j => j.Level)
+                 .Include(j => j.JobType)
+                 .Include(j => j.JobViews) // Include job views for ranking
+                 .AsQueryable();
+
+             // Apply the same filtering as GetJobs
+             if (role == "candidate")
+             {
+                 query = query.Where(j => j.Status == Job.JobStatus.active
+                                         && !j.DeactivatedByAdmin
+                                         && j.TimeStart.Date <= now.Date
+                                         && j.TimeEnd.Date >= now.Date);
+             }
+             else if (role == "company" && companyId.HasValue)
+             {
+                 query = query.Where(j => j.CompanyId == companyId);
+             }
+             else if (role == "admin")
+             {
+                 // Admins see all trending jobs
+             }
+             else
+             {
+                 return BadRequest("Invalid role parameter.");
+             }
+
+             // Count total trending jobs after filtering
+             var totalCount = await query.CountAsync();
+
+             // Calculate the number of pages
+             var pageCount = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+             // Order trending jobs by view count (descending) and then by creation date
+             var orderedJobs = await query
+                 .OrderByDescending(j => j.JobViews.Count())
+                 .ThenByDescending(j => j.CreatedAt)
+                 .Skip((page - 1) * pageSize)
+                 .Take(pageSize)
+                 .ToListAsync();
+
+             // For each job, get its view count
+             var jobsWithViewCounts = orderedJobs.Select(job => new
+             {
+                 Job = job,
+                 ViewCount = job.JobViews.Count
+             }).ToList();
+
+             // Format the response the same way as GetJobs
+             var result = jobsWithViewCounts.Select(item => new
+             {
+                 item.Job.JobId,
+                 item.Job.Title,
+                 item.Job.Description,
+                 item.Job.Education,
+                 item.Job.YourSkill,
+                 item.Job.YourExperience,
+                 item.Job.CompanyId,
+                 DeactivatedByAdmin = item.Job.DeactivatedByAdmin,
+                 IsTrending = true, // Always true in this endpoint
+                 ViewCount = item.ViewCount, // Include the view count
+                 Company = item.Job.Company == null ? null : new
+                 {
+                     item.Job.Company.UserId,
+                     item.Job.Company.FullName,
+                     item.Job.Company.Email,
+                     CompanyName = item.Job.Company.CompanyProfile?.CompanyName,
+                     Location = item.Job.Company.CompanyProfile?.Location,
+                     UrlCompanyLogo = item.Job.Company.CompanyProfile?.UrlCompanyLogo
+                 },
+                 item.Job.IndustryId,
+                 Industry = item.Job.Industry == null ? null : new
+                 {
+                     item.Job.Industry.IndustryId,
+                     item.Job.Industry.IndustryName
+                 },
+                 item.Job.ExpiryDate,
+                 item.Job.LevelId,
+                 Level = item.Job.Level == null ? null : new
+                 {
+                     item.Job.Level.LevelId,
+                     item.Job.Level.LevelName
+                 },
+                 item.Job.JobTypeId,
+                 JobType = item.Job.JobType == null ? null : new
+                 {
+                     item.Job.JobType.JobTypeId,
+                     item.Job.JobType.JobTypeName
+                 },
+                 item.Job.Quantity,
+                 item.Job.TimeStart,
+                 item.Job.TimeEnd,
+                 item.Job.Status,
+                 item.Job.ProvinceName,
+                 item.Job.AddressDetail,
+                 item.Job.IsSalaryNegotiable,
+                 item.Job.MinSalary,
+                 item.Job.MaxSalary,
+                 item.Job.CreatedAt,
+                 item.Job.UpdatedAt,
+                 Skills = item.Job.JobSkills.Select(js => new
+                 {
+                     js.SkillId,
+                     js.Skill.SkillName
+                 }).ToList(),
+                 item.Job.DescriptionWeight,
+                 item.Job.SkillsWeight,
+                 item.Job.ExperienceWeight,
+                 item.Job.EducationWeight
+             });
+
+             return Ok(new
+             {
+                 TotalCount = totalCount,
+                 PageCount = pageCount,
+                 CurrentPage = page,
+                 PageSize = pageSize,
+                 Jobs = result
+             });
+         }*/
+        [HttpGet("trending")]
+        public async Task<ActionResult<IEnumerable<object>>> GetTrendingJobs(
+     [FromQuery] string role = "candidate",
+     [FromQuery] int? companyId = null,
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10)
+        {
+            var now = GetVietnamTime();
+            var query = _context.Jobs
+                .Where(j => j.IsTrending == true) // Filter to only trending jobs
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .AsQueryable();
+
+            // Apply the same filtering as GetJobs
+            if (role == "candidate")
+            {
+                query = query.Where(j => j.Status == Job.JobStatus.active
+                                        && !j.DeactivatedByAdmin
+                                        && j.TimeStart.Date <= now.Date
+                                        && j.TimeEnd.Date >= now.Date);
+            }
+            else if (role == "company" && companyId.HasValue)
+            {
+                query = query.Where(j => j.CompanyId == companyId);
+            }
+            else if (role == "admin")
+            {
+                // Admins see all trending jobs
+            }
+            else
+            {
+                return BadRequest("Invalid role parameter.");
+            }
+
+            // First get all job IDs and their view counts
+            var jobViewCounts = await _context.JobViews
+                .GroupBy(v => v.JobId)
+                .Select(g => new { JobId = g.Key, ViewCount = g.Count() })
+                .ToListAsync();
+
+            // Create a dictionary for quick lookup
+            var viewCountDict = jobViewCounts.ToDictionary(v => v.JobId, v => v.ViewCount);
+
+            // Get the filtered jobs
+            var jobs = await query.ToListAsync();
+
+            // Count total trending jobs after filtering
+            var totalCount = jobs.Count;
+
+            // Manually order the jobs by view count and creation date
+            var orderedJobs = jobs
+                .Select(j => new {
+                    Job = j,
+                    ViewCount = viewCountDict.ContainsKey(j.JobId) ? viewCountDict[j.JobId] : 0
+                })
+                .OrderByDescending(x => x.ViewCount)
+                .ThenByDescending(x => x.Job.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Format the response the same way as GetJobs
+            var result = orderedJobs.Select(item => new
+            {
+                item.Job.JobId,
+                item.Job.Title,
+                item.Job.Description,
+                item.Job.Education,
+                item.Job.YourSkill,
+                item.Job.YourExperience,
+                item.Job.CompanyId,
+                DeactivatedByAdmin = item.Job.DeactivatedByAdmin,
+                IsTrending = true,
+                ViewCount = item.ViewCount, // Include the view count in the response
+                Company = item.Job.Company == null ? null : new
+                {
+                    item.Job.Company.UserId,
+                    item.Job.Company.FullName,
+                    item.Job.Company.Email,
+                    CompanyName = item.Job.Company.CompanyProfile?.CompanyName,
+                    Location = item.Job.Company.CompanyProfile?.Location,
+                    UrlCompanyLogo = item.Job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                item.Job.IndustryId,
+                Industry = item.Job.Industry == null ? null : new
+                {
+                    item.Job.Industry.IndustryId,
+                    item.Job.Industry.IndustryName
+                },
+                item.Job.ExpiryDate,
+                item.Job.LevelId,
+                Level = item.Job.Level == null ? null : new
+                {
+                    item.Job.Level.LevelId,
+                    item.Job.Level.LevelName
+                },
+                item.Job.JobTypeId,
+                JobType = item.Job.JobType == null ? null : new
+                {
+                    item.Job.JobType.JobTypeId,
+                    item.Job.JobType.JobTypeName
+                },
+                item.Job.Quantity,
+                item.Job.TimeStart,
+                item.Job.TimeEnd,
+                item.Job.Status,
+                item.Job.ProvinceName,
+                item.Job.AddressDetail,
+                item.Job.IsSalaryNegotiable,
+                item.Job.MinSalary,
+                item.Job.MaxSalary,
+                item.Job.CreatedAt,
+                item.Job.UpdatedAt,
+                Skills = item.Job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList(),
+                item.Job.DescriptionWeight,
+                item.Job.SkillsWeight,
+                item.Job.ExperienceWeight,
+                item.Job.EducationWeight
+            });
+
+            return Ok(new
+            {
+                TotalCount = totalCount,
+                PageCount = (int)Math.Ceiling(totalCount / (double)pageSize),
+                CurrentPage = page,
+                PageSize = pageSize,
+                Jobs = result
+            });
+        }
+
+        [HttpPut("{id}/trending")]
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> ToggleTrendingStatus(int id, [FromBody] bool setTrending)
+        {
+            var job = await _context.Jobs.FindAsync(id);
+            if (job == null)
+                return NotFound("Job not found");
+
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var companyId))
+                return Unauthorized("Invalid user ID");
+
+            // Check if company owns the job
+            if (job.CompanyId != companyId)
+                return Forbid("You don't have permission to modify this job");
+
+            // If already in desired state, just return
+            if (job.IsTrending == setTrending)
+                return Ok(new
+                {
+                    Success = true,
+                    Message = $"Job is already {(setTrending ? "trending" : "not trending")}"
+                });
+
+            // Get company subscription
+            var subscription = await _context.CompanySubscriptions
+                .Where(s => s.UserId == companyId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                .Include(s => s.SubscriptionType)
+                .FirstOrDefaultAsync();
+
+            if (setTrending) // Setting job as trending
+            {
+                // Can't set trending without a subscription
+                if (subscription == null)
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "You need a Basic or Premium subscription to create trending jobs"
+                    });
+                }
+
+                // Check if subscription allows trending jobs
+                if (subscription.SubscriptionType.TrendingJobLimit <= 0)
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "Your current subscription doesn't include trending jobs"
+                    });
+                }
+
+                // Check if there are remaining trending job slots
+                if (subscription.RemainingTrendingJobPosts <= 0)
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "You have used all your trending job posts. Please upgrade your subscription."
+                    });
+                }
+
+                // Check for max active trending jobs
+                var activeTrendingCount = await _context.Jobs
+                    .CountAsync(j => j.CompanyId == companyId &&
+                                 j.IsTrending &&
+                                 (j.Status == Job.JobStatus.active || j.Status == Job.JobStatus.pending));
+
+                if (activeTrendingCount >= subscription.SubscriptionType.TrendingJobLimit)
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = $"You have reached the maximum limit of {subscription.SubscriptionType.TrendingJobLimit} active trending jobs"
+                    });
+                }
+
+                // Set as trending and reduce count
+                job.IsTrending = true;
+                subscription.RemainingTrendingJobPosts--;
+                subscription.UpdatedAt = DateTime.UtcNow;
+            }
+            else // Removing trending status
+            {
+                job.IsTrending = false;
+                // Don't refund the trending post count
+            }
+
+            job.UpdatedAt = GetVietnamTime();
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Success = true,
+                Message = $"Job is now {(setTrending ? "trending" : "not trending")}",
+                IsTrending = job.IsTrending,
+                RemainingTrendingPosts = subscription?.RemainingTrendingJobPosts ?? 0
+            });
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody] JobUpdateRequest dto)
@@ -976,7 +1640,3 @@ namespace JOB_FINDER_API.Controllers
         }
     }
 }
-
-
-
-    

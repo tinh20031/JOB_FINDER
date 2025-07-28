@@ -33,6 +33,7 @@ namespace JOB_FINDER_API.Models
         public int JobPostLimit { get; set; } // Number of jobs that can be posted
 
         public int CvMatchLimit { get; set; } // Number of CVs that can be viewed in matching
+        public int TrendingJobLimit { get; set; }
 
         public int DurationInDays { get; set; } // Subscription duration in days
 

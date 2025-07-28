@@ -1410,6 +1410,11 @@ namespace JOB_FINDER_API.Controllers
 
                     };
                     context.TryMatchRecords.Add(tryMatchRecord);
+                    if (activeSubscription != null)
+                    {
+                        activeSubscription.RemainingTryMatches = Math.Max(0, activeSubscription.RemainingTryMatches - 1);
+                        activeSubscription.UpdatedAt = DateTime.UtcNow;
+                    }
                     await context.SaveChangesAsync();
 
                     // Send initial notification

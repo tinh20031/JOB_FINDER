@@ -1,5 +1,6 @@
 ﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
+using JOB_FINDER_API.Models.Background;
 using JOB_FINDER_API.Models.Requests;
 using JOB_FINDER_API.Models.Services;
 using JOB_FINDER_API.Services;
@@ -24,17 +25,23 @@ namespace JOB_FINDER_API.Controllers
         private readonly CloudinaryService _cloudinaryService;
         private readonly SemanticMatchingService _semanticMatchingService;
         private readonly ILogger<CVController> _logger;
+        private readonly IBackgroundTaskQueue _taskQueue;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public CVController(
             JobFinderDbContext context,
             CloudinaryService cloudinaryService,
             SemanticMatchingService semanticMatchingService,
-            ILogger<CVController> logger)
+            ILogger<CVController> logger,
+             IBackgroundTaskQueue taskQueue,
+             IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _cloudinaryService = cloudinaryService;
             _semanticMatchingService = semanticMatchingService;
             _logger = logger;
+            _taskQueue = taskQueue;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         [HttpGet]
@@ -61,6 +68,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(cvs);
         }
 
+
         [Authorize]
         [HttpPost]
         [Consumes("multipart/form-data")]
@@ -69,75 +77,61 @@ namespace JOB_FINDER_API.Controllers
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId) || userId != request.UserId)
             {
-                _logger.LogWarning("Unauthorized attempt to create CV for UserId {UserId} by {ClaimUserId}", request.UserId, userIdStr);
+                _logger.LogWarning("Unauthorized attempt to create CV for UserId {UserId} by {ClaimUserId} at {Time}", request.UserId, userIdStr, DateTime.Now);
                 return Unauthorized("You can only create a CV for your own account.");
             }
 
             var cvCount = await _context.CVs.CountAsync(c => c.UserId == userId && c.Type == CvType.Upload);
             if (cvCount >= 5)
             {
+                _logger.LogWarning("UserId {UserId} exceeded CV upload limit (5) at {Time}", userId, DateTime.Now);
                 return BadRequest("You can only upload a maximum of 5 CVs. Please delete old CVs to upload new ones.");
             }
 
             if (request.File == null || request.File.Length == 0)
             {
-                _logger.LogWarning("No file selected for CV creation by UserId {UserId}", userId);
+                _logger.LogWarning("No file selected for CV creation by UserId {UserId} at {Time}", userId, DateTime.Now);
                 return BadRequest("No file selected.");
             }
 
             if (!request.File.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
                 !Path.GetExtension(request.File.FileName).ToLower().EndsWith(".pdf"))
             {
-                _logger.LogWarning("Invalid file format for CV by UserId {UserId}. Only PDF is allowed.", userId);
+                _logger.LogWarning("Invalid file format for CV by UserId {UserId} at {Time}. Only PDF is allowed.", userId, DateTime.Now);
                 return BadRequest("Only PDF files are allowed.");
             }
 
-            var fileUrl = await _cloudinaryService.UploadCvAsync(request.File);
-            if (string.IsNullOrEmpty(fileUrl))
-            {
-                _logger.LogError("Failed to upload CV to Cloudinary for UserId {UserId}", userId);
-                return StatusCode(500, "Failed to upload CV to Cloudinary.");
-            }
-
-            string extractedText = string.Empty;
+            string tempCvPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".pdf");
+            string originalFileName = Path.GetFileNameWithoutExtension(request.File.FileName); // Lấy tên tệp gốc
             try
             {
-                using (var stream = request.File.OpenReadStream())
-                using (var pdfDocument = PdfDocument.Open(stream))
+                using (var stream = new FileStream(tempCvPath, FileMode.Create))
                 {
-                    foreach (var page in pdfDocument.GetPages())
-                    {
-                        extractedText += page.Text + "\n";
-                    }
-                }
-                extractedText = CleanExtractedText(extractedText);
-
-                if (string.IsNullOrWhiteSpace(extractedText))
-                {
-                    _logger.LogWarning("CV content is empty or unreadable for UserId {UserId}", userId);
-                    return BadRequest("CV content is empty or unreadable.");
+                    await request.File.CopyToAsync(stream);
                 }
 
-                var (success, extractError, extractedCvData) = await _semanticMatchingService.ExtractCvDataAsync(null, extractedText);
-                if (!success)
-                {
-                    _logger.LogError("Failed to extract CV data for UserId {UserId}: {Error}", userId, extractError);
-                    return BadRequest($"Failed to extract CV data: {extractError}");
-                }
+               
+                var fileUrl = await _cloudinaryService.UploadCvAsync(
+                    new FormFile(
+                        new FileStream(tempCvPath, FileMode.Open, FileAccess.Read, FileShare.Read),
+                        0,
+                        new FileInfo(tempCvPath).Length,
+                        null,
+                        Path.GetFileName(tempCvPath)),
+                    SanitizeFileName(originalFileName) 
+                );
 
-                var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-                var fullCvJson = JsonSerializer.Serialize(new
+                if (string.IsNullOrEmpty(fileUrl))
                 {
-                    Text = extractedText,
-                    TranslatedText = string.Empty,
-                    CVData = extractedCvData
-                }, jsonOptions);
+                    _logger.LogError("Failed to upload CV to Cloudinary for UserId {UserId} at {Time}", userId, DateTime.Now);
+                    return StatusCode(500, "Failed to upload CV to Cloudinary.");
+                }
 
                 var cv = new CV
                 {
-                    UserId = request.UserId,
+                    UserId = userId,
                     FileUrl = fileUrl,
-                    FullCvJson = fullCvJson,
+                    FullCvJson = null, 
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     Type = CvType.Upload
@@ -145,15 +139,176 @@ namespace JOB_FINDER_API.Controllers
 
                 _context.CVs.Add(cv);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("CV created successfully for UserId {UserId}, CVId {CVId}", userId, cv.CVId);
+                _logger.LogInformation("CV saved with CVId {CVId} for UserId {UserId} at {Time}", cv.CVId, userId, DateTime.Now);
 
-                return CreatedAtAction(nameof(Get), new { id = cv.CVId }, cv);
+                // Đưa xử lý trích xuất vào tác vụ nền
+                _taskQueue.QueueBackgroundWorkItem(async token =>
+                {
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var innerContext = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
+                    var innerSemanticService = scope.ServiceProvider.GetRequiredService<SemanticMatchingService>();
+
+                    try
+                    {
+                        using var transaction = await innerContext.Database.BeginTransactionAsync();
+
+                        var innerCv = await innerContext.CVs.FindAsync(cv.CVId);
+                        if (innerCv == null)
+                        {
+                            _logger.LogError("CV {CVId} not found during background processing for UserId {UserId} at {Time}", cv.CVId, userId, DateTime.Now);
+                            return;
+                        }
+
+                        string extractedText = string.Empty;
+                        try
+                        {
+                            // Đảm bảo stream được đóng đúng cách
+                            using (var stream = new FileStream(tempCvPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                            using (var pdfDocument = PdfDocument.Open(stream))
+                            {
+                                foreach (var page in pdfDocument.GetPages())
+                                {
+                                    extractedText += page.Text + "\n";
+                                }
+                            }
+                            extractedText = CleanExtractedText(extractedText);
+
+                            if (string.IsNullOrWhiteSpace(extractedText))
+                            {
+                                _logger.LogWarning("CV content is empty or unreadable for CVId {CVId}, UserId {UserId} at {Time}", cv.CVId, userId, DateTime.Now);
+                                innerCv.FullCvJson = JsonSerializer.Serialize(new
+                                {
+                                    Text = string.Empty,
+                                    TranslatedText = string.Empty,
+                                    CVData = new CVData()
+                                }, new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+                                innerCv.UpdatedAt = DateTime.UtcNow;
+                                await innerContext.SaveChangesAsync();
+                                await transaction.CommitAsync();
+                                return;
+                            }
+
+                            var (success, extractError, extractedCvData) = await innerSemanticService.ExtractCvDataAsync(null, extractedText);
+                            if (!success)
+                            {
+                                _logger.LogError("Failed to extract CV data for CVId {CVId}, UserId {UserId} at {Time}: {Error}", cv.CVId, userId, DateTime.Now, extractError);
+                                innerCv.FullCvJson = JsonSerializer.Serialize(new
+                                {
+                                    Text = extractedText,
+                                    TranslatedText = string.Empty,
+                                    CVData = new CVData()
+                                }, new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+                                innerCv.UpdatedAt = DateTime.UtcNow;
+                                await innerContext.SaveChangesAsync();
+                                await transaction.CommitAsync();
+                                return;
+                            }
+
+                            innerCv.FullCvJson = JsonSerializer.Serialize(new
+                            {
+                                Text = extractedText,
+                                TranslatedText = string.Empty,
+                                CVData = extractedCvData
+                            }, new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+                            innerCv.UpdatedAt = DateTime.UtcNow;
+                            await innerContext.SaveChangesAsync();
+                            await transaction.CommitAsync();
+
+                            _logger.LogInformation("CV processing completed for CVId {CVId}, UserId {UserId} at {Time}", cv.CVId, userId, DateTime.Now);
+                        }
+                        catch (Exception ex)
+                        {
+                            await transaction.RollbackAsync();
+                            _logger.LogError(ex, "PDF extraction failed for CVId {CVId}, UserId {UserId} at {Time}. Details: {Message}", cv.CVId, userId, DateTime.Now, ex.Message);
+                            innerCv.FullCvJson = JsonSerializer.Serialize(new
+                            {
+                                Text = string.Empty,
+                                TranslatedText = string.Empty,
+                                CVData = new CVData()
+                            }, new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+                            innerCv.UpdatedAt = DateTime.UtcNow;
+                            await innerContext.SaveChangesAsync();
+                            return;
+                        }
+                    }
+                    finally
+                    {
+                        if (System.IO.File.Exists(tempCvPath))
+                        {
+                            try
+                            {
+                                // Thêm cơ chế retry khi xóa tệp
+                                int retries = 3;
+                                while (retries > 0)
+                                {
+                                    try
+                                    {
+                                        System.IO.File.Delete(tempCvPath);
+                                        _logger.LogInformation("Temporary CV file {TempCvPath} deleted successfully for CVId {CVId}, UserId {UserId} at {Time}", tempCvPath, cv.CVId, userId, DateTime.Now);
+                                        break;
+                                    }
+                                    catch (IOException)
+                                    {
+                                        retries--;
+                                        if (retries == 0) throw;
+                                        await Task.Delay(1000); // Chờ 1 giây trước khi thử lại
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to delete temporary CV file {TempCvPath} for CVId {CVId}, UserId {UserId} at {Time}", tempCvPath, cv.CVId, userId, DateTime.Now);
+                            }
+                        }
+                    }
+                });
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "CV uploaded successfully. Processing content in background.",
+                    CVId = cv.CVId,
+                    FileUrl = fileUrl
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "PDF extraction failed for UserId {UserId}", userId);
-                return BadRequest($"PDF extraction failed: {ex.Message}");
+                if (System.IO.File.Exists(tempCvPath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(tempCvPath);
+                    }
+                    catch (Exception fileEx)
+                    {
+                        _logger.LogWarning(fileEx, "Failed to delete temporary CV file {TempCvPath} for UserId {UserId} at {Time}", tempCvPath, userId, DateTime.Now);
+                    }
+                }
+                _logger.LogError(ex, "Error initiating CV upload for UserId {UserId} at {Time}. Details: {Message}", userId, DateTime.Now, ex.Message);
+                return StatusCode(500, new { Success = false, ErrorMessage = $"An error occurred while initiating CV upload: {ex.Message}" });
             }
+        }
+
+        private string CleanExtractedText(string text)
+        {
+            return text?.Trim() ?? string.Empty;
+        }
+
+        private string SanitizeFileName(string fileName)
+        {
+           
+            var invalidChars = Path.GetInvalidFileNameChars();
+            foreach (var c in invalidChars)
+            {
+                fileName = fileName.Replace(c, '_');
+            }
+         
+            fileName = fileName.Replace(" ", "_").Trim();
+            if (fileName.Length > 100)
+            {
+                fileName = fileName.Substring(0, 100);
+            }
+            return fileName;
         }
 
         [HttpPut("{id}")]
@@ -207,14 +362,6 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        private string CleanExtractedText(string text)
-        {
-            text = Regex.Replace(text, @"(Page|Trang)\s*\d+\s*(of|\/|-)\s*\d+\s*(-?\s*©.*)?", "", RegexOptions.IgnoreCase);
-            text = Regex.Replace(text, @"©\s*[^\n]+", "", RegexOptions.IgnoreCase);
-            text = Regex.Replace(text, @"\n{2,}", "\n");
-            text = Regex.Replace(text, @"\s{2,}", " ");
-            text = Regex.Replace(text, @"[\t\r]+", " ");
-            return text.Trim();
-        }
+      
     }
 }

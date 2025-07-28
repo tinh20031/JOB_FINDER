@@ -1271,7 +1271,7 @@ namespace JOB_FINDER_API.Controllers
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                // Check user subscription and try-match limits
+                
                 var activeSubscription = await context.CandidateSubscriptions
                     .Where(s => s.UserId == userId && s.IsActive) // Removed EndDate condition
                     .Include(s => s.SubscriptionType)
@@ -1280,7 +1280,7 @@ namespace JOB_FINDER_API.Controllers
 
                 if (activeSubscription == null)
                 {
-                    // Check if user has ever used a try-match before
+                   
                     var tryMatchCount = await context.TryMatchRecords
                         .Where(r => r.UserId == userId)
                         .CountAsync();
@@ -1295,7 +1295,7 @@ namespace JOB_FINDER_API.Controllers
                         });
                     }
 
-                    // If this is the user's first try-match, continue without a subscription
+                    
                     _logger.LogInformation("User {UserId} is using their free try-match attempt", userId);
                 }
                 else if (activeSubscription.RemainingTryMatches <= 0)
@@ -1332,7 +1332,6 @@ namespace JOB_FINDER_API.Controllers
                         return BadRequest(new { Success = false, Message = "Please update your personal information before applying." });
                     }
 
-                    // Check job validity
                     var job = await context.Jobs.FindAsync(request.JobId);
                     if (job == null)
                     {
@@ -1345,7 +1344,7 @@ namespace JOB_FINDER_API.Controllers
                         return BadRequest(new { Success = false, ErrorMessage = "Job is inactive or deactivated." });
                     }
 
-                    // Validate CV input
+                   
                     if (request.CvFile == null && !request.CvId.HasValue)
                     {
                         var existingCv = await context.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
@@ -1376,7 +1375,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                     }
 
-                    // Check for existing processing TryMatch record
+                  
                     var existingRecord = await context.TryMatchRecords
                         .FirstOrDefaultAsync(r => r.UserId == userId && r.JobId == request.JobId &&
                             (r.CvId == request.CvId || (request.CvFile != null && r.CvId == null)) && r.Status == "Processing");
@@ -1398,7 +1397,7 @@ namespace JOB_FINDER_API.Controllers
                         return BadRequest(new { Success = false, ErrorMessage = "A try-match request is already being processed for this job and CV." });
                     }
 
-                    // Create TryMatch record
+                    
                     var tryMatchRecord = new TryMatchRecord
                     {
                         UserId = userId,
@@ -1412,7 +1411,7 @@ namespace JOB_FINDER_API.Controllers
                     context.TryMatchRecords.Add(tryMatchRecord);
                     await context.SaveChangesAsync();
 
-                    // Send initial notification
+                   
                     try
                     {
                         await notificationService.CreateTryMatchNotification(tryMatchRecord, request.JobId, job.Title);
@@ -1423,7 +1422,7 @@ namespace JOB_FINDER_API.Controllers
                             tryMatchRecord.TryMatchId, userId, request.JobId, DateTime.Now);
                     }
 
-                    // Queue background task
+                
                     taskQueue.QueueBackgroundWorkItem(async token =>
                     {
                         using var innerScope = _serviceScopeFactory.CreateScope();
@@ -1447,7 +1446,7 @@ namespace JOB_FINDER_API.Controllers
                                     return;
                                 }
 
-                                // Check job
+                              
                                 innerJob = await innerContext.Jobs.FindAsync(request.JobId);
                                 if (innerJob == null || innerJob.Status != Job.JobStatus.active || innerJob.DeactivatedByAdmin)
                                 {
@@ -1477,11 +1476,11 @@ namespace JOB_FINDER_API.Controllers
 
                                 if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                                 {
-                                    // Recreate IFormFile from temporary file
+                                   
                                     using var stream = new FileStream(tempCvPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                                     var formFile = new FormFile(stream, 0, stream.Length, null, Path.GetFileName(tempCvPath));
 
-                                    // Upload CV to Cloudinary
+                                
                                     uploadedCvUrl = await innerCloudinaryService.UploadCvAsync(formFile);
                                     if (string.IsNullOrEmpty(uploadedCvUrl))
                                     {
@@ -1496,7 +1495,7 @@ namespace JOB_FINDER_API.Controllers
                                         return;
                                     }
 
-                                    // Extract text from PDF
+                                   
                                     string extractedText = string.Empty;
                                     try
                                     {
@@ -1523,7 +1522,7 @@ namespace JOB_FINDER_API.Controllers
                                             return;
                                         }
 
-                                        // Extract CV data
+                                     
                                         var (success, extractError, extractedCvData) = await innerSemanticService.ExtractCvDataAsync(null, extractedText);
                                         if (!success)
                                         {
@@ -1540,7 +1539,7 @@ namespace JOB_FINDER_API.Controllers
 
                                         cvData = extractedCvData;
 
-                                        // Save CV to database
+                                        
                                         cv = new CV
                                         {
                                             UserId = userId,
@@ -1557,7 +1556,7 @@ namespace JOB_FINDER_API.Controllers
                                         };
                                         innerContext.CVs.Add(cv);
                                         await innerContext.SaveChangesAsync();
-                                        record.CvId = cv.CVId; // Update CvId in TryMatchRecord
+                                        record.CvId = cv.CVId;
                                     }
                                     catch (Exception ex)
                                     {
@@ -1637,7 +1636,7 @@ namespace JOB_FINDER_API.Controllers
                                     cvData = extractedCvData;
                                 }
 
-                                // Calculate similarity
+                              
                                 var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv);
                                 var suggestions = await innerSemanticService.GenerateImprovementSuggestions(innerJob, cv,
                                     matchingResult.SimilarityDescription, matchingResult.SimilaritySkills,
@@ -1645,7 +1644,7 @@ namespace JOB_FINDER_API.Controllers
                                     matchingResult.DescriptionMaxScore, matchingResult.SkillsMaxScore,
                                     matchingResult.ExperienceMaxScore, matchingResult.EducationMaxScore);
 
-                                // Update TryMatch record
+                                
                                 record.SimilarityScore = matchingResult.Success ? matchingResult.FinalSimilarity : null;
                                 record.Suggestions = suggestions != null ? JsonSerializer.Serialize(suggestions) : null;
                                 record.Status = matchingResult.Success ? "Completed" : "Failed";
@@ -1693,7 +1692,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                         finally
                         {
-                            // Clean up temporary file
+                            
                             if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                             {
                                 try
@@ -1717,7 +1716,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Clean up temporary file on main thread failure
+                    
                     if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
                     {
                         try
@@ -1966,7 +1965,7 @@ namespace JOB_FINDER_API.Controllers
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                 try
                 {
-                    // Build query for applications
+                  
                     IQueryable<Application> query = context.Applications
                         .Include(a => a.Job)
                             .ThenInclude(j => j.Company);
@@ -2008,7 +2007,7 @@ namespace JOB_FINDER_API.Controllers
                         return NotFound(new { Success = false, Message = "No applications found for export." });
                     }
 
-                    // Create ZIP file
+                   
                     using (var memoryStream = new MemoryStream())
                     {
                         using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
@@ -2064,7 +2063,6 @@ namespace JOB_FINDER_API.Controllers
                 }
             }
         }
-
         [Authorize]
         [HttpPut("confirm/{applicationId}")]
         public async Task<IActionResult> ConfirmApplication(int applicationId, [FromBody] ConfirmApplicationRequest request)
@@ -2088,7 +2086,7 @@ namespace JOB_FINDER_API.Controllers
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                 try
                 {
-                    // Find the application with related job and user
+                    
                     var application = await context.Applications
                         .Include(a => a.Job)
                         .Include(a => a.User)
@@ -2100,35 +2098,34 @@ namespace JOB_FINDER_API.Controllers
                         return NotFound(new { Success = false, Message = "Application not found." });
                     }
 
-                    // Verify that the job belongs to the company
+                   
                     if (application.Job.CompanyId != userId)
                     {
                         _logger.LogWarning("User {UserId} attempted to confirm Application {ApplicationId} for Job {JobId} not owned by them at {Time}.", userId, applicationId, application.JobId, DateTime.Now);
                         return Forbid("You are not authorized to confirm applications for this job.");
                     }
 
-                    // Validate the requested status
+                   
                     if (!Enum.IsDefined(typeof(ApplicationStatus), request.Status))
                     {
                         _logger.LogWarning("Invalid application status {Status} for Application {ApplicationId} by User {UserId} at {Time}.", request.Status, applicationId, userId, DateTime.Now);
                         return BadRequest(new { Success = false, Message = "Invalid application status." });
                     }
 
-                    // Prevent redundant status updates
+                  
                     if (application.Status == request.Status)
                     {
                         _logger.LogWarning("Application {ApplicationId} already has status {Status} for User {UserId} at {Time}.", applicationId, request.Status, userId, DateTime.Now);
                         return BadRequest(new { Success = false, Message = $"Application already has status {request.Status}." });
                     }
 
-                    // Update application status
                     application.Status = request.Status;
                     application.UpdatedAt = DateTime.UtcNow;
 
                     context.Applications.Update(application);
                     await context.SaveChangesAsync();
 
-                    // Prepare notification and email content
+                    
                     string baseUrl = _configuration["AppSettings:BaseUrl"];
                     if (string.IsNullOrEmpty(baseUrl))
                     {
@@ -2136,28 +2133,21 @@ namespace JOB_FINDER_API.Controllers
                         throw new InvalidOperationException("BaseUrl is not configured in appsettings.json.");
                     }
 
+                    string applicationEndpoint = $"/application-details/{applicationId}";
                     string title = request.Status switch
                     {
-                        ApplicationStatus.Accepted => $"Update on Your Application for {application.Job.Title}",
-                        ApplicationStatus.Rejected => $"Update on Your Application for {application.Job.Title}",
+                        ApplicationStatus.Accepted => $"Application for {application.Job.Title} Accepted",
+                        ApplicationStatus.Rejected => $"Application for {application.Job.Title} Rejected",
                         _ => $"Update on Your Application for {application.Job.Title}"
                     };
 
-                    string message = request.Status switch
-                    {
-                        ApplicationStatus.Accepted => $"Dear candidate, we are delighted to inform you that your application for the {application.Job.Title} position has been shortlisted for the next stage. We will contact you soon with further details.",
-                        ApplicationStatus.Rejected => $"Dear candidate, thank you for applying for the {application.Job.Title} position. After careful consideration, we have decided to pursue other candidates whose qualifications more closely align with our current needs. We appreciate your interest and wish you success in your job search.",
-                        _ => $"Dear candidate, your application for the {application.Job.Title} position has been updated to '{request.Status}'. Please check your application dashboard for more details."
-                    };
-
-                    // Send real-time notification to candidate
+                    
                     try
                     {
                         await _notificationService.SendDirectNotification(
                             application.UserId,
                             title,
-                            message,
-                            null, // No link provided
+                            applicationEndpoint,
                             Notification.NotificationType.ApplicationStatusUpdate
                         );
                         _logger.LogInformation("Notification sent to User {UserId} for Application {ApplicationId} status update to {Status} at {Time}.", application.UserId, applicationId, request.Status, DateTime.Now);
@@ -2167,20 +2157,48 @@ namespace JOB_FINDER_API.Controllers
                         _logger.LogError(ex, "Failed to send notification for Application {ApplicationId} to User {UserId} at {Time}.", applicationId, application.UserId, DateTime.Now);
                     }
 
-                    // Send email to candidate
+                   
                     if (!string.IsNullOrEmpty(application.User?.Email))
                     {
-                        string emailBody = $@"
-                    <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
-                        <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
-                            <h2 style='color: #2d8cf0;'>{title}</h2>
-                            <p>{message}</p>
-                            <p><strong>Job:</strong> {application.Job.Title}</p>
-                            <p><strong>Status:</strong> {request.Status}</p>
-                            <p>Best regards,<br>Job Finder Team</p>
-                        </div>
-                    </div>
-                ";
+                        string emailBody = request.Status switch
+                        {
+                            ApplicationStatus.Accepted => $@"
+                                <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+                                    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+                                        <h2 style='color: #2d8cf0;'>Application for {application.Job.Title} Accepted</h2>
+                                        <p>Dear candidate, we are delighted to inform you that your application for the {application.Job.Title} position has been shortlisted for the next stage. We will contact you soon with further details.</p>
+                                        <p><strong>Job:</strong> {application.Job.Title}</p>
+                                        <p><strong>Status:</strong> {request.Status}</p>
+                                        <div style='margin:20px 0;'>
+                                            <a href='{baseUrl}{applicationEndpoint}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>View Application Details</a>
+                                        </div>
+                                        <p>Best regards,<br>Job Finder Team</p>
+                                    </div>
+                                </div>",
+                            ApplicationStatus.Rejected => $@"
+                                <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+                                    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+                                        <h2 style='color: #2d8cf0;'>Application for {application.Job.Title} Rejected</h2>
+                                        <p>Dear candidate, thank you for applying for the {application.Job.Title} position. After careful consideration, we have decided to pursue other candidates whose qualifications more closely align with our current needs. We appreciate your interest and wish you success in your job search.</p>
+                                        <p><strong>Job:</strong> {application.Job.Title}</p>
+                                        <p><strong>Status:</strong> {request.Status}</p>
+                                        <p>Best regards,<br>Job Finder Team</p>
+                                    </div>
+                                </div>",
+                            _ => $@"
+                                <div style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+                                    <div style='max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+                                        <h2 style='color: #2d8cf0;'>Update on Your Application for {application.Job.Title}</h2>
+                                        <p>Dear candidate, your application for the {application.Job.Title} position has been updated to '{request.Status}'. Please check your application dashboard for more details.</p>
+                                        <p><strong>Job:</strong> {application.Job.Title}</p>
+                                        <p><strong>Status:</strong> {request.Status}</p>
+                                        <div style='margin:20px 0;'>
+                                            <a href='{baseUrl}{applicationEndpoint}' style='background:#2d8cf0;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-weight:bold;'>View Application Details</a>
+                                        </div>
+                                        <p>Best regards,<br>Job Finder Team</p>
+                                    </div>
+                                </div>"
+                        };
 
                         try
                         {

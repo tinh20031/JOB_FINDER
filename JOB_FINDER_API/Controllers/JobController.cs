@@ -1638,5 +1638,168 @@ namespace JOB_FINDER_API.Controllers
                 Jobs = jobsData
             });
         }
+
+
+
+        [AllowAnonymous]
+        [HttpGet("company/{companyId}/highlight")]
+        public async Task<ActionResult<IEnumerable<object>>> GetCompanyHighlightJobs(
+            int companyId,
+            [FromQuery] int limit = 5, // Default to top 5 jobs
+            [FromQuery] string timeRange = "7d") // Default to last 7 days
+        {
+            var now = GetVietnamTime();
+            var query = _context.Jobs
+                .Where(j => j.CompanyId == companyId
+                            && j.Status == Job.JobStatus.active
+                            && !j.DeactivatedByAdmin
+                            && j.TimeStart.Date <= now.Date
+                            && j.TimeEnd.Date >= now.Date)
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .AsQueryable();
+
+            // Apply time range for view counts
+            DateTime? startTime = null;
+            switch (timeRange.ToLower())
+            {
+                case "24h":
+                    startTime = now.AddHours(-24);
+                    break;
+                case "7d":
+                    startTime = now.AddDays(-7);
+                    break;
+                case "30d":
+                    startTime = now.AddDays(-30);
+                    break;
+                case "all":
+                default:
+                    break;
+            }
+
+            // Get job view counts
+            var jobViewCounts = await _context.JobViews
+                .Where(v => startTime == null || v.ViewedAt >= startTime)
+                .GroupBy(v => v.JobId)
+                .Select(g => new { JobId = g.Key, TotalViews = g.Count() })
+                .ToListAsync();
+
+            // Get unique view counts
+            var uniqueViewCounts = await _context.JobViews
+                .Where(v => startTime == null || v.ViewedAt >= startTime)
+                .Select(v => new { v.JobId, v.UserId, v.IpAddress })
+                .Distinct()
+                .GroupBy(v => v.JobId)
+                .Select(g => new { JobId = g.Key, UniqueViews = g.Count() })
+                .ToListAsync();
+
+            var viewCountDict = jobViewCounts.ToDictionary(v => v.JobId, v => v.TotalViews);
+            var uniqueViewCountDict = uniqueViewCounts.ToDictionary(v => v.JobId, v => v.UniqueViews);
+
+            // Get filtered jobs
+            var jobs = await query.ToListAsync();
+
+            // Order jobs by view count and creation date, limit to top N
+            var orderedJobs = jobs
+                .Select(j => new
+                {
+                    Job = j,
+                    TotalViews = viewCountDict.ContainsKey(j.JobId) ? viewCountDict[j.JobId] : 0,
+                    UniqueViews = uniqueViewCountDict.ContainsKey(j.JobId) ? uniqueViewCountDict[j.JobId] : 0
+                })
+                .OrderByDescending(x => x.TotalViews)
+                .ThenByDescending(x => x.Job.CreatedAt)
+                .Take(limit)
+                .ToList();
+
+            // Get BaseUrl from configuration
+            var baseUrl = _configuration["AppSettings:BaseUrl"];
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                _logger.LogWarning("BaseUrl is not configured in AppSettings.");
+                baseUrl = "http://localhost:3000/"; // Fallback for safety
+            }
+
+            // Ensure BaseUrl ends with a slash
+            if (!baseUrl.EndsWith("/"))
+            {
+                baseUrl += "/";
+            }
+
+            // Format response with filter URL for each job
+            var result = orderedJobs.Select(item => new
+            {
+                item.Job.JobId,
+                item.Job.Title,
+                item.Job.Description,
+                item.Job.Education,
+                item.Job.YourSkill,
+                item.Job.YourExperience,
+                item.Job.CompanyId,
+                TotalViews = item.TotalViews,
+                UniqueViews = item.UniqueViews,
+                IsTrending = item.Job.IsTrending,
+                Company = item.Job.Company == null ? null : new
+                {
+                    item.Job.Company.UserId,
+                    item.Job.Company.FullName,
+                    item.Job.Company.Email,
+                    CompanyName = item.Job.Company.CompanyProfile?.CompanyName,
+                    Location = item.Job.Company.CompanyProfile?.Location,
+                    UrlCompanyLogo = item.Job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                item.Job.IndustryId,
+                Industry = item.Job.Industry == null ? null : new
+                {
+                    item.Job.Industry.IndustryId,
+                    item.Job.Industry.IndustryName
+                },
+                item.Job.ExpiryDate,
+                item.Job.LevelId,
+                Level = item.Job.Level == null ? null : new
+                {
+                    item.Job.Level.LevelId,
+                    item.Job.Level.LevelName
+                },
+                item.Job.JobTypeId,
+                JobType = item.Job.JobType == null ? null : new
+                {
+                    item.Job.JobType.JobTypeId,
+                    item.Job.JobType.JobTypeName
+                },
+                item.Job.Quantity,
+                item.Job.TimeStart,
+                item.Job.TimeEnd,
+                item.Job.Status,
+                item.Job.ProvinceName,
+                item.Job.AddressDetail,
+                item.Job.IsSalaryNegotiable,
+                item.Job.MinSalary,
+                item.Job.MaxSalary,
+                item.Job.CreatedAt,
+                item.Job.UpdatedAt,
+                Skills = item.Job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList(),
+                item.Job.DescriptionWeight,
+                item.Job.SkillsWeight,
+                item.Job.ExperienceWeight,
+                item.Job.EducationWeight,
+                FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}&SkillIds={string.Join(",", item.Job.JobSkills.Select(js => js.SkillId))}"
+            });
+
+            return Ok(new
+            {
+                TotalCount = orderedJobs.Count,
+                TimeRange = timeRange,
+                Jobs = result
+            });
+        }
+
     }
 }

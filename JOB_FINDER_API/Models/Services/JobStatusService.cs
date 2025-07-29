@@ -16,7 +16,6 @@ namespace JOB_FINDER_API.Models.Services
             _logger = logger;
         }
 
-        // Hàm lấy giờ Việt Nam
         private static DateTime NowVN()
         {
             var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
@@ -32,12 +31,12 @@ namespace JOB_FINDER_API.Models.Services
                 try
                 {
                     await UpdateJobStatuses();
-                    await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken); // Chạy mỗi 30 phút
+                    await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in Job Status Service");
-                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken); // Nếu lỗi, chờ 5 phút rồi thử lại
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                 }
             }
         }
@@ -50,7 +49,7 @@ namespace JOB_FINDER_API.Models.Services
             var now = NowVN();
             var updatedCount = 0;
 
-            // 1. Inactive jobs đã active nhưng chưa tới ngày start
+        
             var jobsToInactive = await context.Jobs
                 .Where(j => j.Status == Job.JobStatus.active &&
                            j.TimeStart.Date > now.Date)
@@ -64,7 +63,7 @@ namespace JOB_FINDER_API.Models.Services
                 _logger.LogInformation($"Job {job.JobId} ({job.Title}) set to inactive - not started yet");
             }
 
-            // 2. Active jobs đã tới ngày start nhưng đang inactive
+           
             var jobsToActive = await context.Jobs
                 .Where(j => j.Status == Job.JobStatus.inactive &&
                            !j.DeactivatedByAdmin &&
@@ -80,7 +79,7 @@ namespace JOB_FINDER_API.Models.Services
                 _logger.LogInformation($"Job {job.JobId} ({job.Title}) set to active - start date reached");
             }
 
-            // 3. Auto inactive expired jobs
+         
             var expiredJobs = await context.Jobs
                 .Where(j => j.Status == Job.JobStatus.active &&
                            j.TimeEnd.Date < now.Date)
@@ -94,6 +93,7 @@ namespace JOB_FINDER_API.Models.Services
                 _logger.LogInformation($"Job {job.JobId} ({job.Title}) set to inactive - expired");
             }
 
+           
             if (updatedCount > 0)
             {
                 await context.SaveChangesAsync();

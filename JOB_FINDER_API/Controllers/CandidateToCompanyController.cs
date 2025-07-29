@@ -14,11 +14,13 @@ namespace JOB_FINDER_API.Controllers
     {
         private readonly JobFinderDbContext _context;
         private readonly IConfiguration _config;
+        private readonly ILogger<CandidateToCompanyController> _logger;
 
-        public CandidateToCompanyController(JobFinderDbContext context, IConfiguration config)
+        public CandidateToCompanyController(JobFinderDbContext context, IConfiguration config, ILogger<CandidateToCompanyController> _logger)
         {
             _context = context;
             _config = config;
+            this._logger = _logger;
         }
 
         [HttpPost("request")]
@@ -83,6 +85,64 @@ namespace JOB_FINDER_API.Controllers
 
             return Ok("Đã gửi yêu cầu lên admin.");
         }
+        private async Task DeleteCandidateSubscription(int userId)
+        {
+            try
+            {
+                var candidateSubscriptions = await _context.CandidateSubscriptions
+                    .Where(s => s.UserId == userId)
+                    .ToListAsync();
+
+                if (candidateSubscriptions.Any())
+                {
+                    _context.CandidateSubscriptions.RemoveRange(candidateSubscriptions);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Deleted candidate subscriptions for user {userId} during role upgrade");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting candidate subscriptions for user {userId}");
+            }
+        }
+
+        private async Task CreateInitialCompanySubscription(int userId)
+        {
+            try
+            {
+                // Find the free subscription type
+                var freeSubscription = await _context.CompanySubscriptionTypes
+                    .FirstOrDefaultAsync(s => s.PackageType == CompanySubscriptionPackageType.Free);
+
+                if (freeSubscription == null)
+                {
+                    _logger.LogError("Free company subscription type not found");
+                    return;
+                }
+
+                // Create a new subscription entry for the free tier
+                var subscription = new CompanySubscription
+                {
+                    UserId = userId,
+                    CompanySubscriptionTypeId = freeSubscription.CompanySubscriptionTypeId,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddDays(freeSubscription.DurationInDays),
+                    IsActive = true,
+                    RemainingJobPosts = freeSubscription.JobPostLimit,
+                    RemainingTrendingJobPosts = freeSubscription.TrendingJobLimit, // Set trending job posts limit
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.CompanySubscriptions.Add(subscription);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Created initial free subscription for company user {userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error creating initial company subscription for user {userId}");
+            }
+        }
 
         [HttpPost("verify/{userId}")]
         public async Task<IActionResult> VerifyUpgrade(int userId)
@@ -120,7 +180,8 @@ namespace JOB_FINDER_API.Controllers
                 };
                 _context.CompanyProfile.Add(companyProfile);
             }
-
+            await DeleteCandidateSubscription(userId);
+            await CreateInitialCompanySubscription(userId);
             await _context.SaveChangesAsync();
 
             string baseUrl = _config["AppSettings:BaseUrl"];

@@ -207,55 +207,10 @@ namespace JOB_FINDER_API.Controllers
                         // Determine if this is a company subscription based on the payment type or the provided type parameter
                         bool isCompanySubscription = (type == "company" || payment.PaymentType == "CompanySubscription");
 
-                        /*if (isCompanySubscription)
-                        {
-                            // Handle company subscription
-                            var subscriptionType = await _context.CompanySubscriptionTypes
-                                .FindAsync(payment.SubscriptionTypeId);
-
-                            if (subscriptionType == null)
-                            {
-                                _logger.LogError($"Company subscription type not found: {payment.SubscriptionTypeId}");
-                                return Redirect($"{_configuration["AppSettings:BaseUrl"]}/payment-success?error=subscription-not-found&orderCode={payment.TransactionCode}&type=company");
-                            }
-
-                            // Check if company has an active subscription
-                            var existingSubscription = await _context.CompanySubscriptions
-                                .Where(s => s.UserId == payment.UserId && s.IsActive)
-                                .OrderByDescending(s => s.CreatedAt)
-                                .FirstOrDefaultAsync();
-
-                            if (existingSubscription != null)
-                            {
-                                // Update existing subscription - add more job posts
-                                existingSubscription.RemainingJobPosts += subscriptionType.JobPostLimit;
-                                existingSubscription.UpdatedAt = DateTime.UtcNow;
-                                existingSubscription.EndDate = DateTime.UtcNow.AddDays(subscriptionType.DurationInDays);
-
-                                _logger.LogInformation($"Updated company subscription for user {payment.UserId}, added {subscriptionType.JobPostLimit} job posts, total now: {existingSubscription.RemainingJobPosts}");
-                            }
-                            else
-                            {
-                                // Create new subscription
-                                var subscription = new CompanySubscription
-                                {
-                                    UserId = payment.UserId,
-                                    CompanySubscriptionTypeId = payment.SubscriptionTypeId,
-                                    StartDate = DateTime.UtcNow,
-                                    EndDate = DateTime.UtcNow.AddDays(subscriptionType.DurationInDays),
-                                    IsActive = true,
-                                    RemainingJobPosts = subscriptionType.JobPostLimit,
-                                    CreatedAt = DateTime.UtcNow,
-                                    UpdatedAt = DateTime.UtcNow
-                                };
-
-                                _context.CompanySubscriptions.Add(subscription);
-                                _logger.LogInformation($"Created new company subscription for user {payment.UserId} with {subscription.RemainingJobPosts} job posts");
-                            }
-                        }*/
+                        
                         if (isCompanySubscription)
                         {
-                            // Handle company subscription
+                              // Handle company subscription
                             var subscriptionType = await _context.CompanySubscriptionTypes
                                 .FindAsync(payment.SubscriptionTypeId);
 
@@ -276,10 +231,12 @@ namespace JOB_FINDER_API.Controllers
                                 // Update existing subscription
                                 existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId; // Update the subscription type ID
                                 existingSubscription.RemainingJobPosts += subscriptionType.JobPostLimit;
+                                existingSubscription.RemainingTrendingJobPosts += subscriptionType.TrendingJobLimit;
                                 existingSubscription.UpdatedAt = DateTime.UtcNow;
                                 existingSubscription.EndDate = DateTime.UtcNow.AddDays(subscriptionType.DurationInDays);
 
-                                _logger.LogInformation($"Updated company subscription for user {payment.UserId} to subscription type {payment.SubscriptionTypeId}, added {subscriptionType.JobPostLimit} job posts, total now: {existingSubscription.RemainingJobPosts}");
+                                _logger.LogInformation($"Updated company subscription for user {payment.UserId} to {subscriptionType.Name}, " +
+            $"added {subscriptionType.JobPostLimit} regular jobs and {subscriptionType.TrendingJobLimit} trending jobs");
                             }
                             else
                             {
@@ -292,12 +249,14 @@ namespace JOB_FINDER_API.Controllers
                                     EndDate = DateTime.UtcNow.AddDays(subscriptionType.DurationInDays),
                                     IsActive = true,
                                     RemainingJobPosts = subscriptionType.JobPostLimit,
+                                    RemainingTrendingJobPosts = subscriptionType.TrendingJobLimit,
                                     CreatedAt = DateTime.UtcNow,
                                     UpdatedAt = DateTime.UtcNow
                                 };
 
                                 _context.CompanySubscriptions.Add(subscription);
-                                _logger.LogInformation($"Created new company subscription for user {payment.UserId} with subscription type {payment.SubscriptionTypeId} and {subscription.RemainingJobPosts} job posts");
+                                _logger.LogInformation($"Created new company subscription for user {payment.UserId} with {subscription.RemainingJobPosts} " +
+                                    $"regular jobs and {subscription.RemainingTrendingJobPosts} trending jobs");
                             }
                         }
                         else
@@ -320,12 +279,13 @@ namespace JOB_FINDER_API.Controllers
 
                             if (existingSubscription != null)
                             {
-                                // Update existing subscription - just add more TryMatches
+                                // Update existing subscription
+                                existingSubscription.SubscriptionTypeId = payment.SubscriptionTypeId; // Thêm dòng này để cập nhật SubscriptionTypeId
                                 existingSubscription.RemainingTryMatches += subscriptionType.TryMatchLimit;
                                 existingSubscription.UpdatedAt = DateTime.UtcNow;
                                 existingSubscription.EndDate = DateTime.UtcNow.AddYears(10);
 
-                                _logger.LogInformation($"Updated candidate subscription for user {payment.UserId}, added {subscriptionType.TryMatchLimit} try matches, total now: {existingSubscription.RemainingTryMatches}");
+                                _logger.LogInformation($"Updated candidate subscription for user {payment.UserId}, changed subscription type to {subscriptionType.Name}, added {subscriptionType.TryMatchLimit} try matches, total now: {existingSubscription.RemainingTryMatches}");
                             }
                             else
                             {

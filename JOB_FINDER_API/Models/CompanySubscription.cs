@@ -22,6 +22,7 @@ namespace JOB_FINDER_API.Models
         public bool IsActive { get; set; } = true;
 
         public int RemainingJobPosts { get; set; } // Remaining job posts allowed
+        public int RemainingTrendingJobPosts { get; set; } 
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

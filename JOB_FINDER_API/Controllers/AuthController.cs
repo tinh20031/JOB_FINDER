@@ -27,19 +27,22 @@ namespace JOB_FINDER_API.Controllers
         private readonly EmailService _emailService;
         private readonly IUserService _userService;
         private readonly IMemoryCache _cache;
+        private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             JobFinderDbContext dbContext,
             IConfiguration configuration,
             EmailService emailService,
             IUserService userService,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            ILogger<AuthController> logger)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _emailService = emailService;
             _userService = userService;
             _cache = cache;
+            _logger = logger;
         }
 
         // Helper method to validate email format
@@ -129,6 +132,43 @@ namespace JOB_FINDER_API.Controllers
         //        return StatusCode(500, $"Registration error: {ex.Message}");
         //    }
         //}
+
+        private async Task CreateInitialCandidateSubscription(int userId)
+        {
+            try
+            {
+                // Find the free subscription type
+                var freeSubscription = await _dbContext.SubscriptionTypes
+                    .FirstOrDefaultAsync(s => s.PackageType == SubscriptionPackageType.Free);
+
+                if (freeSubscription == null)
+                {
+                    _logger.LogWarning("Free subscription type not found for candidate");
+                    return;
+                }
+
+                // Create a new subscription entry for the free tier
+                var subscription = new CandidateSubscription
+                {
+                    UserId = userId,
+                    SubscriptionTypeId = freeSubscription.SubscriptionTypeId,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddYears(10), // Far future date for free tier
+                    IsActive = true,
+                    RemainingTryMatches = freeSubscription.TryMatchLimit,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _dbContext.CandidateSubscriptions.Add(subscription);
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation($"Created initial free subscription for candidate user {userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error creating initial candidate subscription for user {userId}");
+            }
+        }
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -197,6 +237,8 @@ namespace JOB_FINDER_API.Controllers
                 };
                 _dbContext.CandidateProfiles.Add(candidateProfile);
                 await _dbContext.SaveChangesAsync();
+
+                await CreateInitialCandidateSubscription(user.UserId ?? 0);
 
                 try
                 {

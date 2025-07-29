@@ -34,7 +34,8 @@ namespace JOB_FINDER_API.Models
         public float DescriptionWeight { get; set; }
         public float SkillsWeight { get; set; } 
         public float ExperienceWeight { get; set; } 
-        public float EducationWeight { get; set; } 
+        public float EducationWeight { get; set; }
+        public bool IsTrending { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         [JsonIgnore]

@@ -139,7 +139,10 @@ namespace JOB_FINDER_API.Controllers
                         freeSubscription.Name,
                         freeSubscription.Description,
                         freeSubscription.TryMatchLimit,
+                        freeSubscription.CreatedAt,
+                        freeSubscription.UpdatedAt,
                         RemainingFreeMatches = remainingFreeMatches 
+                       
                     } : null
                 });
             }
@@ -153,6 +156,8 @@ namespace JOB_FINDER_API.Controllers
                     PackageName = subscription.SubscriptionType.Name,
                     subscription.SubscriptionType.Description,
                     subscription.StartDate,
+                    subscription.CreatedAt,
+                    subscription.UpdatedAt,
                     subscription.RemainingTryMatches,
                     // No longer showing DaysRemaining since we've removed the time limitation
                 }
@@ -436,101 +441,6 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        /*[Authorize]
-        [HttpGet("payment-status/{orderCode}")]
-        public async Task<IActionResult> CheckPaymentStatus(string orderCode)
-        {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out var userId))
-                return Unauthorized("Invalid user ID");
-
-            var payment = await _context.Payments
-                .Where(p => p.TransactionCode == orderCode && p.UserId == userId)
-                .FirstOrDefaultAsync();
-
-            if (payment == null)
-                return NotFound("Payment not found");
-
-            try
-            {
-                // Trích xuất số từ chuỗi orderCode
-                string numericPart = orderCode.Replace("SUB-", "");
-                if (!long.TryParse(numericPart, out long numericOrderCode))
-                {
-                    return BadRequest("Invalid order code format");
-                }
-
-                // Check payment status from PayOS API sử dụng mã số
-                PaymentLinkInformation paymentInfo = await _payOS.getPaymentLinkInformation(numericOrderCode);
-
-                // Update payment status if needed
-                if (paymentInfo.status == "PAID" && payment.Status != PaymentStatus.Completed)
-                {
-                    payment.Status = PaymentStatus.Completed;
-                    payment.UpdatedAt = DateTime.UtcNow;
-
-                    // Get subscription package
-                    var subscriptionType = await _context.SubscriptionTypes
-                        .FindAsync(payment.SubscriptionTypeId);
-
-                    if (subscriptionType != null)
-                    {
-                        // Check if user has an active subscription
-                        var existingSubscription = await _context.CandidateSubscriptions
-                            .Where(s => s.UserId == payment.UserId && s.IsActive)
-                            .OrderByDescending(s => s.CreatedAt)
-                            .FirstOrDefaultAsync();
-
-                        if (existingSubscription != null)
-                        {
-                            // Update existing subscription - just add more TryMatches
-                            existingSubscription.RemainingTryMatches += subscriptionType.TryMatchLimit;
-                            existingSubscription.UpdatedAt = DateTime.UtcNow;
-
-                            // Set EndDate to a far future date to ensure it doesn't expire
-                            existingSubscription.EndDate = DateTime.UtcNow.AddYears(10);
-                        }
-                        else
-                        {
-                            // Create new subscription with no practical expiration
-                            var subscription = new CandidateSubscription
-                            {
-                                UserId = payment.UserId,
-                                SubscriptionTypeId = payment.SubscriptionTypeId,
-                                StartDate = DateTime.UtcNow,
-                                EndDate = DateTime.UtcNow.AddYears(10), // Far future date
-                                IsActive = true,
-                                RemainingTryMatches = subscriptionType.TryMatchLimit,
-                                CreatedAt = DateTime.UtcNow,
-                                UpdatedAt = DateTime.UtcNow
-                            };
-
-                            _context.CandidateSubscriptions.Add(subscription);
-                        }
-
-                        await _context.SaveChangesAsync();
-                    }
-                }
-
-                return Ok(new
-                {
-                    Success = true,
-                    OrderCode = orderCode,
-                    Status = payment.Status.ToString(),
-                    Amount = payment.Amount,
-                    PayOsStatus = paymentInfo.status,
-                    CreatedAt = payment.CreatedAt,
-                    UpdatedAt = payment.UpdatedAt
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error checking payment status: {ex.Message}");
-                return StatusCode(500, "Error checking payment status");
-            }
-        }*/
-        // Modify this endpoint - remove the [Authorize] attribute temporarily and add detailed logging
-        // [Authorize] - Comment this out temporarily
         [HttpGet("payment-status/{orderCode}")]
         public async Task<IActionResult> CheckPaymentStatus(string orderCode)
         {

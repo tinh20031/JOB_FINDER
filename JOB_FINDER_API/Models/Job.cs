@@ -6,6 +6,7 @@ namespace JOB_FINDER_API.Models
     {
         public enum JobStatus
         {
+            draft,
             pending,
             active,
             inactive

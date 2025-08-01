@@ -63,8 +63,8 @@ namespace JOB_FINDER_API.Controllers
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
                 .AsQueryable();
-
-            // Apply trending filter if specified
+            query = query.Where(j => j.Status != Job.JobStatus.draft);
+           
             if (onlyTrending.HasValue && onlyTrending.Value)
             {
                 query = query.Where(j => j.IsTrending);
@@ -1231,7 +1231,6 @@ namespace JOB_FINDER_API.Controllers
             return Ok(jobs);
         }
 
-
         [Authorize]
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateJobStatus(int id, [FromQuery] Job.JobStatus newStatus)
@@ -1259,6 +1258,14 @@ namespace JOB_FINDER_API.Controllers
                     if (job.Status == newStatus)
                         return BadRequest("Job is already in the specified status.");
 
+                    // Thêm kiểm tra giới hạn chuyển trạng thái
+                    if (previousStatus == Job.JobStatus.pending && newStatus != Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
+                        return BadRequest("Pending jobs can only be set to active or inactive.");
+                    if (previousStatus == Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
+                        return BadRequest("Active jobs can only be set to inactive.");
+                    if (previousStatus == Job.JobStatus.inactive && newStatus != Job.JobStatus.active)
+                        return BadRequest("Inactive jobs can only be set to active.");
+
                     bool isChangingFromPending = previousStatus == Job.JobStatus.pending;
                     bool isApproving = newStatus == Job.JobStatus.active;
                     bool isRejecting = newStatus == Job.JobStatus.inactive;
@@ -1268,6 +1275,7 @@ namespace JOB_FINDER_API.Controllers
                     job.DeactivatedByAdmin = newStatus == Job.JobStatus.inactive;
 
                     await _context.SaveChangesAsync();
+
                     _logger.LogInformation($"Job #{id} status updated to {newStatus} by admin");
 
                     if (isChangingFromPending && (isApproving || isRejecting))
@@ -1279,7 +1287,6 @@ namespace JOB_FINDER_API.Controllers
                     if (isChangingFromPending && isApproving)
                     {
                         _logger.LogInformation($"Preparing to send notifications to candidates for job #{id}");
-
                         try
                         {
                             var favoriteUsers = await _context.UserFavoriteCompanies
@@ -1287,17 +1294,14 @@ namespace JOB_FINDER_API.Controllers
                                 .Include(f => f.User)
                                 .Select(f => f.User)
                                 .ToListAsync();
-
                             _logger.LogInformation($"Found {favoriteUsers.Count} users who favorited company {job.CompanyId}");
 
                             var allCandidates = await _context.Users
                                 .Where(u => u.RoleId == 1) // Assuming 1 is Candidate role
                                 .ToListAsync();
-
                             _logger.LogInformation($"Found {allCandidates.Count} total candidates");
 
                             var companyUser = await _context.Users.FindAsync(job.CompanyId);
-
                             if (companyUser != null)
                             {
                                 await _notificationService.CreateNewJobNotification(job, companyUser, allCandidates, favoriteUsers);
@@ -1315,7 +1319,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                     }
 
-                    return Ok($"Admin updated job #{id} status to {newStatus}. Background service will manage timing automatically.");
+                    return Ok($"Admin updated job #{id} status to {newStatus}.");
                 }
                 else if (role == "company")
                 {
@@ -1339,10 +1343,8 @@ namespace JOB_FINDER_API.Controllers
                     {
                         if (job.DeactivatedByAdmin)
                             return Forbid("Job was deactivated by admin. Company cannot reactivate it.");
-
                         if (job.TimeStart > GetVietnamTime())
                             return BadRequest("Cannot activate job before its start date.");
-
                         job.Status = Job.JobStatus.active;
                         job.UpdatedAt = GetVietnamTime();
                         await _context.SaveChangesAsync();

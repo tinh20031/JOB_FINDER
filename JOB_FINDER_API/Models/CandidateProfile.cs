@@ -113,7 +113,6 @@ namespace JOB_FINDER_API.Models
         }
     }
 
-    // Các lớp chứa thông tin - không ánh xạ tới database
     public class SkillInfo
     {
         public int Id { get; set; }

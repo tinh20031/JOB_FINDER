@@ -1258,7 +1258,7 @@ namespace JOB_FINDER_API.Controllers
                     if (job.Status == newStatus)
                         return BadRequest("Job is already in the specified status.");
 
-                    // Thêm kiểm tra giới hạn chuyển trạng thái
+                  
                     if (previousStatus == Job.JobStatus.pending && newStatus != Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
                         return BadRequest("Pending jobs can only be set to active or inactive.");
                     if (previousStatus == Job.JobStatus.active && newStatus != Job.JobStatus.inactive)

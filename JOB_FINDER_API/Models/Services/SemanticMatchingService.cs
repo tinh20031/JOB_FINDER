@@ -214,7 +214,6 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
                         contextAnalysis = trimmedLine.Substring("Context Analysis:".Length).Trim();
                 }
 
-                // Boost weights for contextually relevant skills
                 if (!string.IsNullOrEmpty(contextAnalysis) && weightedTerms.Any())
                 {
                     var skillsInContext = Regex.Matches(contextAnalysis, @"Technical Skills:\s*(.*?)(?:;|\z)", RegexOptions.IgnoreCase)
@@ -609,14 +608,7 @@ CV text:
 
             return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "All vectors empty" : string.Empty, vectors, contextAnalysis);
         }
-        public void ClearPreprocessCache()
-        {
-            lock (_preprocessCache)
-            {
-                _preprocessCache.Clear();
-                _logger.LogInformation("Preprocess cache cleared.");
-            }
-        }
+        public void ClearPreprocessCache() { _logger.LogInformation("Preprocess cache clearing is no longer needed as caching is disabled."); }
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors)> GenerateBatchEmbeddingsAsync(string[] texts)
         {
             if (texts == null || !texts.Any())

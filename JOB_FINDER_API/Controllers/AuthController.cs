@@ -3,6 +3,7 @@ using FirebaseAdmin.Auth;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
+using JOB_FINDER_API.Models.Requests;
 using JOB_FINDER_API.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -998,5 +999,121 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, $"Failed to send email: {ex.Message}");
             }
         }
+
+
+
+        [HttpPost("mobile-google-login")]
+        public async Task<IActionResult> MobileGoogleLogin([FromBody] GoogleTokenRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.IdToken))
+                {
+                    return BadRequest("ID token is required");
+                }
+
+                // Verify the Google ID token
+                FirebaseToken decodedToken;
+                try
+                {
+                    decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(request.IdToken);
+                }
+                catch (FirebaseAuthException ex)
+                {
+                    return BadRequest($"Invalid ID token: {ex.Message}");
+                }
+
+                string email = decodedToken.Claims.TryGetValue("email", out object emailObj) ? emailObj.ToString() : null;
+                string name = decodedToken.Claims.TryGetValue("name", out object nameObj) ? nameObj.ToString() : null;
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    return BadRequest("Email not found in token");
+                }
+
+                // Check if user exists
+                var user = await _dbContext.Users
+                    .Include(u => u.Role)
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                string firebaseUid = decodedToken.Uid;
+
+                if (user == null)
+                {
+                    // Create new user with Candidate role
+                    var candidateRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Candidate");
+                    if (candidateRole == null)
+                    {
+                        return BadRequest("User role not found");
+                    }
+
+                    user = new User
+                    {
+                        FullName = name ?? email.Split('@')[0],
+                        Email = email,
+                        RoleId = candidateRole.RoleId,
+                        FirebaseUid = firebaseUid,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        IsActive = true,
+                        IsEmailVerified = true,
+                        EmailVerificationCode = "VERIFIED",
+                        EmailVerificationCodeExpiry = null
+                    };
+                    _dbContext.Users.Add(user);
+                    await _dbContext.SaveChangesAsync();
+
+                    var candidateProfile = new CandidateProfile
+                    {
+                        UserId = user.UserId ?? 0
+                    };
+                    _dbContext.CandidateProfiles.Add(candidateProfile);
+                    await _dbContext.SaveChangesAsync();
+
+                    // Get fresh user with role
+                    user = await _dbContext.Users
+                        .Include(u => u.Role)
+                        .FirstOrDefaultAsync(u => u.Email == email);
+                }
+                else
+                {
+                    // Update Firebase UID if needed
+                    if (user.FirebaseUid != firebaseUid)
+                    {
+                        user.FirebaseUid = firebaseUid;
+                        user.UpdatedAt = DateTime.UtcNow;
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
+
+                // Generate JWT token
+                var token = GenerateJwtToken(user);
+
+                // Return the same response structure as regular login
+                return Ok(new
+                {
+                    Token = token,
+                    Role = user.Role.RoleName,
+                    User = new
+                    {
+                        user.UserId,
+                        user.FullName,
+                        user.Email,
+                        user.Phone,
+                        user.RoleId,
+                        user.Image,
+                        RoleName = user.Role.RoleName,
+                        FirebaseUid = user.FirebaseUid
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in mobile Google login");
+                return StatusCode(500, $"Google login error: {ex.Message}");
+            }
+        }
+
+
     }
 }

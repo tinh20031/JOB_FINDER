@@ -176,7 +176,7 @@ Text:
                 await EnsureValidToken();
                 var prompt = $@"Preprocess this text for semantic analysis in a job matching context (supporting multiple languages, e.g., English, Vietnamese):
 - Clean the text by removing irrelevant details (e.g., contact info, formatting) based on configurable rules.
-- Identify key weighted terms with their importance (e.g., term *weight, weight from 0.5 to 0.5 to 1.0). Dynamically infer skills and suggest related terms or synonyms based on context (e.g., infer C# from .NET usage, JavaScript from React.js, SQL from database mentions). Prioritize skills matching common job requirements (e.g., C#, JavaScript, SQL, RESTful API, DevOps).
+- Identify key weighted terms with their importance (e.g., term *weight, weight from 0.5 to 1.0). Dynamically infer skills and suggest related terms or synonyms based on context (e.g., infer C# from .NET usage, JavaScript from React.js, SQL from database mentions). Prioritize skills matching common job requirements (e.g., C#, JavaScript, SQL, RESTful API, DevOps).
 - Analyze context: identify technical skill proficiency levels (e.g., Java (senior), Python (junior)), soft skills (e.g., teamwork, communication), experience type (e.g., project-based, theoretical), education, and relevance to job matching.
 - For short texts (<100 characters), infer related skills based on context (e.g., .NET implies C#, React.js implies JavaScript) and assign weights >= 0.8 for inferred skills.
 Text:
@@ -519,7 +519,6 @@ CV text:
                 if (!result.Success)
                 {
                     _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
-                    ClearPreprocessCache(); // Xóa cache khi vector hóa thất bại
                 }
             }
 
@@ -605,7 +604,6 @@ CV text:
                 if (!result.Success)
                 {
                     _logger.LogWarning("Failed to generate vector for CV criteria {Index} for CVId {CVId}: {Error}", result.Index, cv.CVId, result.Error);
-                    ClearPreprocessCache();
                 }
             }
 

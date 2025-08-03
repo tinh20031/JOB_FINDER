@@ -47,7 +47,31 @@ namespace JOB_FINDER_API.Services
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
             return uploadResult.SecureUrl.ToString();
         }
+        public async Task<string?> UploadCvAsync(IFormFile file, string publicId)
+        {
+            if (file == null || file.Length <= 0)
+            {
+                return null;
+            }
 
+            string safePublicId = publicId
+                .Replace(" ", "_")
+                .Replace(".", "_")
+                .Replace("/", "_")
+                .Replace("\\", "_");
+
+            await using var stream = file.OpenReadStream();
+            var uploadParams = new RawUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "cv_user",
+                AccessMode = "public",
+                PublicId = safePublicId
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            return uploadResult.SecureUrl.ToString();
+        }
 
         public async Task<(string? MediaUrl, string? MediaType, string? FileName)> UploadMediaAsync(IFormFile file, bool isSticker = false)
         {

@@ -26,6 +26,7 @@ namespace JOB_FINDER_API.Models.Requests
         public Job.JobStatus Status { get; set; } = Job.JobStatus.pending;
         public string ProvinceName { get; set; }
         public string AddressDetail { get; set; }
+
         public List<SkillInput>? skillInputs { get; set; }
         [Required(ErrorMessage = "DescriptionWeight là bắt buộc.")]
         [Range(0, 100, ErrorMessage = "DescriptionWeight phải từ 0 đến 100.")]

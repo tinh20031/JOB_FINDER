@@ -69,7 +69,6 @@ namespace JOB_FINDER_API.Controllers
             await _notificationService.MarkAllAsRead(userId);
             return Ok();
         }
-
         [HttpPost("send")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
@@ -83,7 +82,6 @@ namespace JOB_FINDER_API.Controllers
                         await _notificationService.SendDirectNotification(
                             userId,
                             request.Title,
-                            request.Message,
                             request.Link,
                             request.Type
                         );
@@ -103,8 +101,7 @@ namespace JOB_FINDER_API.Controllers
     {
         public List<int> UserIds { get; set; } = new List<int>();
         public string Title { get; set; } = "";
-        public string Message { get; set; } = "";
-        public string? Link { get; set; }
+        public string? Link { get; set; } 
         public Notification.NotificationType Type { get; set; } = Notification.NotificationType.SystemNotification;
     }
 }

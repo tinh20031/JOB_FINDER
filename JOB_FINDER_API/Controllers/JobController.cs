@@ -63,8 +63,8 @@ namespace JOB_FINDER_API.Controllers
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
                 .AsQueryable();
-
-            // Apply trending filter if specified
+            query = query.Where(j => j.Status != Job.JobStatus.draft);
+           
             if (onlyTrending.HasValue && onlyTrending.Value)
             {
                 query = query.Where(j => j.IsTrending);
@@ -331,99 +331,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
 
-        /*[HttpPost("create")]
-        public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateRequest dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
-            if (dto.Quantity < 1)
-                return BadRequest("Quantity must be at least 1.");
-
-            if (float.IsNaN(dto.DescriptionWeight) || float.IsNaN(dto.SkillsWeight) ||
-                float.IsNaN(dto.ExperienceWeight) || float.IsNaN(dto.EducationWeight))
-                return BadRequest("Weights cannot be NaN.");
-
-            if (!dto.IsSalaryNegotiable && (!dto.MinSalary.HasValue || !dto.MaxSalary.HasValue))
-                return BadRequest("Minimum and maximum salary must be provided if salary is not negotiable.");
-            if (dto.TimeEnd <= dto.TimeStart)
-                return BadRequest("End time must be after start time.");
-            if (dto.ExpiryDate <= GetVietnamTime())
-                return BadRequest("Expiry date must be in the future.");
-
-            var job = new Job
-            {
-                Title = dto.Title,
-                Description = dto.Description,
-                Education = dto.Education,
-                YourSkill = dto.YourSkill,
-                YourExperience = dto.YourExperience,
-                CompanyId = dto.CompanyId,
-                IndustryId = dto.IndustryId,
-                ExpiryDate = dto.ExpiryDate,
-                LevelId = dto.LevelId,
-                JobTypeId = dto.JobTypeId,
-                Quantity = dto.Quantity, // Thay thế ExperienceLevelId
-                TimeStart = dto.TimeStart,
-                TimeEnd = dto.TimeEnd,
-                ProvinceName = dto.ProvinceName,
-                AddressDetail = dto.AddressDetail,
-                CreatedAt = GetVietnamTime(),
-                UpdatedAt = GetVietnamTime(),
-                Status = Job.JobStatus.pending,
-                IsSalaryNegotiable = dto.IsSalaryNegotiable,
-                MinSalary = dto.IsSalaryNegotiable ? null : dto.MinSalary,
-                MaxSalary = dto.IsSalaryNegotiable ? null : dto.MaxSalary,
-                DescriptionWeight = dto.DescriptionWeight / 100f,
-                SkillsWeight = dto.SkillsWeight / 100f,
-                ExperienceWeight = dto.ExperienceWeight / 100f,
-                EducationWeight = dto.EducationWeight / 100f
-            };
-
-            _context.Jobs.Add(job);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"Created new job #{job.JobId} with title: {job.Title}");
-
-            if (dto.skillInputs != null && dto.skillInputs.Any())
-            {
-                foreach (var input in dto.skillInputs)
-                {
-                    int skillId;
-                    if (input.SkillId.HasValue)
-                    {
-                        skillId = input.SkillId.Value;
-                    }
-                    else if (!string.IsNullOrWhiteSpace(input.SkillName))
-                    {
-                        var existingSkill = await _context.Skills
-                            .FirstOrDefaultAsync(s => s.SkillName.ToLower() == input.SkillName.ToLower());
-                        if (existingSkill != null)
-                        {
-                            skillId = existingSkill.SkillId;
-                        }
-                        else
-                        {
-                            var newSkill = new Skill { SkillName = input.SkillName };
-                            _context.Skills.Add(newSkill);
-                            await _context.SaveChangesAsync();
-                            skillId = newSkill.SkillId;
-                            _logger.LogInformation($"Created new skill: {input.SkillName} with ID: {skillId}");
-                        }
-                    }
-                    else
-                    {
-                        continue;
-                    }
-
-                    _context.JobSkills.Add(new JobSkill { JobId = job.JobId, SkillId = skillId });
-                }
-                await _context.SaveChangesAsync();
-                _logger.LogInformation($"Added skills to job #{job.JobId}");
-            }
-
-            return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, job);
-        }*/
-                // Add this method to JobController.cs to check subscription limits
         private async Task<(bool CanPost, string Message, CompanySubscriptionType Tier)> CheckJobPostingLimit(int companyId)
         {
             // Get active job count for this company
@@ -485,7 +393,7 @@ namespace JOB_FINDER_API.Controllers
                 subscription.SubscriptionType);
         }
 
-        // Modify the CreateJob method to check job posting limits
+
         [HttpPost("create")]
         public async Task<ActionResult<Job>> CreateJob([FromBody] JobCreateRequest dto)
         {
@@ -620,7 +528,7 @@ namespace JOB_FINDER_API.Controllers
             });
         }
 
-        // Add this method to your JobController class
+
         [HttpPost("trending")]
         [Authorize(Roles = "Company")]
         public async Task<ActionResult<Job>> CreateTrendingJob([FromBody] JobCreateRequest dto)
@@ -1323,7 +1231,6 @@ namespace JOB_FINDER_API.Controllers
             return Ok(jobs);
         }
 
-
         [Authorize]
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateJobStatus(int id, [FromQuery] Job.JobStatus newStatus)
@@ -1351,6 +1258,14 @@ namespace JOB_FINDER_API.Controllers
                     if (job.Status == newStatus)
                         return BadRequest("Job is already in the specified status.");
 
+                    // Thêm kiểm tra giới hạn chuyển trạng thái
+                    if (previousStatus == Job.JobStatus.pending && newStatus != Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
+                        return BadRequest("Pending jobs can only be set to active or inactive.");
+                    if (previousStatus == Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
+                        return BadRequest("Active jobs can only be set to inactive.");
+                    if (previousStatus == Job.JobStatus.inactive && newStatus != Job.JobStatus.active)
+                        return BadRequest("Inactive jobs can only be set to active.");
+
                     bool isChangingFromPending = previousStatus == Job.JobStatus.pending;
                     bool isApproving = newStatus == Job.JobStatus.active;
                     bool isRejecting = newStatus == Job.JobStatus.inactive;
@@ -1360,6 +1275,7 @@ namespace JOB_FINDER_API.Controllers
                     job.DeactivatedByAdmin = newStatus == Job.JobStatus.inactive;
 
                     await _context.SaveChangesAsync();
+
                     _logger.LogInformation($"Job #{id} status updated to {newStatus} by admin");
 
                     if (isChangingFromPending && (isApproving || isRejecting))
@@ -1371,7 +1287,6 @@ namespace JOB_FINDER_API.Controllers
                     if (isChangingFromPending && isApproving)
                     {
                         _logger.LogInformation($"Preparing to send notifications to candidates for job #{id}");
-
                         try
                         {
                             var favoriteUsers = await _context.UserFavoriteCompanies
@@ -1379,17 +1294,14 @@ namespace JOB_FINDER_API.Controllers
                                 .Include(f => f.User)
                                 .Select(f => f.User)
                                 .ToListAsync();
-
                             _logger.LogInformation($"Found {favoriteUsers.Count} users who favorited company {job.CompanyId}");
 
                             var allCandidates = await _context.Users
                                 .Where(u => u.RoleId == 1) // Assuming 1 is Candidate role
                                 .ToListAsync();
-
                             _logger.LogInformation($"Found {allCandidates.Count} total candidates");
 
                             var companyUser = await _context.Users.FindAsync(job.CompanyId);
-
                             if (companyUser != null)
                             {
                                 await _notificationService.CreateNewJobNotification(job, companyUser, allCandidates, favoriteUsers);
@@ -1407,7 +1319,7 @@ namespace JOB_FINDER_API.Controllers
                         }
                     }
 
-                    return Ok($"Admin updated job #{id} status to {newStatus}. Background service will manage timing automatically.");
+                    return Ok($"Admin updated job #{id} status to {newStatus}.");
                 }
                 else if (role == "company")
                 {
@@ -1431,10 +1343,8 @@ namespace JOB_FINDER_API.Controllers
                     {
                         if (job.DeactivatedByAdmin)
                             return Forbid("Job was deactivated by admin. Company cannot reactivate it.");
-
                         if (job.TimeStart > GetVietnamTime())
                             return BadRequest("Cannot activate job before its start date.");
-
                         job.Status = Job.JobStatus.active;
                         job.UpdatedAt = GetVietnamTime();
                         await _context.SaveChangesAsync();
@@ -1638,5 +1548,333 @@ namespace JOB_FINDER_API.Controllers
                 Jobs = jobsData
             });
         }
+
+
+
+        [AllowAnonymous]
+        [HttpGet("company/{companyId}/highlight")]
+        public async Task<ActionResult<IEnumerable<object>>> GetCompanyHighlightJobs(
+            int companyId,
+            [FromQuery] int limit = 5, 
+            [FromQuery] string timeRange = "7d")
+        {
+            var now = GetVietnamTime();
+            var query = _context.Jobs
+                .Where(j => j.CompanyId == companyId
+                            && j.Status == Job.JobStatus.active
+                            && !j.DeactivatedByAdmin
+                            && j.TimeStart.Date <= now.Date
+                            && j.TimeEnd.Date >= now.Date)
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .AsQueryable();
+
+            // Apply time range for view counts
+            DateTime? startTime = null;
+            switch (timeRange.ToLower())
+            {
+                case "24h":
+                    startTime = now.AddHours(-24);
+                    break;
+                case "7d":
+                    startTime = now.AddDays(-7);
+                    break;
+                case "30d":
+                    startTime = now.AddDays(-30);
+                    break;
+                case "all":
+                default:
+                    break;
+            }
+
+            // Get job view counts
+            var jobViewCounts = await _context.JobViews
+                .Where(v => startTime == null || v.ViewedAt >= startTime)
+                .GroupBy(v => v.JobId)
+                .Select(g => new { JobId = g.Key, TotalViews = g.Count() })
+                .ToListAsync();
+
+            // Get unique view counts
+            var uniqueViewCounts = await _context.JobViews
+                .Where(v => startTime == null || v.ViewedAt >= startTime)
+                .Select(v => new { v.JobId, v.UserId, v.IpAddress })
+                .Distinct()
+                .GroupBy(v => v.JobId)
+                .Select(g => new { JobId = g.Key, UniqueViews = g.Count() })
+                .ToListAsync();
+
+            var viewCountDict = jobViewCounts.ToDictionary(v => v.JobId, v => v.TotalViews);
+            var uniqueViewCountDict = uniqueViewCounts.ToDictionary(v => v.JobId, v => v.UniqueViews);
+
+            // Get filtered jobs
+            var jobs = await query.ToListAsync();
+
+            // Order jobs by view count and creation date, limit to top N
+            var orderedJobs = jobs
+                .Select(j => new
+                {
+                    Job = j,
+                    TotalViews = viewCountDict.ContainsKey(j.JobId) ? viewCountDict[j.JobId] : 0,
+                    UniqueViews = uniqueViewCountDict.ContainsKey(j.JobId) ? uniqueViewCountDict[j.JobId] : 0
+                })
+                .OrderByDescending(x => x.TotalViews)
+                .ThenByDescending(x => x.Job.CreatedAt)
+                .Take(limit)
+                .ToList();
+
+            // Get BaseUrl from configuration
+            var baseUrl = _configuration["AppSettings:BaseUrl"];
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                _logger.LogWarning("BaseUrl is not configured in AppSettings.");
+                baseUrl = "http://localhost:3000/"; // Fallback for safety
+            }
+
+            // Ensure BaseUrl ends with a slash
+            if (!baseUrl.EndsWith("/"))
+            {
+                baseUrl += "/";
+            }
+
+            // Format response with filter URL for each job
+            var result = orderedJobs.Select(item => new
+            {
+                item.Job.JobId,
+                item.Job.Title,
+                item.Job.Description,
+                item.Job.Education,
+                item.Job.YourSkill,
+                item.Job.YourExperience,
+                item.Job.CompanyId,
+                TotalViews = item.TotalViews,
+                UniqueViews = item.UniqueViews,
+                IsTrending = item.Job.IsTrending,
+                Company = item.Job.Company == null ? null : new
+                {
+                    item.Job.Company.UserId,
+                    item.Job.Company.FullName,
+                    item.Job.Company.Email,
+                    CompanyName = item.Job.Company.CompanyProfile?.CompanyName,
+                    Location = item.Job.Company.CompanyProfile?.Location,
+                    UrlCompanyLogo = item.Job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                item.Job.IndustryId,
+                Industry = item.Job.Industry == null ? null : new
+                {
+                    item.Job.Industry.IndustryId,
+                    item.Job.Industry.IndustryName
+                },
+                item.Job.ExpiryDate,
+                item.Job.LevelId,
+                Level = item.Job.Level == null ? null : new
+                {
+                    item.Job.Level.LevelId,
+                    item.Job.Level.LevelName
+                },
+                item.Job.JobTypeId,
+                JobType = item.Job.JobType == null ? null : new
+                {
+                    item.Job.JobType.JobTypeId,
+                    item.Job.JobType.JobTypeName
+                },
+                item.Job.Quantity,
+                item.Job.TimeStart,
+                item.Job.TimeEnd,
+                item.Job.Status,
+                item.Job.ProvinceName,
+                item.Job.AddressDetail,
+                item.Job.IsSalaryNegotiable,
+                item.Job.MinSalary,
+                item.Job.MaxSalary,
+                item.Job.CreatedAt,
+                item.Job.UpdatedAt,
+                Skills = item.Job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList(),
+                item.Job.DescriptionWeight,
+                item.Job.SkillsWeight,
+                item.Job.ExperienceWeight,
+                item.Job.EducationWeight,
+                FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}&SkillIds={string.Join(",", item.Job.JobSkills.Select(js => js.SkillId))}"
+            });
+
+            return Ok(new
+            {
+                TotalCount = orderedJobs.Count,
+                TimeRange = timeRange,
+                Jobs = result 
+            });
+        }
+
+
+        [HttpPost("save-draft")]
+        [Consumes("application/json")]
+        public async Task<ActionResult<Job>> SaveDraft()
+        {
+            var request = await Request.ReadFromJsonAsync<JobDraftRequest>();
+            _logger.LogInformation($"Received payload: {Newtonsoft.Json.JsonConvert.SerializeObject(request)}");
+
+            if (request == null)
+                return BadRequest("Invalid request body.");
+
+            if (request.CompanyId <= 0)
+                return BadRequest("CompanyId is required.");
+            if (request.Quantity < 1)
+                return BadRequest("Quantity must be at least 1.");
+
+            if (request.ExpiryDate.HasValue && request.ExpiryDate.Value <= GetVietnamTime())
+                return BadRequest("ExpiryDate must be in the future.");
+
+            var job = new Job
+            {
+                Title = request.Title ?? string.Empty,
+                Description = request.Description ?? string.Empty,
+                Education = request.Education ?? string.Empty,
+                YourSkill = request.YourSkill ?? string.Empty,
+                YourExperience = request.YourExperience ?? string.Empty,
+                CompanyId = request.CompanyId,
+                IndustryId = request.IndustryId ?? 1,
+                ExpiryDate = request.ExpiryDate ?? DateTime.MaxValue,
+                LevelId = request.LevelId ?? 1,
+                JobTypeId = request.JobTypeId ?? 1,
+                Quantity = request.Quantity,
+                TimeStart = request.TimeStart ?? DateTime.MinValue,
+                TimeEnd = request.TimeEnd ?? DateTime.MinValue,
+                ProvinceName = request.ProvinceName ?? string.Empty,
+                AddressDetail = request.AddressDetail ?? string.Empty,
+                CreatedAt = GetVietnamTime(),
+                UpdatedAt = GetVietnamTime(),
+                Status = Job.JobStatus.draft,
+                IsSalaryNegotiable = request.IsSalaryNegotiable,
+                MinSalary = request.IsSalaryNegotiable ? null : request.MinSalary,
+                MaxSalary = request.IsSalaryNegotiable ? null : request.MaxSalary,
+                DescriptionWeight = (request.DescriptionWeight ?? 0) / 100f,
+                SkillsWeight = (request.SkillsWeight ?? 0) / 100f,
+                ExperienceWeight = (request.ExperienceWeight ?? 0) / 100f,
+                EducationWeight = (request.EducationWeight ?? 0) / 100f
+            };
+
+            _context.Jobs.Add(job);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation($"Saved new draft job #{job.JobId} with title: {job.Title}");
+
+            return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, new { Job = job });
+        }
+
+
+        [Authorize]
+        [HttpDelete("draft/{id}")]
+     
+        public async Task<IActionResult> DeleteDraft(int id)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var companyId))
+                return Unauthorized("Invalid user ID");
+
+            var draft = await _context.Jobs
+                .FirstOrDefaultAsync(j => j.JobId == id && j.CompanyId == companyId && j.Status == Job.JobStatus.draft);
+            if (draft == null)
+                return NotFound("Draft not found.");
+
+            _context.Jobs.Remove(draft);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation($"Deleted draft job #{id} for company {companyId}");
+
+            return NoContent();
+        }
+
+
+
+        [Authorize]
+        [HttpGet("drafts")]
+      
+        public async Task<ActionResult<IEnumerable<object>>> GetDraftJobs()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var companyId))
+                return Unauthorized("Invalid user ID");
+
+            var query = _context.Jobs
+                .Where(j => j.CompanyId == companyId && j.Status == Job.JobStatus.draft)
+                .Include(j => j.Industry)
+                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
+                .Include(j => j.Level)
+                .Include(j => j.JobType)
+                .AsQueryable();
+
+            var jobs = await query.ToListAsync();
+
+            var result = jobs.Select(job => new
+            {
+                job.JobId,
+                job.Title,
+                job.Description,
+                job.Education,
+                job.YourSkill,
+                job.YourExperience,
+                job.CompanyId,
+                Company = job.Company == null ? null : new
+                {
+                    job.Company.UserId,
+                    job.Company.FullName,
+                    job.Company.Email,
+                    CompanyName = job.Company.CompanyProfile?.CompanyName,
+                    Location = job.Company.CompanyProfile?.Location,
+                    UrlCompanyLogo = job.Company.CompanyProfile?.UrlCompanyLogo
+                },
+                job.IndustryId,
+                Industry = job.Industry == null ? null : new
+                {
+                    job.Industry.IndustryId,
+                    job.Industry.IndustryName
+                },
+                job.ExpiryDate,
+                job.LevelId,
+                Level = job.Level == null ? null : new
+                {
+                    job.Level.LevelId,
+                    job.Level.LevelName
+                },
+                job.JobTypeId,
+                JobType = job.JobType == null ? null : new
+                {
+                    job.JobType.JobTypeId,
+                    job.JobType.JobTypeName
+                },
+                job.Quantity,
+                job.TimeStart,
+                job.TimeEnd,
+                job.Status,
+                job.ProvinceName,
+                job.AddressDetail,
+                job.IsSalaryNegotiable,
+                job.MinSalary,
+                job.MaxSalary,
+                job.CreatedAt,
+                job.UpdatedAt,
+                Skills = job.JobSkills.Select(js => new
+                {
+                    js.SkillId,
+                    js.Skill.SkillName
+                }).ToList(),
+                job.DescriptionWeight,
+                job.SkillsWeight,
+                job.ExperienceWeight,
+                job.EducationWeight,
+                job.IsTrending
+            });
+
+            return Ok(result);
+        }
+
+
+
+
     }
 }

@@ -521,7 +521,7 @@ CV text:
                 }
             }
 
-            return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "All vectors empty" : string.Empty, vectors, jobContext);
+            return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "your cv is not relative with job " : string.Empty, vectors, jobContext);
         }
 
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string CvContext)> GenerateVectorsForCVCriteria(CV cv, string fullCvJson)

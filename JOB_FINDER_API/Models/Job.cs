@@ -9,7 +9,8 @@ namespace JOB_FINDER_API.Models
             draft,
             pending,
             active,
-            inactive
+            inactive,
+            inactivebyadmin
         }
         public int JobId { get; set; }
         public string Title { get; set; } = string.Empty;
@@ -87,7 +88,8 @@ namespace JOB_FINDER_API.Models
             // Được phép nếu job đang pending, active hoặc inactive (chưa hết hạn)
             return (Status == JobStatus.pending ||
                     Status == JobStatus.active ||
-                    Status == JobStatus.inactive) && !IsExpired();
+                    Status == JobStatus.inactive ||
+                    Status == JobStatus.inactivebyadmin) && !IsExpired();
         }
 
         public bool CanCompanyChangeStatus(JobStatus newStatus)

@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "F:\\DATN\\JOB_FINDER\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\jobcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\models\\services\\notificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\services\\notificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\configs\\service-account-key.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\configs\\service-account-key.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\controllers\\notificationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\controllers\\notificationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\configs\\job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\configs\\job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|f:\\datn\\job_finder\\job_finder_api\\models\\notification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D6553DC5-53B6-432F-B3BB-CD6375D5FE32}|JOB_FINDER_API\\JOB_FINDER_API.csproj|solutionrelative:job_finder_api\\models\\notification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,58 +26,58 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "service-account-key.json",
-              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Configs\\service-account-key.json",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Configs\\service-account-key.json",
-              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Configs\\service-account-key.json",
-              "RelativeToolTip": "JOB_FINDER_API\\Configs\\service-account-key.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-03T19:05:06.712Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json",
-              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Configs\\job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Configs\\job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json",
-              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Configs\\job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json",
-              "RelativeToolTip": "JOB_FINDER_API\\Configs\\job-32b5d-firebase-adminsdk-fbsvc-55164bc3ae.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-03T19:05:03.211Z",
+              "DocumentIndex": 0,
+              "Title": "JobController.cs",
+              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\JobController.cs",
+              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\JobController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\JobController.cs",
+              "ViewState": "AgIAAC8GAAAAAAAAAAAgwEIGAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-05T18:07:09.486Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\appsettings.json",
-              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\appsettings.json",
-              "RelativeToolTip": "JOB_FINDER_API\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABBAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-03T18:35:56.533Z",
+              "Title": "NotificationService.cs",
+              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Models\\Services\\NotificationService.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Services\\NotificationService.cs",
+              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Models\\Services\\NotificationService.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\Services\\NotificationService.cs",
+              "ViewState": "AgIAAJMEAAAAAAAAAAAgwKkEAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-05T17:37:43.748Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAMwCAAAAAAAAAAAIwPwCAAAoAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "Notification.cs",
+              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Models\\Notification.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Models\\Notification.cs",
+              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Models\\Notification.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Models\\Notification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-03T18:34:32.96Z",
+              "WhenOpened": "2025-08-05T17:36:43.5Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "NotificationController.cs",
+              "DocumentMoniker": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\NotificationController.cs",
+              "RelativeDocumentMoniker": "JOB_FINDER_API\\Controllers\\NotificationController.cs",
+              "ToolTip": "F:\\DATN\\JOB_FINDER\\JOB_FINDER_API\\Controllers\\NotificationController.cs",
+              "RelativeToolTip": "JOB_FINDER_API\\Controllers\\NotificationController.cs",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAmwBMAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-05T17:36:24.27Z",
               "EditorCaption": ""
             }
           ]

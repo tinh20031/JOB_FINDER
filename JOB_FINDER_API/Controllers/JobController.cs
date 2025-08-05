@@ -1136,6 +1136,10 @@ namespace JOB_FINDER_API.Controllers
                 {
                     job.Status = Job.JobStatus.pending;
                 }
+                else if (job.Status == Job.JobStatus.inactivebyadmin && !job.IsExpired())
+                {
+                  job.Status = Job.JobStatus.pending;
+                }
             }
             else if (role != "admin")
             {
@@ -1258,21 +1262,29 @@ namespace JOB_FINDER_API.Controllers
                     if (job.Status == newStatus)
                         return BadRequest("Job is already in the specified status.");
 
-                  
-                    if (previousStatus == Job.JobStatus.pending && newStatus != Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
-                        return BadRequest("Pending jobs can only be set to active or inactive.");
-                    if (previousStatus == Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
-                        return BadRequest("Active jobs can only be set to inactive.");
-                    if (previousStatus == Job.JobStatus.inactive && newStatus != Job.JobStatus.active)
+
+                   
+                    if (previousStatus == Job.JobStatus.pending &&
+                        newStatus != Job.JobStatus.active &&
+                        newStatus != Job.JobStatus.inactive &&
+                        newStatus != Job.JobStatus.inactivebyadmin)
+                        return BadRequest("Pending jobs can only be set to active, inactive, or inactivebyadmin.");
+
+                    if (previousStatus == Job.JobStatus.active &&
+                        newStatus != Job.JobStatus.inactive &&
+                        newStatus != Job.JobStatus.inactivebyadmin)
+                        return BadRequest("Active jobs can only be set to inactive or inactivebyadmin.");
+
+                    if ((previousStatus == Job.JobStatus.inactive || previousStatus == Job.JobStatus.inactivebyadmin) &&
+                        newStatus != Job.JobStatus.active)
                         return BadRequest("Inactive jobs can only be set to active.");
 
                     bool isChangingFromPending = previousStatus == Job.JobStatus.pending;
                     bool isApproving = newStatus == Job.JobStatus.active;
-                    bool isRejecting = newStatus == Job.JobStatus.inactive;
+                    bool isRejecting = newStatus == Job.JobStatus.inactive || newStatus == Job.JobStatus.inactivebyadmin;
 
                     job.Status = newStatus;
                     job.UpdatedAt = GetVietnamTime();
-                    job.DeactivatedByAdmin = newStatus == Job.JobStatus.inactive;
 
                     await _context.SaveChangesAsync();
 
@@ -1328,6 +1340,10 @@ namespace JOB_FINDER_API.Controllers
 
                     if (job.Status == Job.JobStatus.pending)
                         return Forbid("Job is pending approval. Only admin can update its status.");
+
+                    if (job.Status == Job.JobStatus.inactivebyadmin)
+                        return Forbid("Job was inactivated by admin. You cannot change its status.");
+
 
                     if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
                     {
@@ -1512,7 +1528,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        [HttpGet("notify-upcoming-start-new")]
+        /*[HttpGet("notify-upcoming-start-new")]
         public async Task<IActionResult> NotifyUpcomingStartNew(int daysBefore = 2)
         {
             var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
@@ -1545,6 +1561,77 @@ namespace JOB_FINDER_API.Controllers
                 Success = true,
                 Message = $"Notified {jobsData.Count} jobs with upcoming start dates.",
                 Count = jobsData.Count,
+                Jobs = jobsData
+            });
+        }*/
+        // Update only this method in JobController.cs
+        [HttpGet("notify-upcoming-start-new")]
+        public async Task<IActionResult> NotifyUpcomingStartNew(int daysBefore = 2)
+        {
+            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+
+            // Today's jobs that have just started
+            var todaysStartingJobs = await _context.Jobs
+                .Where(j => j.TimeStart.Date == now.Date &&
+                          j.Status == Job.JobStatus.active &&
+                          !j.DeactivatedByAdmin)
+                .Include(j => j.Company)
+                .ToListAsync();
+
+            // Upcoming jobs for notification preview only
+            var upcomingJobs = await _context.Jobs
+                .Where(j => j.TimeStart > now &&
+                          j.TimeStart <= now.AddDays(daysBefore) &&
+                          j.Status == Job.JobStatus.active &&
+                          !j.DeactivatedByAdmin)
+                .Include(j => j.Company)
+                .ToListAsync();
+
+            int notifiedCount = 0;
+
+            // Process jobs that are starting today - send notifications
+            foreach (var job in todaysStartingJobs.Where(j => j.Company != null))
+            {
+                try
+                {
+                    await _notificationService.SendStartDateReachedNotifications(job);
+                    notifiedCount++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error sending notifications for job {job.JobId}: {ex.Message}");
+                }
+            }
+
+            var allJobs = todaysStartingJobs.Concat(upcomingJobs).ToList();
+
+            if (!allJobs.Any())
+            {
+                _logger.LogInformation("No jobs found with start dates today or within {0} days.", daysBefore);
+                return Ok(new { Success = true, Message = "No jobs to notify.", Count = 0, Jobs = new object[0] });
+            }
+
+            var jobsData = allJobs
+                .Where(job => job.Company != null)
+                .Select(job => new
+                {
+                    JobId = job.JobId,
+                    Title = job.Title,
+                    StartDate = job.TimeStart.Date,
+                    IsToday = job.TimeStart.Date == now.Date,
+                    DaysRemaining = (job.TimeStart.Date - now.Date).Days,
+                    NotificationsSent = job.TimeStart.Date == now.Date,
+                    Link = $"{_configuration["AppSettings:BaseUrl"]}/job-single-v3/{job.JobId}"
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                Success = true,
+                Message = $"Processed {allJobs.Count} jobs. Sent notifications for {notifiedCount} jobs starting today.",
+                TodaysJobsCount = todaysStartingJobs.Count,
+                UpcomingJobsCount = upcomingJobs.Count,
+                NotificationsSent = notifiedCount,
                 Jobs = jobsData
             });
         }

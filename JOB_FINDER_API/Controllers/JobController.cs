@@ -58,7 +58,7 @@ namespace JOB_FINDER_API.Controllers
             var now = GetVietnamTime();
             var query = _context.Jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -151,11 +151,11 @@ namespace JOB_FINDER_API.Controllers
                     x.Job.MaxSalary,
                     x.Job.CreatedAt,
                     x.Job.UpdatedAt,
-                    Skills = x.Job.JobSkills.Select(js => new
+                    /*Skills = x.Job.JobSkills.Select(js => new
                     {
                         js.SkillId,
                         js.Skill.SkillName
-                    }).ToList(),
+                    }).ToList(),*/
                     x.Job.DescriptionWeight,
                     x.Job.SkillsWeight,
                     x.Job.ExperienceWeight,
@@ -221,11 +221,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+                /*Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,
@@ -243,7 +243,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var job = await _context.Jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -318,11 +318,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+               /* Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,
@@ -479,7 +479,7 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             _logger.LogInformation($"Created new job #{job.JobId} with title: {job.Title}");
 
-            if (dto.skillInputs != null && dto.skillInputs.Any())
+            /*if (dto.skillInputs != null && dto.skillInputs.Any())
             {
                 foreach (var input in dto.skillInputs)
                 {
@@ -514,7 +514,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Added skills to job #{job.JobId}");
-            }
+            }*/
 
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, new
             {
@@ -669,7 +669,7 @@ namespace JOB_FINDER_API.Controllers
             _logger.LogInformation($"Created new trending job #{job.JobId} with title: {job.Title}");
 
             // Handle skills same as regular job creation
-            if (dto.skillInputs != null && dto.skillInputs.Any())
+            /*if (dto.skillInputs != null && dto.skillInputs.Any())
             {
                 foreach (var input in dto.skillInputs)
                 {
@@ -704,7 +704,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Added skills to trending job #{job.JobId}");
-            }
+            }*/
 
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, new
             {
@@ -862,7 +862,7 @@ namespace JOB_FINDER_API.Controllers
             var query = _context.Jobs
                 .Where(j => j.IsTrending == true) // Filter to only trending jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -968,11 +968,11 @@ namespace JOB_FINDER_API.Controllers
                 item.Job.MaxSalary,
                 item.Job.CreatedAt,
                 item.Job.UpdatedAt,
-                Skills = item.Job.JobSkills.Select(js => new
+                /*Skills = item.Job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 item.Job.DescriptionWeight,
                 item.Job.SkillsWeight,
                 item.Job.ExperienceWeight,
@@ -1106,7 +1106,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Expiry date must be in the future.");
 
             var job = await _context.Jobs
-                .Include(j => j.JobSkills)
+                //.Include(j => j.JobSkills)
                 .FirstOrDefaultAsync(j => j.JobId == id);
             if (job == null)
                 return NotFound("Job not found.");
@@ -1195,7 +1195,7 @@ namespace JOB_FINDER_API.Controllers
             var query = _context.Jobs
                 .Where(j => !j.DeactivatedByAdmin)
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(filter.Title))
@@ -1224,10 +1224,10 @@ namespace JOB_FINDER_API.Controllers
                 query = query.Where(j => j.TimeStart >= filter.TimeStart);
             if (filter.TimeEnd.HasValue)
                 query = query.Where(j => j.TimeEnd <= filter.TimeEnd);
-            if (filter.SkillIds != null && filter.SkillIds.Any())
+           /* if (filter.SkillIds != null && filter.SkillIds.Any())
                 query = query.Where(j => j.JobSkills.Any(js => filter.SkillIds.Contains(js.SkillId)));
             if (!string.IsNullOrEmpty(filter.SkillName))
-                query = query.Where(j => j.JobSkills.Any(js => js.Skill.SkillName.Contains(filter.SkillName)));
+                query = query.Where(j => j.JobSkills.Any(js => js.Skill.SkillName.Contains(filter.SkillName)));*/
 
             var jobs = await query.ToListAsync();
             _logger.LogInformation($"Filtered {jobs.Count} jobs with provided parameters");
@@ -1410,7 +1410,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var job = await _context.Jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -1494,11 +1494,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+               /* Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,
@@ -1512,7 +1512,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var now = GetVietnamTime();
             var expiredJobs = await _context.Jobs
-                .Where(j => j.Status == Job.JobStatus.active && j.TimeEnd < now)
+                .Where(j => j.Status == Job.JobStatus.active && j.TimeEnd <= now)
                 .ToListAsync();
 
             foreach (var job in expiredJobs)
@@ -1653,7 +1653,7 @@ namespace JOB_FINDER_API.Controllers
                             && j.TimeStart.Date <= now.Date
                             && j.TimeEnd.Date >= now.Date)
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -1778,16 +1778,17 @@ namespace JOB_FINDER_API.Controllers
                 item.Job.MaxSalary,
                 item.Job.CreatedAt,
                 item.Job.UpdatedAt,
-                Skills = item.Job.JobSkills.Select(js => new
+               /* Skills = item.Job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 item.Job.DescriptionWeight,
                 item.Job.SkillsWeight,
                 item.Job.ExperienceWeight,
                 item.Job.EducationWeight,
-                FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}&SkillIds={string.Join(",", item.Job.JobSkills.Select(js => js.SkillId))}"
+                //FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}&SkillIds={string.Join(",", item.Job.JobSkills.Select(js => js.SkillId))}"
+                FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}"
             });
 
             return Ok(new
@@ -1889,7 +1890,7 @@ namespace JOB_FINDER_API.Controllers
             var query = _context.Jobs
                 .Where(j => j.CompanyId == companyId && j.Status == Job.JobStatus.draft)
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -1945,11 +1946,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+               /* Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,

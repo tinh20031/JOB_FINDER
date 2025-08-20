@@ -20,15 +20,15 @@ namespace JOB_FINDER_API.Data
         public DbSet<Industry> Industries { get; set; }
         public DbSet<Level> Levels { get; set; }
         public DbSet<JobType> JobTypes { get; set; }
-        public DbSet<Skill> Skills { get; set; }
-        public DbSet<JobSkill> JobSkills { get; set; }
+        //public DbSet<Skill> Skills { get; set; }
+        //public DbSet<JobSkill> JobSkills { get; set; }
         public DbSet<Experience> Experiences { get; set; }
         public DbSet<Application> Applications { get; set; }
         public DbSet<UserFavoriteJob> UserFavoriteJobs { get; set; }
         public DbSet<CV> CVs { get; set; }
         public DbSet<Embedding> Embeddings { get; set; }
         //public DbSet<Education> Educations { get; set; }
-        public DbSet<Contact> Contacts { get; set; }
+        //public DbSet<Contact> Contacts { get; set; }
      
         public DbSet<CandidateToCompanyRequest> CandidateToCompanyRequests { get; set; }
         public DbSet<UserFavoriteCompany> UserFavoriteCompanies { get; set; }
@@ -78,15 +78,16 @@ namespace JOB_FINDER_API.Data
                 new JobType { JobTypeId = 3, JobTypeName = "Remote", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() }
             );
 
-  
+
             modelBuilder.Entity<Level>().HasData(
-                new Level { LevelId = 1, LevelName = "Intern", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() },
-                new Level { LevelId = 2, LevelName = "Junior", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() },
-                new Level { LevelId = 3, LevelName = "Senior", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() }
+              new Level { LevelId = 1, LevelName = "Intern", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() },
+              new Level { LevelId = 2, LevelName = "Fresher", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() },
+              new Level { LevelId = 3, LevelName = "Junior", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() },
+              new Level { LevelId = 4, LevelName = "Mid-level", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() },
+              new Level { LevelId = 5, LevelName = "Senior", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() },
+              new Level { LevelId = 6, LevelName = "Lead", CreatedAt = GetVietnamTime(), UpdatedAt = GetVietnamTime() }
+
             );
-
-
-          
 
             modelBuilder.Entity<CompanyProfile>()
                 .HasKey(cp => cp.CompanyProfileId);
@@ -111,7 +112,7 @@ namespace JOB_FINDER_API.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Configure JobSkill relationships
-            modelBuilder.Entity<JobSkill>()
+           /* modelBuilder.Entity<JobSkill>()
                 .HasKey(js => new { js.JobId, js.SkillId });
 
             modelBuilder.Entity<JobSkill>()
@@ -124,7 +125,7 @@ namespace JOB_FINDER_API.Data
                 .HasOne(js => js.Skill)
                 .WithMany(s => s.JobSkills)
                 .HasForeignKey(js => js.SkillId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction);*/
 
             // Configure UserFavoriteJob relationships
             modelBuilder.Entity<UserFavoriteJob>()

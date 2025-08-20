@@ -1,4 +1,4 @@
-using JOB_FINDER_API.Data;
+/*using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -49,4 +49,4 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
     }
-}
+}*/

@@ -370,7 +370,7 @@ namespace JOB_FINDER_API.Controllers
                 // Validate email format
                 if (!IsValidEmail(request.Email))
                 {
-                    return BadRequest("Invalid email format. Please provide a valid email address.");
+                    return BadRequest("Invalid email address, please try again");
                 }
 
                 var user = await _dbContext.Users
@@ -378,14 +378,21 @@ namespace JOB_FINDER_API.Controllers
                     .Include(u => u.CompanyProfile)
                     .FirstOrDefaultAsync(u => u.Email == request.Email);
 
+                // Check if user exists with that email
+                if (user == null)
+                {
+                    return Unauthorized("Invalid email address, please try again");
+                }
+
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
-                    return Unauthorized("Invalid login credentials.");
+                    return Unauthorized("Incorrect password, please try again");
                 }
 
                 if (!user.IsActive)
                 {
-                    return Forbid("Your account has been locked. Please contact support.");
+                    
+                    return Unauthorized("Your account has been locked. Please contact support.");
                 }
 
                 // Email verification check

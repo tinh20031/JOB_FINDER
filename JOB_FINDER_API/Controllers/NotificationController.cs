@@ -23,7 +23,7 @@ namespace JOB_FINDER_API.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public async Task<IActionResult> GetUserNotifications(
             [FromQuery] bool? isRead = null,
             [FromQuery] int page = 1,
@@ -35,6 +35,38 @@ namespace JOB_FINDER_API.Controllers
 
             var notifications = await _notificationService.GetUserNotifications(userId, isRead, page, pageSize);
             return Ok(notifications);
+        }*/
+        [HttpGet]
+        public async Task<IActionResult> GetUserNotifications(
+    [FromQuery] bool? isRead = null,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userIdClaim == null)
+                {
+                    _logger.LogWarning("GetUserNotifications: No user ID claim found");
+                    return Unauthorized(new { message = "User ID not found in token" });
+                }
+
+                if (!int.TryParse(userIdClaim, out var userId))
+                {
+                    _logger.LogWarning($"GetUserNotifications: Invalid user ID format: {userIdClaim}");
+                    return Unauthorized(new { message = "Invalid user ID format" });
+                }
+
+                _logger.LogInformation($"Getting notifications for user {userId}, page {page}, pageSize {pageSize}");
+                var notifications = await _notificationService.GetUserNotifications(userId, isRead, page, pageSize);
+                return Ok(notifications);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in GetUserNotifications: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, new { error = "An error occurred while retrieving notifications" });
+            }
         }
 
         [HttpGet("unread-count")]

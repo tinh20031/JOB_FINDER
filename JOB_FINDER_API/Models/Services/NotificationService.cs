@@ -1055,7 +1055,7 @@ namespace JOB_FINDER_API.Services
             {
                 var companyUserId = favoriteCompany.CompanyProfileId;
 
-                string candidateEndpoint = $"/candidate-profile/{candidate.UserId}";
+                string candidateEndpoint = $"/candidates-single-v1/{candidate.UserId}";
                 string candidateName = candidate.FullName?.Length > 20 ? candidate.FullName.Substring(0, 20) + "..." : candidate.FullName ?? "Candidate";
                 string title = $"{candidateName} favorited your company";
 
@@ -1115,7 +1115,7 @@ namespace JOB_FINDER_API.Services
 
                 var companyUserId = job.CompanyId;
 
-                string candidateEndpoint = $"/candidate-profile/{candidate.UserId}";
+                string candidateEndpoint = $"/candidates-single-v1/{candidate.UserId}";
                 string candidateName = candidate.FullName?.Length > 20 ? candidate.FullName.Substring(0, 20) + "..." : candidate.FullName ?? "User";
                 string jobTitle = job.Title.Length > 30 ? job.Title.Substring(0, 30) + "..." : job.Title;
                 string title = $"{candidateName} favorited your job {jobTitle}";

@@ -184,9 +184,11 @@ builder.Services.AddCors(options =>
                 "http://localhost:5194")
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();
+            .AllowCredentials()
+            .SetIsOriginAllowedToAllowWildcardSubdomains();
     });
 });
+
 
 builder.Services.AddDbContext<JobFinderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -321,15 +323,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.EnableFilter());
 }
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+});
 
 app.UseCors("AllowReactApp");
 
-app.Use(async (context, next) =>
+/*app.Use(async (context, next) =>
 {
     var origin = context.Request.Headers["Origin"].ToString();
     Console.WriteLine($"CORS applied for {context.Request.Path}, Origin: {(string.IsNullOrEmpty(origin) ? "null/empty" : origin)}");
     await next();
-});
+});*/
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -49,8 +49,8 @@ namespace JOB_FINDER_API.Models
         [JsonIgnore]
         public JobType? JobType { get; set; }
        
-        [JsonIgnore]
-        public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
+        //[JsonIgnore]
+        //public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
         [JsonIgnore]
         public ICollection<Application> Applications { get; set; } = new List<Application>();
         [JsonIgnore]
@@ -75,7 +75,7 @@ namespace JOB_FINDER_API.Models
 
         public bool IsExpired()
         {
-            return DateTime.UtcNow > TimeEnd;
+            return DateTime.UtcNow >= TimeEnd;
         }
 
 

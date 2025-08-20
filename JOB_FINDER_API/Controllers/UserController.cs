@@ -24,12 +24,15 @@ namespace JOB_FINDER_API.Controllers
         {
             var user = await _dbContext.Users
                 .Include(u => u.Role)
+                .Include(u => u.CompanyProfile)
                 .FirstOrDefaultAsync(u => u.UserId == id);
 
             if (user == null)
             {
                 return NotFound("User not found.");
             }
+
+            var isCompany = user.Role?.RoleName == "Company";
 
             return Ok(new
             {
@@ -38,6 +41,7 @@ namespace JOB_FINDER_API.Controllers
                 user.Email,
                 user.Phone,
                 user.Image,
+                urlCompanyLogo = isCompany ? user.CompanyProfile?.UrlCompanyLogo : null,
                 Role = user.Role.RoleName,
                 user.IsActive,
                 user.CreatedAt,
@@ -45,30 +49,37 @@ namespace JOB_FINDER_API.Controllers
             });
         }
 
+     
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _dbContext.Users
                 .Include(u => u.Role)
-                .Select(u => new
+                .Include(u => u.CompanyProfile)
+                .ToListAsync();
+
+            var result = users.Select(u => {
+                var isCompany = u.Role?.RoleName == "Company";
+
+                return new
                 {
                     Id = u.UserId,
-
                     u.FullName,
                     u.Email,
                     u.Phone,
                     u.Image,
-                    Role = u.Role.RoleName,
+                    urlCompanyLogo = isCompany ? u.CompanyProfile?.UrlCompanyLogo : null,
+                    Role = u.Role?.RoleName,
                     u.IsActive,
                     u.CreatedAt,
                     u.UpdatedAt
-                })
-                .ToListAsync();
+                };
+            });
 
-            return Ok(users);
+            return Ok(result);
         }
 
-       
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromForm] UpdateUserRequest request, IFormFile? imageFile, [FromServices] CloudinaryService cloudinaryService)
         {

@@ -177,16 +177,18 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", builder =>
     {
         builder.WithOrigins(
-                "https://job-finder-fe.vercel.app",
                 "http://localhost:3000",
                 "https://job-finder-kjt2.onrender.com",
                 "http://job-finder-kjt2.onrender.com",
-                "http://localhost:5194")
+                "http://localhost:5194",
+                "https://job-finder-fe-ug96.vercel.app")
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();
+            .AllowCredentials()
+            .SetIsOriginAllowedToAllowWildcardSubdomains();
     });
 });
+
 
 builder.Services.AddDbContext<JobFinderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -321,15 +323,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.EnableFilter());
 }
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+});
 
 app.UseCors("AllowReactApp");
 
-app.Use(async (context, next) =>
+/*app.Use(async (context, next) =>
 {
     var origin = context.Request.Headers["Origin"].ToString();
     Console.WriteLine($"CORS applied for {context.Request.Path}, Origin: {(string.IsNullOrEmpty(origin) ? "null/empty" : origin)}");
     await next();
-});
+});*/
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -12,13 +12,13 @@ namespace JOB_FINDER_API.Controllers
         private readonly JobFinderDbContext _context;
         public SkillController(JobFinderDbContext context) => _context = context;
 
-        [HttpGet("profile/{candidateProfileId}")]
+        /*[HttpGet("profile/{candidateProfileId}")]
         public async Task<IActionResult> GetByProfile(int candidateProfileId)
         {
             var skills = await _context.Skills.Where(s => s.CandidateProfileId == candidateProfileId).ToListAsync();
             return Ok(skills);
         }
-        
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Skill model)
@@ -44,7 +44,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-       
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -55,9 +55,9 @@ namespace JOB_FINDER_API.Controllers
             skill.CandidateProfileId = null; // hoặc null nếu cho phép null
             await _context.SaveChangesAsync();
             return NoContent();
-        }
+        }*/
 
-       
+
         [HttpGet("me")]
         public async Task<IActionResult> GetForMe()
         {
@@ -86,7 +86,7 @@ namespace JOB_FINDER_API.Controllers
             return Ok(skills);
         }
 
-        
+
         [HttpPost("me")]
         public async Task<IActionResult> CreateForMe([FromBody] object modelData)
         {
@@ -211,7 +211,7 @@ namespace JOB_FINDER_API.Controllers
             return NoContent();
         }
 
-        
+
         [HttpDelete("me/{id}")]
         public async Task<IActionResult> DeleteForMe(int id)
         {

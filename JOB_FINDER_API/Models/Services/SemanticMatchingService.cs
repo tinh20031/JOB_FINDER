@@ -367,7 +367,7 @@ CV text:
 
             return cvData;
         }
-        public async Task<(bool Success, string ErrorMessage, float[] Vector)> PreprocessAndGenerateEmbeddingAsync(string text)
+        public async Task<(bool Success, string ErrorMessage, float[] Vector)> PreprocessAndGenerateEmbeddingAsync(string text, int? jobId = null)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -403,13 +403,27 @@ CV text:
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var existingEmbedding = await context.Embeddings
-                    .FirstOrDefaultAsync(e => e.Text == preprocessedText && e.Model == modelName);
-                if (existingEmbedding != null && existingEmbedding.CreatedAt > DateTime.UtcNow.AddDays(-7) &&
-                    existingEmbedding.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)))
+                if (jobId.HasValue)
                 {
-                    _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
-                    return (true, string.Empty, existingEmbedding.Vector);
+                    var existingEmbedding = await context.Embeddings
+                        .FirstOrDefaultAsync(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName &&
+                            e.CreatedAt > DateTime.UtcNow.AddDays(-7) && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
+                    if (existingEmbedding != null)
+                    {
+                        _logger.LogInformation("Reusing existing embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
+                        return (true, string.Empty, existingEmbedding.Vector);
+                    }
+                }
+                else
+                {
+                    var existingEmbedding = await context.Embeddings
+                        .FirstOrDefaultAsync(e => e.Text == preprocessedText && e.Model == modelName &&
+                            e.CreatedAt > DateTime.UtcNow.AddDays(-7) && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
+                    if (existingEmbedding != null)
+                    {
+                        _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
+                        return (true, string.Empty, existingEmbedding.Vector);
+                    }
                 }
 
                 var embeddingRequestBody = new
@@ -448,11 +462,12 @@ CV text:
                         Model = modelName,
                         Vector = embeddingArray,
                         CreatedAt = DateTime.UtcNow,
-                        ExpiresAt = DateTime.UtcNow.AddDays(7)
+                        ExpiresAt = DateTime.UtcNow.AddDays(7),
+                        JobId = jobId // Lưu JobId nếu có
                     };
                     context.Embeddings.Add(embeddingEntity);
                     await context.SaveChangesAsync();
-                    _logger.LogInformation("New embedding saved for text: {Text}", preprocessedText);
+                    _logger.LogInformation("New embedding saved for text: {Text}, JobId: {JobId}", preprocessedText, jobId);
 
                     return (true, string.Empty, embeddingArray);
                 }
@@ -503,9 +518,9 @@ CV text:
             {
                 if (!string.IsNullOrWhiteSpace(text))
                 {
-                    // Sử dụng cùng cleanedJobText để đảm bảo preprocess giống nhau
+                    // Sử dụng cùng cleanedJobText và truyền JobId để kiểm tra cache
                     var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
-                        string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText);
+                        string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText, job.JobId);
                     return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                 }
                 return (Index: i, Success: false, Vector: new float[0], Error: "Empty text");

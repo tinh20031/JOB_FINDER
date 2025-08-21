@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using UglyToad.PdfPig.Graphics.Operations.PathPainting;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -281,16 +282,33 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpGet("recent-transactions")]
-        public async Task<IActionResult> GetRecentTransactions([FromQuery] int count = 10)
+        public async Task<IActionResult> GetRecentTransactions(
+     [FromQuery] int count = 10,
+     [FromQuery] DateTime? startDate = null,
+     [FromQuery] DateTime? endDate = null)
         {
             try
             {
                 // Limit the count to a reasonable number
                 count = Math.Min(count, 100);
 
+                // Build query with base conditions
+                var query = _context.Payments
+                    .Where(p => p.Status == PaymentStatus.Completed);
+
+                // Add date range filters if provided
+                if (startDate.HasValue)
+                {
+                    query = query.Where(p => p.UpdatedAt.Date >= startDate.Value.Date);
+                }
+
+                if (endDate.HasValue)
+                {
+                    query = query.Where(p => p.UpdatedAt.Date <= endDate.Value.Date);
+                }
+
                 // Get recent completed payments
-                var recentPayments = await _context.Payments
-                    .Where(p => p.Status == PaymentStatus.Completed)
+                var recentPayments = await query
                     .OrderByDescending(p => p.UpdatedAt)
                     .Take(count)
                     .Join(_context.Users.Include(u => u.CompanyProfile),
@@ -313,7 +331,14 @@ namespace JOB_FINDER_API.Controllers
                           })
                     .ToListAsync();
 
-                return Ok(recentPayments);
+                return Ok(new
+                {
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    Count = recentPayments.Count,
+                    MaxRequested = count,
+                    Transactions = recentPayments
+                });
             }
             catch (Exception ex)
             {
@@ -323,7 +348,7 @@ namespace JOB_FINDER_API.Controllers
         }
 
         [HttpGet("dashboard")]
-        public async Task<IActionResult> GetDashboardStatistics()
+        public async Task<IActionResult> GetDashboardStatistics([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try
             {
@@ -333,12 +358,33 @@ namespace JOB_FINDER_API.Controllers
                 var startOfMonth = new DateTime(today.Year, today.Month, 1);
                 var startOfYear = new DateTime(today.Year, 1, 1);
 
+                // Use provided date range if specified, otherwise use default ranges
+                var end = endDate ?? today;
+                var start = startDate ?? startOfYear; // Default to beginning of year if not specified
+
+                // Validate date range
+                if (end < start)
+                {
+                    return BadRequest(new
+                    {
+                        Error = "Invalid date range",
+                        Message = "End date must be greater than or equal to start date",
+                        ProvidedStartDate = start,
+                        ProvidedEndDate = end
+                    });
+                }
+
                 // Get completed payments
                 var allPayments = await _context.Payments
                     .Where(p => p.Status == PaymentStatus.Completed)
                     .ToListAsync();
 
-                // Calculate revenue for different time periods
+                // Filter payments by the selected date range
+                var rangePayments = allPayments
+                    .Where(p => p.CreatedAt.Date >= start.Date && p.CreatedAt.Date <= end.Date)
+                    .ToList();
+
+                // Calculate revenue for different time periods - these are independent of the selected date range
                 var todayRevenue = allPayments
                     .Where(p => p.CreatedAt.Date == today)
                     .Sum(p => p.Amount);
@@ -357,18 +403,22 @@ namespace JOB_FINDER_API.Controllers
 
                 var totalRevenue = allPayments.Sum(p => p.Amount);
 
-                // Calculate revenue by user type
-                var candidateRevenue = allPayments
+                // Calculate revenue for the selected date range
+                var rangeRevenue = rangePayments.Sum(p => p.Amount);
+
+                // Calculate revenue by user type for the selected range
+                var rangeCandidateRevenue = rangePayments
                     .Where(p => string.IsNullOrEmpty(p.PaymentType) || p.PaymentType != "CompanySubscription")
                     .Sum(p => p.Amount);
 
-                var companyRevenue = allPayments
+                var rangeCompanyRevenue = rangePayments
                     .Where(p => p.PaymentType == "CompanySubscription")
                     .Sum(p => p.Amount);
 
                 // Get transaction counts
                 var todayTransactions = allPayments.Count(p => p.CreatedAt.Date == today);
                 var totalTransactions = allPayments.Count;
+                var rangeTransactions = rangePayments.Count;
 
                 // Get active subscriptions count
                 var activeUserSubscriptions = await _context.CandidateSubscriptions
@@ -379,24 +429,52 @@ namespace JOB_FINDER_API.Controllers
                     .Where(s => s.IsActive && s.EndDate > DateTime.UtcNow)
                     .CountAsync();
 
+                // Calculate revenue percentages for the range
+                decimal candidatePercentage = rangeRevenue > 0
+                    ? Math.Round(rangeCandidateRevenue * 100 / rangeRevenue, 1)
+                    : 0;
+
+                decimal companyPercentage = rangeRevenue > 0
+                    ? Math.Round(rangeCompanyRevenue * 100 / rangeRevenue, 1)
+                    : 0;
+
                 return Ok(new
                 {
+                    // Date range info
+                    StartDate = start,
+                    EndDate = end,
+                    IsCustomDateRange = startDate.HasValue || endDate.HasValue,
+
+                    // Selected range data
+                    RangeRevenue = rangeRevenue,
+                    RangeTransactions = rangeTransactions,
+                    RangeCandidateRevenue = rangeCandidateRevenue,
+                    RangeCompanyRevenue = rangeCompanyRevenue,
+
+                    // Standard time period revenues (always show these)
                     TodayRevenue = todayRevenue,
                     WeekRevenue = weekRevenue,
                     MonthRevenue = monthRevenue,
                     YearRevenue = yearRevenue,
                     TotalRevenue = totalRevenue,
-                    CandidateRevenue = candidateRevenue,
-                    CompanyRevenue = companyRevenue,
+
+                    // Transaction counts
                     TodayTransactions = todayTransactions,
                     TotalTransactions = totalTransactions,
+
+                    // Subscription counts
                     ActiveUserSubscriptions = activeUserSubscriptions,
                     ActiveCompanySubscriptions = activeCompanySubscriptions,
+
+                    // Revenue breakdown within the selected range
                     RevenueBreakdown = new
                     {
-                        CandidatePercentage = totalRevenue > 0 ? Math.Round(candidateRevenue * 100 / totalRevenue, 1) : 0,
-                        CompanyPercentage = totalRevenue > 0 ? Math.Round(companyRevenue * 100 / totalRevenue, 1) : 0
-                    }
+                        CandidatePercentage = candidatePercentage,
+                        CompanyPercentage = companyPercentage
+                    },
+
+                    // Flag to indicate if data exists in the selected range
+                    HasDataInRange = rangePayments.Any()
                 });
             }
             catch (Exception ex)
@@ -405,6 +483,7 @@ namespace JOB_FINDER_API.Controllers
                 return StatusCode(500, new { Error = "Error retrieving dashboard statistics", Message = ex.Message });
             }
         }
+
 
         [HttpGet("export")]
         public async Task<IActionResult> ExportRevenueData([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)

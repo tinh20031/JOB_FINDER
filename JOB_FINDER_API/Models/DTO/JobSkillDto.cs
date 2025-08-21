@@ -1,4 +1,4 @@
-﻿namespace JOB_FINDER_API.Models.DTO
+﻿/*namespace JOB_FINDER_API.Models.DTO
 {
     public class JobSkillDto
     {
@@ -6,3 +6,4 @@
         public int SkillId { get; set; }
     }
 }
+*/

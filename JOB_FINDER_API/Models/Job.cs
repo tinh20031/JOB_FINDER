@@ -9,7 +9,8 @@ namespace JOB_FINDER_API.Models
             draft,
             pending,
             active,
-            inactive
+            inactive,
+            inactivebyadmin
         }
         public int JobId { get; set; }
         public string Title { get; set; } = string.Empty;
@@ -48,8 +49,8 @@ namespace JOB_FINDER_API.Models
         [JsonIgnore]
         public JobType? JobType { get; set; }
        
-        [JsonIgnore]
-        public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
+        //[JsonIgnore]
+        //public ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
         [JsonIgnore]
         public ICollection<Application> Applications { get; set; } = new List<Application>();
         [JsonIgnore]
@@ -74,7 +75,7 @@ namespace JOB_FINDER_API.Models
 
         public bool IsExpired()
         {
-            return DateTime.UtcNow > TimeEnd;
+            return DateTime.UtcNow >= TimeEnd;
         }
 
 
@@ -87,7 +88,8 @@ namespace JOB_FINDER_API.Models
             // Được phép nếu job đang pending, active hoặc inactive (chưa hết hạn)
             return (Status == JobStatus.pending ||
                     Status == JobStatus.active ||
-                    Status == JobStatus.inactive) && !IsExpired();
+                    Status == JobStatus.inactive ||
+                    Status == JobStatus.inactivebyadmin) && !IsExpired();
         }
 
         public bool CanCompanyChangeStatus(JobStatus newStatus)

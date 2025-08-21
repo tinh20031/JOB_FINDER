@@ -10,6 +10,7 @@ namespace JOB_FINDER_API.Models
         public string? Link { get; set; } 
         public NotificationType Type { get; set; }
         public bool IsRead { get; set; } = false;
+        public string? JobTimeStart { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

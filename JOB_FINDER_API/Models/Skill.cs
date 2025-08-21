@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+﻿/*using System.Text.Json.Serialization;
 
 namespace JOB_FINDER_API.Models
 {
@@ -22,4 +22,4 @@ namespace JOB_FINDER_API.Models
 
     }
  
-}
+}*/

@@ -58,7 +58,7 @@ namespace JOB_FINDER_API.Controllers
             var now = GetVietnamTime();
             var query = _context.Jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -151,11 +151,11 @@ namespace JOB_FINDER_API.Controllers
                     x.Job.MaxSalary,
                     x.Job.CreatedAt,
                     x.Job.UpdatedAt,
-                    Skills = x.Job.JobSkills.Select(js => new
+                    /*Skills = x.Job.JobSkills.Select(js => new
                     {
                         js.SkillId,
                         js.Skill.SkillName
-                    }).ToList(),
+                    }).ToList(),*/
                     x.Job.DescriptionWeight,
                     x.Job.SkillsWeight,
                     x.Job.ExperienceWeight,
@@ -221,11 +221,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+                /*Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,
@@ -243,7 +243,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var job = await _context.Jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -318,11 +318,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+               /* Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,
@@ -479,7 +479,7 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             _logger.LogInformation($"Created new job #{job.JobId} with title: {job.Title}");
 
-            if (dto.skillInputs != null && dto.skillInputs.Any())
+            /*if (dto.skillInputs != null && dto.skillInputs.Any())
             {
                 foreach (var input in dto.skillInputs)
                 {
@@ -514,7 +514,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Added skills to job #{job.JobId}");
-            }
+            }*/
 
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, new
             {
@@ -669,7 +669,7 @@ namespace JOB_FINDER_API.Controllers
             _logger.LogInformation($"Created new trending job #{job.JobId} with title: {job.Title}");
 
             // Handle skills same as regular job creation
-            if (dto.skillInputs != null && dto.skillInputs.Any())
+            /*if (dto.skillInputs != null && dto.skillInputs.Any())
             {
                 foreach (var input in dto.skillInputs)
                 {
@@ -704,7 +704,7 @@ namespace JOB_FINDER_API.Controllers
                 }
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Added skills to trending job #{job.JobId}");
-            }
+            }*/
 
             return CreatedAtAction(nameof(GetJob), new { id = job.JobId }, new
             {
@@ -862,7 +862,7 @@ namespace JOB_FINDER_API.Controllers
             var query = _context.Jobs
                 .Where(j => j.IsTrending == true) // Filter to only trending jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -968,11 +968,11 @@ namespace JOB_FINDER_API.Controllers
                 item.Job.MaxSalary,
                 item.Job.CreatedAt,
                 item.Job.UpdatedAt,
-                Skills = item.Job.JobSkills.Select(js => new
+                /*Skills = item.Job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 item.Job.DescriptionWeight,
                 item.Job.SkillsWeight,
                 item.Job.ExperienceWeight,
@@ -1106,7 +1106,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Expiry date must be in the future.");
 
             var job = await _context.Jobs
-                .Include(j => j.JobSkills)
+                //.Include(j => j.JobSkills)
                 .FirstOrDefaultAsync(j => j.JobId == id);
             if (job == null)
                 return NotFound("Job not found.");
@@ -1135,6 +1135,10 @@ namespace JOB_FINDER_API.Controllers
                 else if (job.Status == Job.JobStatus.active && !job.IsExpired())
                 {
                     job.Status = Job.JobStatus.pending;
+                }
+                else if (job.Status == Job.JobStatus.inactivebyadmin && !job.IsExpired())
+                {
+                  job.Status = Job.JobStatus.pending;
                 }
             }
             else if (role != "admin")
@@ -1191,7 +1195,7 @@ namespace JOB_FINDER_API.Controllers
             var query = _context.Jobs
                 .Where(j => !j.DeactivatedByAdmin)
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(filter.Title))
@@ -1220,10 +1224,10 @@ namespace JOB_FINDER_API.Controllers
                 query = query.Where(j => j.TimeStart >= filter.TimeStart);
             if (filter.TimeEnd.HasValue)
                 query = query.Where(j => j.TimeEnd <= filter.TimeEnd);
-            if (filter.SkillIds != null && filter.SkillIds.Any())
+           /* if (filter.SkillIds != null && filter.SkillIds.Any())
                 query = query.Where(j => j.JobSkills.Any(js => filter.SkillIds.Contains(js.SkillId)));
             if (!string.IsNullOrEmpty(filter.SkillName))
-                query = query.Where(j => j.JobSkills.Any(js => js.Skill.SkillName.Contains(filter.SkillName)));
+                query = query.Where(j => j.JobSkills.Any(js => js.Skill.SkillName.Contains(filter.SkillName)));*/
 
             var jobs = await query.ToListAsync();
             _logger.LogInformation($"Filtered {jobs.Count} jobs with provided parameters");
@@ -1258,21 +1262,29 @@ namespace JOB_FINDER_API.Controllers
                     if (job.Status == newStatus)
                         return BadRequest("Job is already in the specified status.");
 
-                  
-                    if (previousStatus == Job.JobStatus.pending && newStatus != Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
-                        return BadRequest("Pending jobs can only be set to active or inactive.");
-                    if (previousStatus == Job.JobStatus.active && newStatus != Job.JobStatus.inactive)
-                        return BadRequest("Active jobs can only be set to inactive.");
-                    if (previousStatus == Job.JobStatus.inactive && newStatus != Job.JobStatus.active)
+
+                   
+                    if (previousStatus == Job.JobStatus.pending &&
+                        newStatus != Job.JobStatus.active &&
+                        newStatus != Job.JobStatus.inactive &&
+                        newStatus != Job.JobStatus.inactivebyadmin)
+                        return BadRequest("Pending jobs can only be set to active, inactive, or inactivebyadmin.");
+
+                    if (previousStatus == Job.JobStatus.active &&
+                        newStatus != Job.JobStatus.inactive &&
+                        newStatus != Job.JobStatus.inactivebyadmin)
+                        return BadRequest("Active jobs can only be set to inactive or inactivebyadmin.");
+
+                    if ((previousStatus == Job.JobStatus.inactive || previousStatus == Job.JobStatus.inactivebyadmin) &&
+                        newStatus != Job.JobStatus.active)
                         return BadRequest("Inactive jobs can only be set to active.");
 
                     bool isChangingFromPending = previousStatus == Job.JobStatus.pending;
                     bool isApproving = newStatus == Job.JobStatus.active;
-                    bool isRejecting = newStatus == Job.JobStatus.inactive;
+                    bool isRejecting = newStatus == Job.JobStatus.inactive || newStatus == Job.JobStatus.inactivebyadmin;
 
                     job.Status = newStatus;
                     job.UpdatedAt = GetVietnamTime();
-                    job.DeactivatedByAdmin = newStatus == Job.JobStatus.inactive;
 
                     await _context.SaveChangesAsync();
 
@@ -1328,6 +1340,10 @@ namespace JOB_FINDER_API.Controllers
 
                     if (job.Status == Job.JobStatus.pending)
                         return Forbid("Job is pending approval. Only admin can update its status.");
+
+                    if (job.Status == Job.JobStatus.inactivebyadmin)
+                        return Forbid("Job was inactivated by admin. You cannot change its status.");
+
 
                     if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
                     {
@@ -1394,7 +1410,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var job = await _context.Jobs
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -1478,11 +1494,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+               /* Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,
@@ -1496,7 +1512,7 @@ namespace JOB_FINDER_API.Controllers
         {
             var now = GetVietnamTime();
             var expiredJobs = await _context.Jobs
-                .Where(j => j.Status == Job.JobStatus.active && j.TimeEnd < now)
+                .Where(j => j.Status == Job.JobStatus.active && j.TimeEnd <= now)
                 .ToListAsync();
 
             foreach (var job in expiredJobs)
@@ -1512,7 +1528,7 @@ namespace JOB_FINDER_API.Controllers
             }
         }
 
-        [HttpGet("notify-upcoming-start-new")]
+        /*[HttpGet("notify-upcoming-start-new")]
         public async Task<IActionResult> NotifyUpcomingStartNew(int daysBefore = 2)
         {
             var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
@@ -1547,6 +1563,77 @@ namespace JOB_FINDER_API.Controllers
                 Count = jobsData.Count,
                 Jobs = jobsData
             });
+        }*/
+        // Update only this method in JobController.cs
+        [HttpGet("notify-upcoming-start-new")]
+        public async Task<IActionResult> NotifyUpcomingStartNew(int daysBefore = 2)
+        {
+            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+
+            // Today's jobs that have just started
+            var todaysStartingJobs = await _context.Jobs
+                .Where(j => j.TimeStart.Date == now.Date &&
+                          j.Status == Job.JobStatus.active &&
+                          !j.DeactivatedByAdmin)
+                .Include(j => j.Company)
+                .ToListAsync();
+
+            // Upcoming jobs for notification preview only
+            var upcomingJobs = await _context.Jobs
+                .Where(j => j.TimeStart > now &&
+                          j.TimeStart <= now.AddDays(daysBefore) &&
+                          j.Status == Job.JobStatus.active &&
+                          !j.DeactivatedByAdmin)
+                .Include(j => j.Company)
+                .ToListAsync();
+
+            int notifiedCount = 0;
+
+            // Process jobs that are starting today - send notifications
+            foreach (var job in todaysStartingJobs.Where(j => j.Company != null))
+            {
+                try
+                {
+                    await _notificationService.SendStartDateReachedNotifications(job);
+                    notifiedCount++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error sending notifications for job {job.JobId}: {ex.Message}");
+                }
+            }
+
+            var allJobs = todaysStartingJobs.Concat(upcomingJobs).ToList();
+
+            if (!allJobs.Any())
+            {
+                _logger.LogInformation("No jobs found with start dates today or within {0} days.", daysBefore);
+                return Ok(new { Success = true, Message = "No jobs to notify.", Count = 0, Jobs = new object[0] });
+            }
+
+            var jobsData = allJobs
+                .Where(job => job.Company != null)
+                .Select(job => new
+                {
+                    JobId = job.JobId,
+                    Title = job.Title,
+                    StartDate = job.TimeStart.Date,
+                    IsToday = job.TimeStart.Date == now.Date,
+                    DaysRemaining = (job.TimeStart.Date - now.Date).Days,
+                    NotificationsSent = job.TimeStart.Date == now.Date,
+                    Link = $"{_configuration["AppSettings:BaseUrl"]}/job-single-v3/{job.JobId}"
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                Success = true,
+                Message = $"Processed {allJobs.Count} jobs. Sent notifications for {notifiedCount} jobs starting today.",
+                TodaysJobsCount = todaysStartingJobs.Count,
+                UpcomingJobsCount = upcomingJobs.Count,
+                NotificationsSent = notifiedCount,
+                Jobs = jobsData
+            });
         }
 
 
@@ -1566,7 +1653,7 @@ namespace JOB_FINDER_API.Controllers
                             && j.TimeStart.Date <= now.Date
                             && j.TimeEnd.Date >= now.Date)
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -1691,16 +1778,17 @@ namespace JOB_FINDER_API.Controllers
                 item.Job.MaxSalary,
                 item.Job.CreatedAt,
                 item.Job.UpdatedAt,
-                Skills = item.Job.JobSkills.Select(js => new
+               /* Skills = item.Job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 item.Job.DescriptionWeight,
                 item.Job.SkillsWeight,
                 item.Job.ExperienceWeight,
                 item.Job.EducationWeight,
-                FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}&SkillIds={string.Join(",", item.Job.JobSkills.Select(js => js.SkillId))}"
+                //FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}&SkillIds={string.Join(",", item.Job.JobSkills.Select(js => js.SkillId))}"
+                FilterUrl = $"{baseUrl}api/Job/filter?IndustryId={item.Job.IndustryId}&LevelId={item.Job.LevelId}&JobTypeId={item.Job.JobTypeId}&ProvinceName={Uri.EscapeDataString(item.Job.ProvinceName ?? "")}"
             });
 
             return Ok(new
@@ -1802,7 +1890,7 @@ namespace JOB_FINDER_API.Controllers
             var query = _context.Jobs
                 .Where(j => j.CompanyId == companyId && j.Status == Job.JobStatus.draft)
                 .Include(j => j.Industry)
-                .Include(j => j.JobSkills).ThenInclude(js => js.Skill)
+                //.Include(j => j.JobSkills).ThenInclude(js => js.Skill)
                 .Include(j => j.Company).ThenInclude(u => u.CompanyProfile)
                 .Include(j => j.Level)
                 .Include(j => j.JobType)
@@ -1858,11 +1946,11 @@ namespace JOB_FINDER_API.Controllers
                 job.MaxSalary,
                 job.CreatedAt,
                 job.UpdatedAt,
-                Skills = job.JobSkills.Select(js => new
+               /* Skills = job.JobSkills.Select(js => new
                 {
                     js.SkillId,
                     js.Skill.SkillName
-                }).ToList(),
+                }).ToList(),*/
                 job.DescriptionWeight,
                 job.SkillsWeight,
                 job.ExperienceWeight,

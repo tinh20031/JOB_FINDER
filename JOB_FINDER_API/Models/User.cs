@@ -36,8 +36,8 @@ namespace JOB_FINDER_API.Models
         
         [JsonIgnore]
         public ICollection<CV> CVs { get; set; } = new List<CV>();
-        [JsonIgnore]
-        public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
+        //[JsonIgnore]
+        //public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
         [JsonIgnore]
         public ICollection<Message> SentMessages { get; set; } = new List<Message>();
         [JsonIgnore]

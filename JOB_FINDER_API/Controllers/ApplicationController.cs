@@ -142,6 +142,68 @@ namespace JOB_FINDER_API.Controllers
                     if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin || job.IsExpired())
                         return BadRequest(new { Success = false, Message = "The job posting has expired" });
 
+                    // Đếm số lượng đơn Pending của user với các job thuộc company này
+                    var pendingCount = await context.Applications
+                        .Where(a => a.UserId == userId
+                            && a.Status == ApplicationStatus.Pending
+                            && context.Jobs.Any(j => j.JobId == a.JobId && j.CompanyId == job.CompanyId))
+                        .CountAsync();
+
+                    if (pendingCount >= 3)
+                    {
+                        return BadRequest(new
+                        {
+                            Success = false,
+                            Message = "You are only allowed to apply for a maximum of 3 pending positions at the same company. Please wait for the results before applying for more positions."
+                        });
+                    }
+
+                    //  BẮT ĐẦU: Kiểm tra và cập nhật đơn apply cũ nếu có 
+                    var existingApplication = await context.Applications
+                        .FirstOrDefaultAsync(a => a.JobId == request.JobId && a.UserId == userId && a.Status == ApplicationStatus.Pending);
+
+                    bool isUpdate = false;
+                    Application application;
+                    if (existingApplication != null)
+                    {
+                        // Nếu đã apply, cập nhật đơn cũ
+                        application = existingApplication;
+                        application.CoverLetter = request.CoverLetter;
+                        application.Status = ApplicationStatus.Pending;
+                        application.UpdatedAt = DateTime.UtcNow;
+                        application.SubmittedAt = DateTime.UtcNow;
+                        isUpdate = true;
+                    }
+                    else
+                    {
+                        // Nếu chưa apply, tạo mới
+                        application = new Application
+                        {
+                            UserId = userId,
+                            JobId = request.JobId,
+                            CoverLetter = request.CoverLetter,
+                            Status = ApplicationStatus.Pending,
+                            SubmittedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        context.Applications.Add(application);
+                    }
+                    //  KẾT THÚC: Kiểm tra và cập nhật đơn apply cũ nếu có 
+
+                    await context.SaveChangesAsync();
+
+                    // Gửi email thông báo cho candidate
+                    if (!string.IsNullOrEmpty(user.Email))
+                    {
+                        string subject = isUpdate
+                            ? "Your application has been updated": "You have successfully applied";
+                        string body = isUpdate
+                        ? $"Your application for the job \"{job.Title}\" has been successfully updated/replaced at {DateTime.Now:HH:mm dd/MM/yyyy}."
+                        : $"You have successfully applied for the job \"{job.Title}\" at {DateTime.Now:HH:mm dd/MM/yyyy}.";
+                        await _emailService.SendEmailAsync(user.Email, subject, body);
+                    }
+
 
                     if (request.CvFile != null && request.CvFile.Length > 0)
                     {
@@ -161,19 +223,19 @@ namespace JOB_FINDER_API.Controllers
                     }
 
 
-                    var application = new Application
-                    {
-                        UserId = userId,
-                        JobId = request.JobId,
-                        CoverLetter = request.CoverLetter,
-                        Status = ApplicationStatus.Pending,
-                        SubmittedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-                    context.Applications.Add(application);
-                    await context.SaveChangesAsync();
-                    _logger.LogInformation("Application {ApplicationId} created for UserId {UserId}, JobId {JobId}", application.ApplicationId, userId, request.JobId);
+                    //var application = new Application
+                    //{
+                    //    UserId = userId,
+                    //    JobId = request.JobId,
+                    //    CoverLetter = request.CoverLetter,
+                    //    Status = ApplicationStatus.Pending,
+                    //    SubmittedAt = DateTime.UtcNow,
+                    //    CreatedAt = DateTime.UtcNow,
+                    //    UpdatedAt = DateTime.UtcNow
+                    //};
+                    //context.Applications.Add(application);
+                    //await context.SaveChangesAsync();
+                    //_logger.LogInformation("Application {ApplicationId} created for UserId {UserId}, JobId {JobId}", application.ApplicationId, userId, request.JobId);
 
 
                     taskQueue.QueueBackgroundWorkItem(async token =>
@@ -400,6 +462,7 @@ namespace JOB_FINDER_API.Controllers
                         GeminiReasoning = (string)null
                     });
                 }
+
                 catch (Exception ex)
                 {
 

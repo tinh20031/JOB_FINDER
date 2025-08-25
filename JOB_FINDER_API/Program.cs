@@ -177,10 +177,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", builder =>
     {
         builder.WithOrigins(
-                "https://job-finder-fe.vercel.app",
+                "https://jobfinder.io.vn/",
                 "http://localhost:3000",
+                "http://34.124.213.192/JobFinderApi",
+                "http://34.124.213.192/JobFinderApi",
                 "https://job-finder-kjt2.onrender.com",
-                "http://job-finder-kjt2.onrender.com",
                 "http://localhost:5194")
             .AllowAnyMethod()
             .AllowAnyHeader()

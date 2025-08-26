@@ -3,8 +3,17 @@ using System.Text.Json.Serialization;
 
 namespace JOB_FINDER_API.Models
 {
+
+    public enum RequestStatus
+    {
+        Pending,
+        Approved,
+        Rejected
+    }
     public class CandidateToCompanyRequest
     {
+
+
         public int CandidateToCompanyRequestId { get; set; }
         public int UserId { get; set; }
         public string CompanyName { get; set; } = string.Empty;
@@ -16,6 +25,7 @@ namespace JOB_FINDER_API.Models
         public int IndustryId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public RequestStatus Status { get; set; } = RequestStatus.Pending;
 
         public Industry? Industry { get; set; }
         [JsonIgnore]

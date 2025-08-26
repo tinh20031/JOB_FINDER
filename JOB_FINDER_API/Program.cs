@@ -109,7 +109,6 @@ builder.Services.AddHostedService<JobStatusService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueuedHostedService>();
 builder.Services.AddHostedService<UpcomingJobNotificationService>();
-
 builder.Services.AddScoped<VideoService>();
 builder.Services.AddLogging(config =>
 {

@@ -238,9 +238,14 @@ namespace JOB_FINDER_API.Data
             modelBuilder.Entity<CandidateProfile>()
                 .Property(cp => cp.ForeignLanguagesJson)
                 .HasColumnType("nvarchar(max)");
-            
+            modelBuilder.Entity<Embedding>()
+            .HasOne<Job>()
+            .WithMany() 
+            .HasForeignKey(e => e.JobId)
+            .OnDelete(DeleteBehavior.SetNull) 
+            .IsRequired(false);
 
-            // Configure Embedding
+          
             modelBuilder.Entity<Embedding>().HasKey(e => e.Id);
 
             modelBuilder.Entity<Embedding>()

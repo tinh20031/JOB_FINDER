@@ -367,7 +367,7 @@ CV text:
 
             return cvData;
         }
-        public async Task<(bool Success, string ErrorMessage, float[] Vector)> PreprocessAndGenerateEmbeddingAsync(string text)
+        public async Task<(bool Success, string ErrorMessage, float[] Vector)> PreprocessAndGenerateEmbeddingAsync(string text, int? jobId = null)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -403,63 +403,95 @@ CV text:
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-                var existingEmbedding = await context.Embeddings
-                    .FirstOrDefaultAsync(e => e.Text == preprocessedText && e.Model == modelName);
-                if (existingEmbedding != null && existingEmbedding.CreatedAt > DateTime.UtcNow.AddDays(-7) &&
-                    existingEmbedding.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)))
-                {
-                    _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
-                    return (true, string.Empty, existingEmbedding.Vector);
-                }
-
-                var embeddingRequestBody = new
-                {
-                    model = modelName,
-                    content = new { parts = new[] { new { text = preprocessedText } } }
-                };
-
-                var embeddingJsonContent = new StringContent(JsonSerializer.Serialize(embeddingRequestBody), Encoding.UTF8, "application/json");
-                var embeddingResponse = await _retryPolicy.ExecuteAsync(async () =>
-                    await _authenticatedClient.PostAsync(_geminiConfig.EmbeddingEndpoint, embeddingJsonContent));
-
-                if (!embeddingResponse.IsSuccessStatusCode)
-                {
-                    var errorContent = await embeddingResponse.Content.ReadAsStringAsync();
-                    _logger.LogError("Embedding API error: {ErrorContent}", errorContent);
-                    return (false, $"API Error: {errorContent}", new float[0]);
-                }
-
-                var embeddingResponseContent = await embeddingResponse.Content.ReadAsStringAsync();
                 try
                 {
-                    var geminiResult = JsonSerializer.Deserialize<JsonElement>(embeddingResponseContent);
-                    var embeddingArray = geminiResult.GetProperty("embedding").GetProperty("values").EnumerateArray()
-                        .Select(e => e.GetSingle()).ToArray();
-
-                    if (embeddingArray.Any(v => float.IsNaN(v) || float.IsInfinity(v)))
+                    Embedding existingEmbedding = null;
+                    if (jobId.HasValue)
                     {
-                        _logger.LogWarning("Invalid embedding values detected for text: {Text}", preprocessedText);
-                        return (false, "Invalid embedding values", new float[0]);
+                        // Lấy dữ liệu từ DB trước, sau đó kiểm tra vector trong bộ nhớ
+                        var embeddings = await context.Embeddings
+                            .Where(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                            .ToListAsync();
+                        existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
+
+                        if (existingEmbedding != null)
+                        {
+                            _logger.LogInformation("Reusing existing embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
+                            return (true, string.Empty, existingEmbedding.Vector);
+                        }
+                    }
+                    else
+                    {
+                        // Trường hợp không có jobId
+                        var embeddings = await context.Embeddings
+                            .Where(e => e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                            .ToListAsync();
+                        existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
+
+                        if (existingEmbedding != null)
+                        {
+                            _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
+                            return (true, string.Empty, existingEmbedding.Vector);
+                        }
                     }
 
-                    var embeddingEntity = new Embedding
+                    var embeddingRequestBody = new
                     {
-                        Text = preprocessedText,
-                        Model = modelName,
-                        Vector = embeddingArray,
-                        CreatedAt = DateTime.UtcNow,
-                        ExpiresAt = DateTime.UtcNow.AddDays(7)
+                        model = modelName,
+                        content = new { parts = new[] { new { text = preprocessedText } } }
                     };
-                    context.Embeddings.Add(embeddingEntity);
-                    await context.SaveChangesAsync();
-                    _logger.LogInformation("New embedding saved for text: {Text}", preprocessedText);
 
-                    return (true, string.Empty, embeddingArray);
+                    var embeddingJsonContent = new StringContent(JsonSerializer.Serialize(embeddingRequestBody), Encoding.UTF8, "application/json");
+                    var embeddingResponse = await _retryPolicy.ExecuteAsync(async () =>
+                        await _authenticatedClient.PostAsync(_geminiConfig.EmbeddingEndpoint, embeddingJsonContent));
+
+                    if (!embeddingResponse.IsSuccessStatusCode)
+                    {
+                        var errorContent = await embeddingResponse.Content.ReadAsStringAsync();
+                        _logger.LogError("Embedding API error: {ErrorContent}", errorContent);
+                        return (false, $"API Error: {errorContent}", new float[0]);
+                    }
+
+                    var embeddingResponseContent = await embeddingResponse.Content.ReadAsStringAsync();
+                    try
+                    {
+                        var geminiResult = JsonSerializer.Deserialize<JsonElement>(embeddingResponseContent);
+                        var embeddingArray = geminiResult.GetProperty("embedding").GetProperty("values").EnumerateArray()
+                            .Select(e => e.GetSingle()).ToArray();
+
+                        // Kiểm tra trước khi lưu vào DB
+                        if (embeddingArray.Any(v => float.IsNaN(v) || float.IsInfinity(v)))
+                        {
+                            _logger.LogWarning("Invalid embedding values detected for text: {Text}", preprocessedText);
+                            return (false, "Invalid embedding values", new float[0]);
+                        }
+
+                        var embeddingEntity = new Embedding
+                        {
+                            Text = preprocessedText,
+                            Model = modelName,
+                            Vector = embeddingArray,
+                            CreatedAt = DateTime.UtcNow,
+                            ExpiresAt = DateTime.UtcNow.AddDays(7),
+                            JobId = jobId // Lưu JobId nếu có
+                        };
+
+                        context.Embeddings.Add(embeddingEntity);
+                        await context.SaveChangesAsync();
+                        _logger.LogInformation("New embedding saved for text: {Text}, JobId: {JobId}", preprocessedText, jobId);
+
+                        return (true, string.Empty, embeddingArray);
+                    }
+                    catch (JsonException ex)
+                    {
+                        _logger.LogError(ex, "Failed to parse embedding response: {ResponseContent}", embeddingResponseContent);
+                        return (false, "Invalid embedding response format", new float[0]);
+                    }
                 }
-                catch (JsonException ex)
+                catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to parse embedding response: {ResponseContent}", embeddingResponseContent);
-                    return (false, "Invalid embedding response format", new float[0]);
+                    _logger.LogError(ex, "Error processing embedding for text: {Text}, JobId: {JobId}", preprocessedText, jobId);
+                    return (false, $"Processing error: {ex.Message}", new float[0]);
                 }
             }
         }
@@ -481,10 +513,12 @@ CV text:
 
             string processedJobText = jobText;
             string jobContext = string.Empty;
+
+            // Tóm tắt nếu cần và xử lý lỗi
             if (summarize && jobText.Length > summaryLengthThreshold)
             {
                 var (summarizeSuccess, summary, error) = await SummarizeAndTranslate(jobText, "en");
-                processedJobText = summarizeSuccess ? summary : jobText; // Sử dụng text gốc nếu summarize thất bại
+                processedJobText = summarizeSuccess ? summary : jobText; // Fallback về text gốc nếu tóm tắt thất bại
                 _logger.LogInformation("Summarized job text: Length={Length}", processedJobText.Length);
             }
 
@@ -496,32 +530,58 @@ CV text:
             }
             else
             {
-                _logger.LogWarning("Preprocess failed for job text, using original text");
+                _logger.LogWarning("Preprocess failed for job text, using original text as fallback");
+                cleanedJobText = processedJobText; // Fallback về text gốc nếu preprocess thất bại
             }
 
-            var tasks = texts.Select(async (text, i) =>
+            using (var scope = _serviceScopeFactory.CreateScope())
             {
-                if (!string.IsNullOrWhiteSpace(text))
-                {
-                    // Sử dụng cùng cleanedJobText để đảm bảo preprocess giống nhau
-                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
-                        string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText);
-                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
-                }
-                return (Index: i, Success: false, Vector: new float[0], Error: "Empty text");
-            }).ToArray();
+                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
 
-            var results = await Task.WhenAll(tasks);
-            foreach (var result in results)
-            {
-                vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
-                if (!result.Success)
+                var tasks = texts.Select(async (text, i) =>
                 {
-                    _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            // Kiểm tra vector cũ trong DB dựa trên JobId và tiêu chí
+                            var existingVector = await context.Embeddings
+                                .Where(e => e.JobId == job.JobId && e.Text == text && e.Model == "models/text-embedding-004" && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                                .Select(e => e.Vector)
+                                .FirstOrDefaultAsync();
+
+                            if (existingVector != null && existingVector.Length > 0)
+                            {
+                                _logger.LogInformation("Reusing existing vector for JobId: {JobId}, Criteria Index: {Index}", job.JobId, i);
+                                return (Index: i, Success: true, Vector: existingVector, Error: string.Empty);
+                            }
+
+                            // Nếu không có vector cũ, tạo vector mới từ cleanedJobText hoặc text gốc
+                            var inputText = string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText;
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText, job.JobId);
+                            return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
+                        }
+                        return (Index: i, Success: false, Vector: new float[0], Error: "Empty text");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error generating vector for job criteria {Index} for JobId {JobId}", i, job.JobId);
+                        return (Index: i, Success: false, Vector: new float[0], Error: ex.Message);
+                    }
+                }).ToArray();
+
+                var results = await Task.WhenAll(tasks);
+                foreach (var result in results)
+                {
+                    vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
+                    if (!result.Success)
+                    {
+                        _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
+                    }
                 }
             }
 
-            return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "your cv is not relative with job " : string.Empty, vectors, jobContext);
+            return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "Your CV is not relative with job" : string.Empty, vectors, jobContext);
         }
 
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string CvContext)> GenerateVectorsForCVCriteria(CV cv, string fullCvJson)
@@ -532,7 +592,7 @@ CV text:
                 return (false, "Invalid CV or FullCvJson", new float[4][], string.Empty);
             }
 
-            // Parse FullCvJson để lấy trường Text
+        
             string cvText;
             try
             {
@@ -553,7 +613,7 @@ CV text:
                 return (false, "Text field in FullCvJson is empty", new float[4][], string.Empty);
             }
 
-            // Trích xuất 4 tiêu chí từ cvText
+      
             var (extractSuccess, extractError, cvData) = await ExtractCvDataAsync(cv, cvText);
             if (!extractSuccess)
             {
@@ -573,12 +633,12 @@ CV text:
 
             var vectors = new float[4][] { new float[0], new float[0], new float[0], new float[0] };
 
-            // Preprocess toàn bộ văn bản CV để đảm bảo nhất quán
+       
             var (preprocessSuccess, cleanedCvText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(cvText);
             if (!preprocessSuccess)
             {
                 _logger.LogWarning("Preprocess failed for CV text, using original text for CVId {CVId}", cv.CVId);
-                cleanedCvText = cvText; // Fallback to original text
+                cleanedCvText = cvText; 
             }
 
             var tasks = texts.Select(async (text, i) =>

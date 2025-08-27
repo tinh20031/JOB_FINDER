@@ -11,6 +11,12 @@ namespace JOB_FINDER_API.Models.Services
             public const bool ENABLE_ENHANCED_LOGGING = true;
             public const int EMBEDDING_CACHE_DAYS = 7;
             
+            // Performance optimization settings
+            public const bool ENABLE_PREPROCESSING_CACHE = true;
+            public const int MAX_CONCURRENT_API_CALLS = 3;
+            public const int PREPROCESSING_CACHE_HOURS = 1;
+            public const bool SMART_CACHE_INVALIDATION = true;
+            
             // Text processing settings
             public const int MIN_TEXT_LENGTH_FOR_ANALYSIS = 100;
             public const int SUMMARY_LENGTH_THRESHOLD = 500;

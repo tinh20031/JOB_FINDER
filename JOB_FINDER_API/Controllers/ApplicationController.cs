@@ -478,7 +478,7 @@ namespace JOB_FINDER_API.Controllers
                                 return;
                             }
 
-                            var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv);
+                            var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv, forceRecalculation: false, isApplication: true);
                             if (matchingResult.Success)
                             {
                                 innerApplication.SimilarityScore = matchingResult.FinalSimilarity;
@@ -1787,7 +1787,7 @@ namespace JOB_FINDER_API.Controllers
 
                               
                                 // Force recalculation for try-match to ensure accuracy and consistency
-                                var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv, forceRecalculation: true);
+                                var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv, forceRecalculation: true, isApplication: false);
                                 var suggestions = await innerSemanticService.GenerateImprovementSuggestions(innerJob, cv,
                                     matchingResult.SimilarityDescription, matchingResult.SimilaritySkills,
                                     matchingResult.SimilarityExperience, matchingResult.SimilarityEducation,

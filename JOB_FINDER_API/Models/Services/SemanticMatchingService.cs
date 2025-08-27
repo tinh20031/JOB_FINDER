@@ -31,6 +31,8 @@ namespace JOB_FINDER_API.Models.Services
         private DateTime _tokenExpiration;
         private readonly Dictionary<string, (string CleanedText, string[] WeightedTerms, string ContextAnalysis)> _preprocessCache = new();
         private readonly Dictionary<string, (string SummaryText, DateTime ExpiresAt)> _translationCache = new();
+        private readonly ConcurrentDictionary<string, (string result, DateTime expiry)> _textProcessingCache = new();
+        private static readonly TimeSpan _processingCacheExpiry = TimeSpan.FromHours(1);
 
         public SemanticMatchingService(
             ILogger<SemanticMatchingService> logger,
@@ -942,7 +944,7 @@ CV text:
 
             return suggestions.Any() ? suggestions : new List<string> { "Your **CV** is **well-aligned** with the job requirements. No major changes needed!" };
         }
-        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv, bool forceRecalculation = false)
+        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv, bool forceRecalculation = false, bool isApplication = false)
         {
             if (job == null || cv == null)
             {
@@ -979,18 +981,22 @@ CV text:
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                 try
                 {
-                    // Standardize CV processing - ensure consistent format
-                    CV processedCv = await EnsureStandardizedCvFormat(cv, context, forceRecalculation);
+                    // Smart CV processing - optimize for performance
+                    bool needsStandardization = !isApplication || string.IsNullOrWhiteSpace(cv.FullCvJson) || forceRecalculation;
+                    CV processedCv = needsStandardization ? await EnsureStandardizedCvFormat(cv, context, forceRecalculation) : cv;
+                    
+                    // Use intelligent caching - only force recalc for try-match when needed
+                    bool useForceRecalc = forceRecalculation && !isApplication;
                     
                     string jobText = $"{job.Description}\n{job.YourSkill}\n{job.YourExperience}\n{job.Education}";
-                    var (jobVectorsSuccess, jobVectorsError, jobVectors, jobContext) = await GenerateVectorsForCriteria(job, jobText, summarize: false, forceRecalculation);
+                    var (jobVectorsSuccess, jobVectorsError, jobVectors, jobContext) = await GenerateVectorsForCriteria(job, jobText, summarize: false, useForceRecalc);
                     if (!jobVectorsSuccess)
                     {
                         _logger.LogError("Failed to generate job vectors: {Error}", jobVectorsError);
                         return (false, jobVectorsError, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, jobVectorsError);
                     }
 
-                    var (cvVectorsSuccess, cvVectorsError, cvVectors, cvContext) = await GenerateVectorsForCVCriteria(processedCv, processedCv.FullCvJson, forceRecalculation);
+                    var (cvVectorsSuccess, cvVectorsError, cvVectors, cvContext) = await GenerateVectorsForCVCriteria(processedCv, processedCv.FullCvJson, useForceRecalc);
                     if (!cvVectorsSuccess)
                     {
                         _logger.LogError("Failed to generate CV vectors: {Error}", cvVectorsError);
@@ -1148,6 +1154,79 @@ CV text:
             var normalized = NormalizeText(text);
             var cleanedText = Regex.Replace(normalized, @"[^\w\s]", "").Trim();
             return cleanedText;
+        }
+        
+        private async Task<string> GetCachedOrPreprocessTextAsync(string text, bool forceRecalculation = false)
+        {
+            var cacheKey = CreateConsistentTextHash(text);
+            
+            // Check cache first (unless forcing recalculation)
+            if (!forceRecalculation && _textProcessingCache.TryGetValue(cacheKey, out var cached))
+            {
+                if (cached.expiry > DateTime.UtcNow)
+                {
+                    return cached.result;
+                }
+                else
+                {
+                    _textProcessingCache.TryRemove(cacheKey, out _);
+                }
+            }
+            
+            // Only call Gemini API if not in cache or expired
+            _logger.LogInformation("Preprocessing text with Gemini API: Length={Length}", text.Length);
+            
+            var processedText = await CallGeminiForPreprocessingAsync(text);
+            
+            // Cache the result
+            _textProcessingCache[cacheKey] = (processedText, DateTime.UtcNow.Add(_processingCacheExpiry));
+            
+            return processedText;
+        }
+        
+        private async Task<string> CallGeminiForPreprocessingAsync(string text)
+        {
+            // Your existing Gemini preprocessing logic here
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new
+                            {
+                                text = $@"Transform this text into a weighted keyword format for semantic similarity matching. 
+                                Focus on technical skills, experience levels, and key job requirements.
+                                Format: 'keyword *weight' where weight is 0.5 for basic terms and 1.0 for important terms.
+                                Text: {text}"
+                            }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.1,
+                    topK = 1,
+                    topP = 0.8,
+                    maxOutputTokens = 1000
+                }
+            };
+
+            var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+            var response = await _authenticatedClient.PostAsync("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", jsonContent);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var geminiResponse = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(responseContent);
+                return geminiResponse.GetProperty("candidates")[0]
+                    .GetProperty("content").GetProperty("parts")[0]
+                    .GetProperty("text").GetString().Trim();
+            }
+            
+            return text; // Fallback to original text
         }
         private string ExtractEducationFallback(string text)
         {

@@ -30,6 +30,27 @@ namespace JOB_FINDER_API.Services
             };
             client.Send(mail);
         }
+
+        // Bổ sung hàm async cho background service
+        public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
+        {
+            var smtpHost = _config["Smtp:Host"];
+            var smtpPort = int.Parse(_config["Smtp:Port"]);
+            var smtpUser = _config["Smtp:User"];
+            var smtpPass = _config["Smtp:Pass"];
+
+            using var client = new SmtpClient(smtpHost, smtpPort)
+            {
+                Credentials = new NetworkCredential(smtpUser, smtpPass),
+                EnableSsl = true
+            };
+            var mail = new MailMessage(smtpUser, to, subject, body)
+            {
+                IsBodyHtml = isHtml
+            };
+            await client.SendMailAsync(mail);
+        }
+
         public void SendVerificationEmail(string to, string verificationCode)
         {
             string subject = "Verify Job Finder account email";

@@ -514,15 +514,13 @@ CV text:
             string processedJobText = jobText;
             string jobContext = string.Empty;
 
-            // Tóm tắt nếu cần và xử lý lỗi
             if (summarize && jobText.Length > summaryLengthThreshold)
             {
                 var (summarizeSuccess, summary, error) = await SummarizeAndTranslate(jobText, "en");
-                processedJobText = summarizeSuccess ? summary : jobText; // Fallback về text gốc nếu tóm tắt thất bại
+                processedJobText = summarizeSuccess ? summary : jobText;
                 _logger.LogInformation("Summarized job text: Length={Length}", processedJobText.Length);
             }
 
-            // Preprocess toàn bộ job text để đảm bảo tính nhất quán
             var (preprocessSuccess, cleanedJobText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(processedJobText);
             if (preprocessSuccess)
             {
@@ -531,20 +529,18 @@ CV text:
             else
             {
                 _logger.LogWarning("Preprocess failed for job text, using original text as fallback");
-                cleanedJobText = processedJobText; // Fallback về text gốc nếu preprocess thất bại
+                cleanedJobText = processedJobText;
             }
 
-            using (var scope = _serviceScopeFactory.CreateScope())
+            var tasks = texts.Select(async (text, i) =>
             {
-                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-
-                var tasks = texts.Select(async (text, i) =>
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
+                    var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                     try
                     {
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            // Kiểm tra vector cũ trong DB dựa trên JobId và tiêu chí
                             var existingVector = await context.Embeddings
                                 .Where(e => e.JobId == job.JobId && e.Text == text && e.Model == "models/text-embedding-004" && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
                                 .Select(e => e.Vector)
@@ -556,7 +552,6 @@ CV text:
                                 return (Index: i, Success: true, Vector: existingVector, Error: string.Empty);
                             }
 
-                            // Nếu không có vector cũ, tạo vector mới từ cleanedJobText hoặc text gốc
                             var inputText = string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText;
                             var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText, job.JobId);
                             return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
@@ -568,16 +563,16 @@ CV text:
                         _logger.LogError(ex, "Error generating vector for job criteria {Index} for JobId {JobId}", i, job.JobId);
                         return (Index: i, Success: false, Vector: new float[0], Error: ex.Message);
                     }
-                }).ToArray();
+                }
+            }).ToArray();
 
-                var results = await Task.WhenAll(tasks);
-                foreach (var result in results)
+            var results = await Task.WhenAll(tasks);
+            foreach (var result in results)
+            {
+                vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
+                if (!result.Success)
                 {
-                    vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
-                    if (!result.Success)
-                    {
-                        _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
-                    }
+                    _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
                 }
             }
 
@@ -592,7 +587,6 @@ CV text:
                 return (false, "Invalid CV or FullCvJson", new float[4][], string.Empty);
             }
 
-        
             string cvText;
             try
             {
@@ -613,7 +607,6 @@ CV text:
                 return (false, "Text field in FullCvJson is empty", new float[4][], string.Empty);
             }
 
-      
             var (extractSuccess, extractError, cvData) = await ExtractCvDataAsync(cv, cvText);
             if (!extractSuccess)
             {
@@ -633,26 +626,36 @@ CV text:
 
             var vectors = new float[4][] { new float[0], new float[0], new float[0], new float[0] };
 
-       
             var (preprocessSuccess, cleanedCvText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(cvText);
             if (!preprocessSuccess)
             {
                 _logger.LogWarning("Preprocess failed for CV text, using original text for CVId {CVId}", cv.CVId);
-                cleanedCvText = cvText; 
+                cleanedCvText = cvText;
             }
 
             var tasks = texts.Select(async (text, i) =>
             {
-                if (!string.IsNullOrWhiteSpace(text) && !text.Contains("No "))
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
-                        string.IsNullOrEmpty(cleanedCvText) ? text : cleanedCvText);
-                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
-                }
-                else
-                {
-                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cvText);
-                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(text) && !text.Contains("No "))
+                        {
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
+                                string.IsNullOrEmpty(cleanedCvText) ? text : cleanedCvText);
+                            return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
+                        }
+                        else
+                        {
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cvText);
+                            return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error generating vector for CV criteria {Index} for CVId {CVId}", i, cv.CVId);
+                        return (Index: i, Success: false, Vector: new float[0], Error: ex.Message);
+                    }
                 }
             }).ToArray();
 

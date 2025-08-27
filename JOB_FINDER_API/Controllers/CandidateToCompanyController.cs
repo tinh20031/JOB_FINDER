@@ -83,7 +83,7 @@ namespace JOB_FINDER_API.Controllers
       <p><b>Contact:</b> {request.Contact}</p>
       <p><b>Industry ID:</b> {request.IndustryId}</p>
       <div style='margin: 24px 0;'>
-        <a href='{baseUrl}/admin-dashboard/user-manager/{user.UserId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
+        <a href='{baseUrl}/admin-dashboard/upgrade-requests' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
       </div>
       <p style='font-size: 13px; color: #888;'>Please verify this request if the information is valid.</p>
     </div>
@@ -319,7 +319,7 @@ namespace JOB_FINDER_API.Controllers
     </div>
   </body>
 </html>";
-                    SendEmail(user.Email, "Xác minh thành Công ty thành công", htmlBody, true);
+                    SendEmail(user.Email, "Company verification successful", htmlBody, true);
                 }
                 else // reject
                 {
@@ -341,7 +341,7 @@ namespace JOB_FINDER_API.Controllers
     </div>
   </body>
 </html>";
-                    SendEmail(user.Email, "Yêu cầu xác minh Công ty bị từ chối", htmlBody, true);
+                    SendEmail(user.Email, "Company verification request denied", htmlBody, true);
                 }
 
                 await _context.SaveChangesAsync();

@@ -1786,7 +1786,8 @@ namespace JOB_FINDER_API.Controllers
                                 }
 
                               
-                                var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv);
+                                // Force recalculation for try-match to ensure accuracy and consistency
+                                var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv, forceRecalculation: true);
                                 var suggestions = await innerSemanticService.GenerateImprovementSuggestions(innerJob, cv,
                                     matchingResult.SimilarityDescription, matchingResult.SimilaritySkills,
                                     matchingResult.SimilarityExperience, matchingResult.SimilarityEducation,

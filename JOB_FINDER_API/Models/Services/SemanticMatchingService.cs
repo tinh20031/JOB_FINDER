@@ -1,4 +1,4 @@
-﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2;
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -347,6 +347,69 @@ CV text:
                 return (false, ex.Message, null);
             }
         }
+
+        private async Task<CV> EnsureStandardizedCvFormat(CV cv, JobFinderDbContext context, bool forceRecalculation = false)
+        {
+            if (cv == null) return null;
+
+            try
+            {
+                // Check if CV has proper FullCvJson format
+                if (string.IsNullOrWhiteSpace(cv.FullCvJson) || forceRecalculation)
+                {
+                    _logger.LogInformation("Regenerating CV data for CVId {CVId} due to missing or forced recalculation", cv.CVId);
+                    
+                    // Re-extract CV data to ensure consistency
+                    var (success, error, cvData) = await ExtractCvDataAsync(cv);
+                    if (success)
+                    {
+                        // Update FullCvJson with standardized format
+                        var jsonOptions = new JsonSerializerOptions { WriteIndented = false };
+                        cv.FullCvJson = JsonSerializer.Serialize(new
+                        {
+                            Text = GetTextFromCvJson(cv.FullCvJson) ?? "No text available",
+                            TranslatedText = string.Empty,
+                            CVData = cvData
+                        }, jsonOptions);
+                        
+                        cv.UpdatedAt = DateTime.UtcNow;
+                        context.Entry(cv).State = EntityState.Modified;
+                        await context.SaveChangesAsync();
+                        
+                        _logger.LogInformation("CV {CVId} standardized successfully", cv.CVId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to standardize CV {CVId}: {Error}", cv.CVId, error);
+                    }
+                }
+
+                return cv;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error standardizing CV format for CVId {CVId}", cv.CVId);
+                return cv; // Return original CV if standardization fails
+            }
+        }
+
+        private string GetTextFromCvJson(string fullCvJson)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fullCvJson)) return null;
+                
+                var jsonElement = JsonSerializer.Deserialize<JsonElement>(fullCvJson);
+                return jsonElement.TryGetProperty("Text", out var textProperty) 
+                    ? textProperty.GetString() 
+                    : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         private CVData ParseGeminiResponseForCVData(string responseText)
         {
             var cvData = new CVData();
@@ -367,7 +430,7 @@ CV text:
 
             return cvData;
         }
-        public async Task<(bool Success, string ErrorMessage, float[] Vector)> PreprocessAndGenerateEmbeddingAsync(string text, int? jobId = null)
+        public async Task<(bool Success, string ErrorMessage, float[] Vector)> PreprocessAndGenerateEmbeddingAsync(string text, int? jobId = null, bool forceRecalculation = false)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -406,32 +469,57 @@ CV text:
                 try
                 {
                     Embedding existingEmbedding = null;
-                    if (jobId.HasValue)
+                    
+                    // Only check for existing embeddings if not forcing recalculation
+                    if (!forceRecalculation)
                     {
-                        // Lấy dữ liệu từ DB trước, sau đó kiểm tra vector trong bộ nhớ
-                        var embeddings = await context.Embeddings
-                            .Where(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
-                            .ToListAsync();
-                        existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
-
-                        if (existingEmbedding != null)
+                        if (jobId.HasValue)
                         {
-                            _logger.LogInformation("Reusing existing embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
-                            return (true, string.Empty, existingEmbedding.Vector);
+                            // Lấy dữ liệu từ DB trước, sau đó kiểm tra vector trong bộ nhớ
+                            var embeddings = await context.Embeddings
+                                .Where(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                                .ToListAsync();
+                            existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
+
+                            if (existingEmbedding != null)
+                            {
+                                _logger.LogInformation("Reusing existing embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
+                                return (true, string.Empty, existingEmbedding.Vector);
+                            }
+                        }
+                        else
+                        {
+                            // Trường hợp không có jobId
+                            var embeddings = await context.Embeddings
+                                .Where(e => e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                                .ToListAsync();
+                            existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
+
+                            if (existingEmbedding != null)
+                            {
+                                _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
+                                return (true, string.Empty, existingEmbedding.Vector);
+                            }
                         }
                     }
                     else
                     {
-                        // Trường hợp không có jobId
-                        var embeddings = await context.Embeddings
-                            .Where(e => e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
-                            .ToListAsync();
-                        existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
-
-                        if (existingEmbedding != null)
+                        _logger.LogInformation("Force regenerating embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
+                        
+                        // Optionally delete existing embeddings when forcing recalculation
+                        if (jobId.HasValue)
                         {
-                            _logger.LogInformation("Reusing existing embedding for text: {Text}", preprocessedText);
-                            return (true, string.Empty, existingEmbedding.Vector);
+                            var existingEmbeddings = await context.Embeddings
+                                .Where(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName)
+                                .ToListAsync();
+                            context.Embeddings.RemoveRange(existingEmbeddings);
+                        }
+                        else
+                        {
+                            var existingEmbeddings = await context.Embeddings
+                                .Where(e => e.Text == preprocessedText && e.Model == modelName && e.JobId == null)
+                                .ToListAsync();
+                            context.Embeddings.RemoveRange(existingEmbeddings);
                         }
                     }
 
@@ -496,7 +584,7 @@ CV text:
             }
         }
 
-        public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string JobContext)> GenerateVectorsForCriteria(Job job, string jobText, bool summarize = false)
+        public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string JobContext)> GenerateVectorsForCriteria(Job job, string jobText, bool summarize = false, bool forceRecalculation = false)
         {
             if (job == null || string.IsNullOrWhiteSpace(jobText))
             {
@@ -541,19 +629,31 @@ CV text:
                     {
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            var existingVector = await context.Embeddings
-                                .Where(e => e.JobId == job.JobId && e.Text == text && e.Model == "models/text-embedding-004" && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
-                                .Select(e => e.Vector)
-                                .FirstOrDefaultAsync();
+                            float[] existingVector = null;
+                            
+                            // Only use cache if not forcing recalculation
+                            if (!forceRecalculation)
+                            {
+                                existingVector = await context.Embeddings
+                                    .Where(e => e.JobId == job.JobId && e.Text == text && e.Model == "models/text-embedding-004" && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                                    .Select(e => e.Vector)
+                                    .FirstOrDefaultAsync();
+                            }
 
-                            if (existingVector != null && existingVector.Length > 0)
+                            if (existingVector != null && existingVector.Length > 0 && !forceRecalculation)
                             {
                                 _logger.LogInformation("Reusing existing vector for JobId: {JobId}, Criteria Index: {Index}", job.JobId, i);
                                 return (Index: i, Success: true, Vector: existingVector, Error: string.Empty);
                             }
 
+                            // Force regeneration or no cache found
+                            if (forceRecalculation)
+                            {
+                                _logger.LogInformation("Force regenerating vector for JobId: {JobId}, Criteria Index: {Index}", job.JobId, i);
+                            }
+
                             var inputText = string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText;
-                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText, job.JobId);
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText, job.JobId, forceRecalculation);
                             return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                         }
                         return (Index: i, Success: false, Vector: new float[0], Error: "Empty text");
@@ -579,7 +679,7 @@ CV text:
             return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "Your CV is not relative with job" : string.Empty, vectors, jobContext);
         }
 
-        public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string CvContext)> GenerateVectorsForCVCriteria(CV cv, string fullCvJson)
+        public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string CvContext)> GenerateVectorsForCVCriteria(CV cv, string fullCvJson, bool forceRecalculation = false)
         {
             if (cv == null || string.IsNullOrWhiteSpace(fullCvJson))
             {
@@ -641,13 +741,13 @@ CV text:
                     {
                         if (!string.IsNullOrWhiteSpace(text) && !text.Contains("No "))
                         {
-                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
-                                string.IsNullOrEmpty(cleanedCvText) ? text : cleanedCvText);
+                            var inputText = string.IsNullOrEmpty(cleanedCvText) ? text : cleanedCvText;
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText, null, forceRecalculation);
                             return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                         }
                         else
                         {
-                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cvText);
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cvText, null, forceRecalculation);
                             return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                         }
                     }
@@ -842,7 +942,7 @@ CV text:
 
             return suggestions.Any() ? suggestions : new List<string> { "Your **CV** is **well-aligned** with the job requirements. No major changes needed!" };
         }
-        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv)
+        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv, bool forceRecalculation = false)
         {
             if (job == null || cv == null)
             {
@@ -879,15 +979,18 @@ CV text:
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                 try
                 {
+                    // Standardize CV processing - ensure consistent format
+                    CV processedCv = await EnsureStandardizedCvFormat(cv, context, forceRecalculation);
+                    
                     string jobText = $"{job.Description}\n{job.YourSkill}\n{job.YourExperience}\n{job.Education}";
-                    var (jobVectorsSuccess, jobVectorsError, jobVectors, jobContext) = await GenerateVectorsForCriteria(job, jobText, summarize: false);
+                    var (jobVectorsSuccess, jobVectorsError, jobVectors, jobContext) = await GenerateVectorsForCriteria(job, jobText, summarize: false, forceRecalculation);
                     if (!jobVectorsSuccess)
                     {
                         _logger.LogError("Failed to generate job vectors: {Error}", jobVectorsError);
                         return (false, jobVectorsError, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, jobVectorsError);
                     }
 
-                    var (cvVectorsSuccess, cvVectorsError, cvVectors, cvContext) = await GenerateVectorsForCVCriteria(cv, cv.FullCvJson);
+                    var (cvVectorsSuccess, cvVectorsError, cvVectors, cvContext) = await GenerateVectorsForCVCriteria(processedCv, processedCv.FullCvJson, forceRecalculation);
                     if (!cvVectorsSuccess)
                     {
                         _logger.LogError("Failed to generate CV vectors: {Error}", cvVectorsError);
@@ -918,8 +1021,22 @@ CV text:
 
                     string geminiReasoning = $"Similarity calculated based on vector cosine similarity. Scores: Description {similarityDescription:F1}/{descriptionMaxScore:F1}, Skills {similaritySkills:F1}/{skillsMaxScore:F1}, Experience {similarityExperience:F1}/{experienceMaxScore:F1}, Education {similarityEducation:F1}/{educationMaxScore:F1}, Total {finalSimilarity:F1}/100";
 
-                    _logger.LogInformation("Similarity Scores for Job {JobId}: Description={Description:F1}/{DescriptionMax:F1}, Skills={Skills:F1}/{SkillsMax:F1}, Experience={Experience:F1}/{ExperienceMax:F1}, Education={Education:F1}/{EducationMax:F1}, Total={Total:F1}/100",
-                        job.JobId, similarityDescription, descriptionMaxScore, similaritySkills, skillsMaxScore, similarityExperience, experienceMaxScore, similarityEducation, educationMaxScore, finalSimilarity);
+                    // Enhanced logging for debugging
+                    _logger.LogInformation("Detailed Similarity Calculation for Job {JobId}, CV {CVId}:", job.JobId, cv.CVId);
+                    _logger.LogInformation("- Weights: Description={DW}, Skills={SW}, Experience={EW}, Education={EdW}", descriptionWeight, skillsWeight, experienceWeight, educationWeight);
+                    _logger.LogInformation("- Max Scores: Description={DMax:F1}, Skills={SMax:F1}, Experience={EMax:F1}, Education={EdMax:F1}", descriptionMaxScore, skillsMaxScore, experienceMaxScore, educationMaxScore);
+                    _logger.LogInformation("- Raw Cosine Similarities: Description={D:F4}, Skills={S:F4}, Experience={E:F4}, Education={Ed:F4}", 
+                        jobVectors[0].Length > 0 && cvVectors[0].Length > 0 ? CalculateCosineSimilarity(jobVectors[0], cvVectors[0]) : 0f,
+                        jobVectors[1].Length > 0 && cvVectors[1].Length > 0 ? CalculateCosineSimilarity(jobVectors[1], cvVectors[1]) : 0f,
+                        jobVectors[2].Length > 0 && cvVectors[2].Length > 0 ? CalculateCosineSimilarity(jobVectors[2], cvVectors[2]) : 0f,
+                        jobVectors[3].Length > 0 && cvVectors[3].Length > 0 ? CalculateCosineSimilarity(jobVectors[3], cvVectors[3]) : 0f);
+                    _logger.LogInformation("- Final Scores: Description={Description:F1}/{DescriptionMax:F1}, Skills={Skills:F1}/{SkillsMax:F1}, Experience={Experience:F1}/{ExperienceMax:F1}, Education={Education:F1}/{EducationMax:F1}, Total={Total:F1}/100",
+                        similarityDescription, descriptionMaxScore, similaritySkills, skillsMaxScore, similarityExperience, experienceMaxScore, similarityEducation, educationMaxScore, finalSimilarity);
+                    
+                    // Log vector information for debugging
+                    _logger.LogInformation("Vector Lengths - Job: [{J0}, {J1}, {J2}, {J3}], CV: [{C0}, {C1}, {C2}, {C3}]", 
+                        jobVectors[0]?.Length ?? 0, jobVectors[1]?.Length ?? 0, jobVectors[2]?.Length ?? 0, jobVectors[3]?.Length ?? 0,
+                        cvVectors[0]?.Length ?? 0, cvVectors[1]?.Length ?? 0, cvVectors[2]?.Length ?? 0, cvVectors[3]?.Length ?? 0);
 
                     return (true, string.Empty, finalSimilarity, similarityDescription, similaritySkills, similarityExperience, similarityEducation, descriptionMaxScore, skillsMaxScore, experienceMaxScore, educationMaxScore, geminiReasoning);
                 }
@@ -1023,6 +1140,14 @@ CV text:
             if (string.IsNullOrWhiteSpace(text))
                 return string.Empty;
             return Regex.Replace(text.Trim().ToLower(), @"\s+", " ");
+        }
+
+        private string CreateConsistentTextHash(string text)
+        {
+            // Create consistent hash for embedding cache key
+            var normalized = NormalizeText(text);
+            var cleanedText = Regex.Replace(normalized, @"[^\w\s]", "").Trim();
+            return cleanedText;
         }
         private string ExtractEducationFallback(string text)
         {

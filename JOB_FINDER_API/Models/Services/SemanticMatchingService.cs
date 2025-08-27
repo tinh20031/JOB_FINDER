@@ -944,7 +944,7 @@ CV text:
 
             return suggestions.Any() ? suggestions : new List<string> { "Your **CV** is **well-aligned** with the job requirements. No major changes needed!" };
         }
-        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv, bool forceRecalculation = false, bool isApplication = false)
+        public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv, bool forceRecalculation = false)
         {
             if (job == null || cv == null)
             {
@@ -981,12 +981,11 @@ CV text:
                 var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                 try
                 {
-                    // Smart CV processing - optimize for performance
-                    bool needsStandardization = !isApplication || string.IsNullOrWhiteSpace(cv.FullCvJson) || forceRecalculation;
-                    CV processedCv = needsStandardization ? await EnsureStandardizedCvFormat(cv, context, forceRecalculation) : cv;
+                    // Standardize CV processing - ensure consistent format for both try-match and applications
+                    CV processedCv = await EnsureStandardizedCvFormat(cv, context, forceRecalculation);
                     
-                    // Use intelligent caching - only force recalc for try-match when needed
-                    bool useForceRecalc = forceRecalculation && !isApplication;
+                    // Use consistent recalculation logic
+                    bool useForceRecalc = forceRecalculation;
                     
                     string jobText = $"{job.Description}\n{job.YourSkill}\n{job.YourExperience}\n{job.Education}";
                     var (jobVectorsSuccess, jobVectorsError, jobVectors, jobContext) = await GenerateVectorsForCriteria(job, jobText, summarize: false, useForceRecalc);
@@ -1158,75 +1157,90 @@ CV text:
         
         private async Task<string> GetCachedOrPreprocessTextAsync(string text, bool forceRecalculation = false)
         {
-            var cacheKey = CreateConsistentTextHash(text);
-            
-            // Check cache first (unless forcing recalculation)
-            if (!forceRecalculation && _textProcessingCache.TryGetValue(cacheKey, out var cached))
-            {
-                if (cached.expiry > DateTime.UtcNow)
-                {
-                    return cached.result;
-                }
-                else
-                {
-                    _textProcessingCache.TryRemove(cacheKey, out _);
-                }
-            }
-            
-            // Only call Gemini API if not in cache or expired
-            _logger.LogInformation("Preprocessing text with Gemini API: Length={Length}", text.Length);
-            
-            var processedText = await CallGeminiForPreprocessingAsync(text);
-            
-            // Cache the result
-            _textProcessingCache[cacheKey] = (processedText, DateTime.UtcNow.Add(_processingCacheExpiry));
-            
-            return processedText;
+            // Fallback to simple processing for now to fix critical issue
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+                
+            // For critical stability, bypass cache temporarily and use simplified processing
+            return await CallGeminiForPreprocessingWithFallback(text);
         }
         
-        private async Task<string> CallGeminiForPreprocessingAsync(string text)
+        private async Task<string> CallGeminiForPreprocessingWithFallback(string text)
         {
-            // Your existing Gemini preprocessing logic here
-            var requestBody = new
+            try
             {
-                contents = new[]
+                // Simplified approach - use existing Gemini call but with better error handling
+                _logger.LogInformation("Preprocessing text with Gemini API: Length={Length}", text.Length);
+                
+                var requestBody = new
                 {
-                    new
+                    contents = new[]
                     {
-                        parts = new[]
+                        new
                         {
-                            new
+                            parts = new[]
                             {
-                                text = $@"Transform this text into a weighted keyword format for semantic similarity matching. 
-                                Focus on technical skills, experience levels, and key job requirements.
-                                Format: 'keyword *weight' where weight is 0.5 for basic terms and 1.0 for important terms.
-                                Text: {text}"
+                                new
+                                {
+                                    text = $@"Transform this text into a weighted keyword format for semantic similarity matching. 
+                                    Focus on technical skills, experience levels, and key job requirements.
+                                    Format: 'keyword *weight' where weight is 0.5 for basic terms and 1.0 for important terms.
+                                    Text: {text}"
+                                }
                             }
                         }
+                    },
+                    generationConfig = new
+                    {
+                        temperature = 0.1,
+                        topK = 1,
+                        topP = 0.8,
+                        maxOutputTokens = 1000
                     }
-                },
-                generationConfig = new
-                {
-                    temperature = 0.1,
-                    topK = 1,
-                    topP = 0.8,
-                    maxOutputTokens = 1000
-                }
-            };
+                };
 
-            var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-            var response = await _authenticatedClient.PostAsync("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", jsonContent);
-            
-            if (response.IsSuccessStatusCode)
+                var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+                var response = await _authenticatedClient.PostAsync("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", jsonContent);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var geminiResponse = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(responseContent);
+                    var result = geminiResponse.GetProperty("candidates")[0]
+                        .GetProperty("content").GetProperty("parts")[0]
+                        .GetProperty("text").GetString().Trim();
+                        
+                    // Validate result is not empty
+                    if (!string.IsNullOrWhiteSpace(result))
+                    {
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var geminiResponse = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(responseContent);
-                return geminiResponse.GetProperty("candidates")[0]
-                    .GetProperty("content").GetProperty("parts")[0]
-                    .GetProperty("text").GetString().Trim();
+                _logger.LogError(ex, "Gemini preprocessing failed, using fallback for text: {Text}", text.Substring(0, Math.Min(100, text.Length)));
             }
             
-            return text; // Fallback to original text
+            // Fallback to simple keyword extraction
+            return CreateSimpleWeightedText(text);
+        }
+        
+        private string CreateSimpleWeightedText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+                
+            // Simple keyword extraction with weights
+            var keywords = text.ToLower()
+                .Split(new char[] { ' ', '\n', '\r', '\t', '.', ',', ';', ':', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(w => w.Length > 2)
+                .Distinct()
+                .Take(50)
+                .Select(w => $"{w} *0.5")
+                .ToList();
+                
+            return string.Join(" ", keywords);
         }
         private string ExtractEducationFallback(string text)
         {

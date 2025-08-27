@@ -181,7 +181,8 @@ builder.Services.AddCors(options =>
                 "http://job-finder-kjt2.onrender.com",
                 "http://localhost:5194",
                 "https://job-finder-fe-ug96.vercel.app",
-                "https://jobfinder.io.vn")
+                "https://jobfinder.io.vn",
+                "https://jobfindersever.io.vn")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
@@ -288,7 +289,7 @@ builder.Services.AddAuthentication(options =>
         OnRemoteFailure = context =>
         {
             Console.WriteLine($"Google authentication failed: {context.Failure?.Message}");
-            context.Response.Redirect($"http://localhost:3000/auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
+            context.Response.Redirect($"https://jobfinder.io.vn//auth/error?message={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
             context.HandleResponse();
             return Task.CompletedTask;
         },

@@ -1,3 +1,4 @@
+using Aspose.Words;
 using Aspose.Words.Drawing;
 using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
@@ -11,11 +12,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using System.IO.Compression;
+using System.Net.NetworkInformation;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using UglyToad.PdfPig;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -138,7 +141,7 @@ namespace JOB_FINDER_API.Controllers
                     }
 
 
-                    var job = await context.Jobs.FindAsync(request.JobId);
+                    /*var job = await context.Jobs.FindAsync(request.JobId);
                     if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin || job.IsExpired())
                         return BadRequest(new { Success = false, Message = "The job posting has expired" });
 
@@ -188,22 +191,100 @@ namespace JOB_FINDER_API.Controllers
                             UpdatedAt = DateTime.UtcNow
                         };
                         context.Applications.Add(application);
+                    }*/
+                    // Lấy job để biết companyId
+                    var job = await context.Jobs.FindAsync(request.JobId);
+                    if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin || job.IsExpired())
+                        return BadRequest(new { Success = false, Message = "The job posting has expired" });
+
+                    // Kiểm tra xem đã từng apply job này và còn Pending chưa
+                    var existingApplication = await context.Applications
+                        .FirstOrDefaultAsync(a => a.JobId == request.JobId && a.UserId == userId && a.Status == ApplicationStatus.Pending);
+
+                    bool isUpdate = false;
+                    Application application;
+
+                    // Nếu chưa từng apply job này (Pending) => kiểm tra số lượng Pending
+                    if (existingApplication == null)
+                    {
+                        // Đếm số lượng đơn Pending của user với các job thuộc company này
+                        var pendingCount = await context.Applications
+                            .Where(a => a.UserId == userId
+                                && a.Status == ApplicationStatus.Pending
+                                && context.Jobs.Any(j => j.JobId == a.JobId && j.CompanyId == job.CompanyId))
+                            .CountAsync();
+
+                        if (pendingCount >= 3)
+                        {
+                            return BadRequest(new
+                            {
+                                Success = false,
+                                Message = "You are only allowed to apply for a maximum of 3 pending positions at the same company. Please wait for the results before applying for more positions."
+                            });
+                        }
+
+                        // Tạo mới đơn apply
+                        application = new Application
+                        {
+                            UserId = userId,
+                            JobId = request.JobId,
+                            CoverLetter = request.CoverLetter,
+                            Status = ApplicationStatus.Pending,
+                            SubmittedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        context.Applications.Add(application);
+                    }
+                    else
+                    {
+                        // Nếu đã apply job này và còn Pending => cho phép update lại đơn apply
+                        application = existingApplication;
+                        application.CoverLetter = request.CoverLetter;
+                        application.Status = ApplicationStatus.Pending;
+                        application.UpdatedAt = DateTime.UtcNow;
+                        application.SubmittedAt = DateTime.UtcNow;
+                        isUpdate = true;
                     }
                     //  KẾT THÚC: Kiểm tra và cập nhật đơn apply cũ nếu có 
 
                     await context.SaveChangesAsync();
 
-                    // Gửi email thông báo cho candidate
+                   
+
                     if (!string.IsNullOrEmpty(user.Email))
                     {
+                        string baseUrl = _configuration["AppSettings:BaseUrl"];
                         string subject = isUpdate
-                            ? "Your application has been updated": "You have successfully applied";
-                        string body = isUpdate
-                        ? $"Your application for the job \"{job.Title}\" has been successfully updated/replaced at {DateTime.Now:HH:mm dd/MM/yyyy}."
-                        : $"You have successfully applied for the job \"{job.Title}\" at {DateTime.Now:HH:mm dd/MM/yyyy}.";
-                        await _emailService.SendEmailAsync(user.Email, subject, body);
-                    }
+                            ? "Your application has been updated"
+                            : "You have successfully applied";
 
+                        string actionText = isUpdate ? "updated/replaced" : "submitted";
+                        string buttonText = isUpdate ? "View your application" : "View job details";
+                        string buttonUrl = $"{baseUrl}/jobs/{job.JobId}";
+
+                        string body = $@"
+                            <html>
+                              <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+                                <div style='max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+                                  <h2 style='color: #2d8cf0; text-align: center;'>Congratulations, {user.FullName}!</h2>
+                                  <p style='font-size: 16px; color: #333;'>
+                                    Your application for the job <b>""{job.Title}""</b> has been <b>{(isUpdate ? "replaced" : "submitted")}</b> at {DateTime.Now:HH:mm dd/MM/yyyy}.
+                                  </p>
+                                  <div style='margin: 24px 0; text-align: center;'>
+                                    <a href='{baseUrl}/candidates-dashboard/applied-jobs/{job.JobId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>
+                                      {(isUpdate ? "View your application" : "View job details")}
+                                    </a>
+                                  </div>
+                                  <p style='font-size: 14px; color: #888; text-align: center;'>
+                                    If you have any questions, please contact our support team.<br>
+                                    Thank you for being part of Job Finder!
+                                  </p>
+                                </div>
+                              </body>
+                            </html>";
+                        await _emailService.SendEmailAsync(user.Email, subject, body, true);
+}
 
                     if (request.CvFile != null && request.CvFile.Length > 0)
                     {

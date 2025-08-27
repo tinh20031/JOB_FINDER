@@ -37,23 +37,6 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Embeddings",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Vector = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Embeddings", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Industries",
                 columns: table => new
                 {
@@ -248,7 +231,8 @@ namespace JOB_FINDER_API.Migrations
                     Contact = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IndustryId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -601,6 +585,30 @@ namespace JOB_FINDER_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Embeddings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Vector = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    JobId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Embeddings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Embeddings_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "JobId",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "JobViews",
                 columns: table => new
                 {
@@ -697,9 +705,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "CompanySubscriptionTypeId", "CreatedAt", "CvMatchLimit", "Description", "DurationInDays", "IsActive", "JobPostLimit", "Name", "PackageType", "Price", "TrendingJobLimit", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 8, 23, 22, 20, 14, 459, DateTimeKind.Unspecified).AddTicks(5382), 5, "Free tier with basic features", 30, true, 2, "Free", 0, 0m, 0, new DateTime(2025, 8, 23, 22, 20, 14, 459, DateTimeKind.Unspecified).AddTicks(5403) },
-                    { 2, new DateTime(2025, 8, 23, 22, 20, 14, 459, DateTimeKind.Unspecified).AddTicks(5407), 10, "Basic tier with extended features", 30, true, 10, "Basic", 1, 2000m, 5, new DateTime(2025, 8, 23, 22, 20, 14, 459, DateTimeKind.Unspecified).AddTicks(5408) },
-                    { 3, new DateTime(2025, 8, 23, 22, 20, 14, 459, DateTimeKind.Unspecified).AddTicks(5412), 2147483647, "Premium tier with unlimited features", 30, true, 2147483647, "Premium", 2, 3000m, 10, new DateTime(2025, 8, 23, 22, 20, 14, 459, DateTimeKind.Unspecified).AddTicks(5414) }
+                    { 1, new DateTime(2025, 8, 26, 23, 8, 46, 354, DateTimeKind.Unspecified).AddTicks(723), 5, "Free tier with basic features", 30, true, 2, "Free", 0, 0m, 0, new DateTime(2025, 8, 26, 23, 8, 46, 354, DateTimeKind.Unspecified).AddTicks(741) },
+                    { 2, new DateTime(2025, 8, 26, 23, 8, 46, 354, DateTimeKind.Unspecified).AddTicks(745), 10, "Basic tier with extended features", 30, true, 10, "Basic", 1, 2000m, 5, new DateTime(2025, 8, 26, 23, 8, 46, 354, DateTimeKind.Unspecified).AddTicks(746) },
+                    { 3, new DateTime(2025, 8, 26, 23, 8, 46, 354, DateTimeKind.Unspecified).AddTicks(749), 2147483647, "Premium tier with unlimited features", 30, true, 2147483647, "Premium", 2, 3000m, 10, new DateTime(2025, 8, 26, 23, 8, 46, 354, DateTimeKind.Unspecified).AddTicks(751) }
                 });
 
             migrationBuilder.InsertData(
@@ -707,13 +715,13 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "IndustryId", "CreatedAt", "IndustryName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 3, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8072), "Software Development", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8098) },
-                    { 4, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8101), "Cybersecurity", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8102) },
-                    { 5, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8106), "Data Science", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8107) },
-                    { 6, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8109), "Cloud Computing", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8111) },
-                    { 7, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8113), "UI/UX Design", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8115) },
-                    { 8, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8117), "Artificial Intelligence", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8118) },
-                    { 9, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8121), "DevOps", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8122) }
+                    { 3, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(874), "Software Development", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(902) },
+                    { 4, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(905), "Cybersecurity", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(906) },
+                    { 5, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(909), "Data Science", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(911) },
+                    { 6, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(913), "Cloud Computing", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(914) },
+                    { 7, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(917), "UI/UX Design", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(918) },
+                    { 8, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(920), "Artificial Intelligence", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(922) },
+                    { 9, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(924), "DevOps", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(925) }
                 });
 
             migrationBuilder.InsertData(
@@ -721,9 +729,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "JobTypeId", "CreatedAt", "JobTypeName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8170), "Full-time", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8171) },
-                    { 2, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8176), "Part-time", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8177) },
-                    { 3, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8180), "Remote", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8181) }
+                    { 1, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(964), "Full-time", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(966) },
+                    { 2, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(969), "Part-time", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(970) },
+                    { 3, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(972), "Remote", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(974) }
                 });
 
             migrationBuilder.InsertData(
@@ -731,12 +739,12 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "LevelId", "CreatedAt", "LevelName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8225), "Intern", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8226) },
-                    { 2, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8230), "Fresher", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8231) },
-                    { 3, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8234), "Junior", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8236) },
-                    { 4, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8238), "Mid-level", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8240) },
-                    { 5, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8242), "Senior", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8243) },
-                    { 6, new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8246), "Lead", new DateTime(2025, 8, 23, 22, 20, 14, 452, DateTimeKind.Unspecified).AddTicks(8248) }
+                    { 1, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1009), "Intern", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1011) },
+                    { 2, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1014), "Fresher", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1016) },
+                    { 3, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1018), "Junior", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1020) },
+                    { 4, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1022), "Mid-level", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1023) },
+                    { 5, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1026), "Senior", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1027) },
+                    { 6, new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1029), "Lead", new DateTime(2025, 8, 26, 23, 8, 46, 348, DateTimeKind.Unspecified).AddTicks(1031) }
                 });
 
             migrationBuilder.InsertData(
@@ -744,9 +752,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "RoleId", "CreatedAt", "RoleName", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 8, 23, 15, 20, 14, 452, DateTimeKind.Utc).AddTicks(7823), "Candidate", new DateTime(2025, 8, 23, 15, 20, 14, 452, DateTimeKind.Utc).AddTicks(7827) },
-                    { 2, new DateTime(2025, 8, 23, 15, 20, 14, 452, DateTimeKind.Utc).AddTicks(7833), "Company", new DateTime(2025, 8, 23, 15, 20, 14, 452, DateTimeKind.Utc).AddTicks(7833) },
-                    { 3, new DateTime(2025, 8, 23, 15, 20, 14, 452, DateTimeKind.Utc).AddTicks(7834), "Admin", new DateTime(2025, 8, 23, 15, 20, 14, 452, DateTimeKind.Utc).AddTicks(7834) }
+                    { 1, new DateTime(2025, 8, 26, 16, 8, 46, 348, DateTimeKind.Utc).AddTicks(649), "Candidate", new DateTime(2025, 8, 26, 16, 8, 46, 348, DateTimeKind.Utc).AddTicks(651) },
+                    { 2, new DateTime(2025, 8, 26, 16, 8, 46, 348, DateTimeKind.Utc).AddTicks(659), "Company", new DateTime(2025, 8, 26, 16, 8, 46, 348, DateTimeKind.Utc).AddTicks(659) },
+                    { 3, new DateTime(2025, 8, 26, 16, 8, 46, 348, DateTimeKind.Utc).AddTicks(660), "Admin", new DateTime(2025, 8, 26, 16, 8, 46, 348, DateTimeKind.Utc).AddTicks(661) }
                 });
 
             migrationBuilder.InsertData(
@@ -754,9 +762,9 @@ namespace JOB_FINDER_API.Migrations
                 columns: new[] { "SubscriptionTypeId", "CreatedAt", "Description", "DurationInDays", "IsActive", "Name", "PackageType", "Price", "TryMatchLimit", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 8, 23, 15, 20, 14, 459, DateTimeKind.Utc).AddTicks(5266), "Free package with 1 try-match", 0, true, "Free", 1, 0m, 1, new DateTime(2025, 8, 23, 15, 20, 14, 459, DateTimeKind.Utc).AddTicks(5270) },
-                    { 2, new DateTime(2025, 8, 23, 15, 20, 14, 459, DateTimeKind.Utc).AddTicks(5277), "Basic package with 3 try-matches", 30, true, "Basic", 2, 2000m, 3, new DateTime(2025, 8, 23, 15, 20, 14, 459, DateTimeKind.Utc).AddTicks(5278) },
-                    { 3, new DateTime(2025, 8, 23, 15, 20, 14, 459, DateTimeKind.Utc).AddTicks(5283), "Premium package with 7 try-matches", 30, true, "Premium", 3, 3000m, 7, new DateTime(2025, 8, 23, 15, 20, 14, 459, DateTimeKind.Utc).AddTicks(5284) }
+                    { 1, new DateTime(2025, 8, 26, 16, 8, 46, 354, DateTimeKind.Utc).AddTicks(631), "Free package with 1 try-match", 0, true, "Free", 1, 0m, 1, new DateTime(2025, 8, 26, 16, 8, 46, 354, DateTimeKind.Utc).AddTicks(633) },
+                    { 2, new DateTime(2025, 8, 26, 16, 8, 46, 354, DateTimeKind.Utc).AddTicks(639), "Basic package with 3 try-matches", 30, true, "Basic", 2, 2000m, 3, new DateTime(2025, 8, 26, 16, 8, 46, 354, DateTimeKind.Utc).AddTicks(640) },
+                    { 3, new DateTime(2025, 8, 26, 16, 8, 46, 354, DateTimeKind.Utc).AddTicks(644), "Premium package with 7 try-matches", 30, true, "Premium", 3, 3000m, 7, new DateTime(2025, 8, 26, 16, 8, 46, 354, DateTimeKind.Utc).AddTicks(644) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -826,6 +834,11 @@ namespace JOB_FINDER_API.Migrations
                 name: "IX_CVs_UserId",
                 table: "CVs",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Embeddings_JobId",
+                table: "Embeddings",
+                column: "JobId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Experiences_UserId",

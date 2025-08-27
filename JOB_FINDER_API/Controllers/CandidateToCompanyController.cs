@@ -37,12 +37,12 @@ namespace JOB_FINDER_API.Controllers
 
             if (existingRequest != null)
             {
-               
+
                 if (existingRequest.Status == RequestStatus.Pending || existingRequest.Status == RequestStatus.Approved)
                 {
                     return BadRequest("You have submitted a request before please wait");
                 }
-                
+
             }
 
             var entity = new JOB_FINDER_API.Models.CandidateToCompanyRequest
@@ -83,7 +83,7 @@ namespace JOB_FINDER_API.Controllers
       <p><b>Contact:</b> {request.Contact}</p>
       <p><b>Industry ID:</b> {request.IndustryId}</p>
       <div style='margin: 24px 0;'>
-        <a href='{baseUrl}/admin-dashboard/user-manager/{user.UserId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
+        <a href='{baseUrl}/admin-dashboard/upgrade-requests' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
       </div>
       <p style='font-size: 13px; color: #888;'>Please verify this request if the information is valid.</p>
     </div>
@@ -161,8 +161,8 @@ namespace JOB_FINDER_API.Controllers
             try
             {
                 var requests = await _context.CandidateToCompanyRequests
-                    .Include(r => r.User)  
-                    .Include(r => r.Industry)  
+                    .Include(r => r.User)
+                    .Include(r => r.Industry)
                     .Select(r => new UpgradeRequestDto
                     {
                         CandidateToCompanyRequestId = r.CandidateToCompanyRequestId,
@@ -221,10 +221,10 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("process-upgrade/{userId}")]
         public async Task<IActionResult> ProcessRoleUpgrade(int userId, [FromBody] UpgradeDecision decision)
         {
-         
+
             _logger.LogInformation("Processing role upgrade request for userId: {UserId}", userId);
 
-          
+
             if (decision == null || string.IsNullOrEmpty(decision.Decision))
             {
                 _logger.LogWarning("Invalid request body: Decision is required");
@@ -238,7 +238,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("Decision must be 'approve' or 'reject'.");
             }
 
-       
+
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
@@ -246,7 +246,7 @@ namespace JOB_FINDER_API.Controllers
                 return NotFound("User not found.");
             }
 
-       
+
             var request = await _context.CandidateToCompanyRequests
                 .OrderByDescending(r => r.CreatedAt)
                 .FirstOrDefaultAsync(r => r.UserId == userId);
@@ -256,7 +256,7 @@ namespace JOB_FINDER_API.Controllers
                 return NotFound("Không tìm thấy request gốc.");
             }
 
-        
+
             var industry = await _context.Industries.FindAsync(request.IndustryId);
             if (industry == null)
             {
@@ -264,7 +264,7 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("IndustryId không hợp lệ.");
             }
 
-       
+
             string baseUrl = _config["AppSettings:BaseUrl"];
             if (string.IsNullOrEmpty(baseUrl))
             {
@@ -276,7 +276,7 @@ namespace JOB_FINDER_API.Controllers
             {
                 if (decisionValue == "approve")
                 {
-                 
+
                     user.RoleId = 2;
                     request.Status = RequestStatus.Approved;
 
@@ -319,7 +319,7 @@ namespace JOB_FINDER_API.Controllers
     </div>
   </body>
 </html>";
-                    SendEmail(user.Email, "Xác minh thành Công ty thành công", htmlBody, true);
+                    SendEmail(user.Email, "Company verification successful", htmlBody, true);
                 }
                 else // reject
                 {
@@ -341,7 +341,7 @@ namespace JOB_FINDER_API.Controllers
     </div>
   </body>
 </html>";
-                    SendEmail(user.Email, "Yêu cầu xác minh Công ty bị từ chối", htmlBody, true);
+                    SendEmail(user.Email, "Company verification request denied", htmlBody, true);
                 }
 
                 await _context.SaveChangesAsync();
@@ -361,3 +361,4 @@ namespace JOB_FINDER_API.Controllers
         }
     }
 }
+

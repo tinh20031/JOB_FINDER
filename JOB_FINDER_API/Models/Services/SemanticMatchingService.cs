@@ -514,15 +514,13 @@ CV text:
             string processedJobText = jobText;
             string jobContext = string.Empty;
 
-            // Tóm tắt nếu cần và xử lý lỗi
             if (summarize && jobText.Length > summaryLengthThreshold)
             {
                 var (summarizeSuccess, summary, error) = await SummarizeAndTranslate(jobText, "en");
-                processedJobText = summarizeSuccess ? summary : jobText; // Fallback về text gốc nếu tóm tắt thất bại
+                processedJobText = summarizeSuccess ? summary : jobText;
                 _logger.LogInformation("Summarized job text: Length={Length}", processedJobText.Length);
             }
 
-            // Preprocess toàn bộ job text để đảm bảo tính nhất quán
             var (preprocessSuccess, cleanedJobText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(processedJobText);
             if (preprocessSuccess)
             {
@@ -531,20 +529,18 @@ CV text:
             else
             {
                 _logger.LogWarning("Preprocess failed for job text, using original text as fallback");
-                cleanedJobText = processedJobText; // Fallback về text gốc nếu preprocess thất bại
+                cleanedJobText = processedJobText;
             }
 
-            using (var scope = _serviceScopeFactory.CreateScope())
+            var tasks = texts.Select(async (text, i) =>
             {
-                var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-
-                var tasks = texts.Select(async (text, i) =>
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
+                    var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
                     try
                     {
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            // Kiểm tra vector cũ trong DB dựa trên JobId và tiêu chí
                             var existingVector = await context.Embeddings
                                 .Where(e => e.JobId == job.JobId && e.Text == text && e.Model == "models/text-embedding-004" && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
                                 .Select(e => e.Vector)
@@ -556,7 +552,6 @@ CV text:
                                 return (Index: i, Success: true, Vector: existingVector, Error: string.Empty);
                             }
 
-                            // Nếu không có vector cũ, tạo vector mới từ cleanedJobText hoặc text gốc
                             var inputText = string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText;
                             var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText, job.JobId);
                             return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
@@ -568,16 +563,16 @@ CV text:
                         _logger.LogError(ex, "Error generating vector for job criteria {Index} for JobId {JobId}", i, job.JobId);
                         return (Index: i, Success: false, Vector: new float[0], Error: ex.Message);
                     }
-                }).ToArray();
+                }
+            }).ToArray();
 
-                var results = await Task.WhenAll(tasks);
-                foreach (var result in results)
+            var results = await Task.WhenAll(tasks);
+            foreach (var result in results)
+            {
+                vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
+                if (!result.Success)
                 {
-                    vectors[result.Index] = result.Success && result.Vector != null && result.Vector.Length > 0 ? result.Vector : new float[0];
-                    if (!result.Success)
-                    {
-                        _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
-                    }
+                    _logger.LogWarning("Failed to generate vector for job criteria {Index}: {Error}", result.Index, result.Error);
                 }
             }
 
@@ -592,7 +587,6 @@ CV text:
                 return (false, "Invalid CV or FullCvJson", new float[4][], string.Empty);
             }
 
-        
             string cvText;
             try
             {
@@ -613,7 +607,6 @@ CV text:
                 return (false, "Text field in FullCvJson is empty", new float[4][], string.Empty);
             }
 
-      
             var (extractSuccess, extractError, cvData) = await ExtractCvDataAsync(cv, cvText);
             if (!extractSuccess)
             {
@@ -633,26 +626,36 @@ CV text:
 
             var vectors = new float[4][] { new float[0], new float[0], new float[0], new float[0] };
 
-       
             var (preprocessSuccess, cleanedCvText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(cvText);
             if (!preprocessSuccess)
             {
                 _logger.LogWarning("Preprocess failed for CV text, using original text for CVId {CVId}", cv.CVId);
-                cleanedCvText = cvText; 
+                cleanedCvText = cvText;
             }
 
             var tasks = texts.Select(async (text, i) =>
             {
-                if (!string.IsNullOrWhiteSpace(text) && !text.Contains("No "))
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
-                        string.IsNullOrEmpty(cleanedCvText) ? text : cleanedCvText);
-                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
-                }
-                else
-                {
-                    var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cvText);
-                    return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(text) && !text.Contains("No "))
+                        {
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(
+                                string.IsNullOrEmpty(cleanedCvText) ? text : cleanedCvText);
+                            return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
+                        }
+                        else
+                        {
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(cvText);
+                            return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error generating vector for CV criteria {Index} for CVId {CVId}", i, cv.CVId);
+                        return (Index: i, Success: false, Vector: new float[0], Error: ex.Message);
+                    }
                 }
             }).ToArray();
 
@@ -789,14 +792,14 @@ CV text:
         {
             var suggestions = new List<string>();
 
-         
-            const float descriptionThreshold = 0.4f; 
-            const float skillsThreshold = 0.5f; 
-            const float experienceThreshold = 0.4f; 
-            const float educationThreshold = 0.6f; 
-            const float totalThreshold = 0.5f; 
 
-            
+            const float descriptionThreshold = 0.4f;
+            const float skillsThreshold = 0.5f;
+            const float experienceThreshold = 0.4f;
+            const float educationThreshold = 0.6f;
+            const float totalThreshold = 0.5f;
+
+
             float normalizedDescription = descriptionMaxScore > 0 ? similarityDescription / descriptionMaxScore : 0f;
             float normalizedSkills = skillsMaxScore > 0 ? similaritySkills / skillsMaxScore : 0f;
             float normalizedExperience = experienceMaxScore > 0 ? similarityExperience / experienceMaxScore : 0f;
@@ -806,37 +809,37 @@ CV text:
                   (descriptionMaxScore + skillsMaxScore + experienceMaxScore + educationMaxScore)
                 : 0f;
 
-         
+
             if (normalizedDescription < descriptionThreshold)
             {
                 suggestions.Add("Revise your **description** to better align with the job's requirements.");
             }
 
-         
+
             if (normalizedSkills < skillsThreshold)
             {
                 suggestions.Add("Enhance your **skills** section to better match the job's technical demands.");
             }
 
-          
+
             if (normalizedExperience < experienceThreshold)
             {
                 suggestions.Add("Strengthen your **experience** section to highlight relevant roles or projects.");
             }
 
-          
+
             if (normalizedEducation < educationThreshold)
             {
                 suggestions.Add("Update your **education** details to better reflect the job's qualifications.");
             }
 
-            
+
             if (totalSimilarity < totalThreshold)
             {
                 suggestions.Add("Tailor your **CV** to improve overall alignment with the job's requirements.");
             }
 
-            
+
             return suggestions.Any() ? suggestions : new List<string> { "Your **CV** is **well-aligned** with the job requirements. No major changes needed!" };
         }
         public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv)
@@ -851,13 +854,13 @@ CV text:
                 job.Description, job.YourSkill, job.YourExperience, job.Education);
             _logger.LogInformation("Extracting CV content from FullCvJson: {FullCvJson}", cv.FullCvJson);
 
-          
+
             float descriptionWeight = job.DescriptionWeight;
             float skillsWeight = job.SkillsWeight;
             float experienceWeight = job.ExperienceWeight;
             float educationWeight = job.EducationWeight;
 
-         
+
             float totalWeight = descriptionWeight + skillsWeight + experienceWeight + educationWeight;
             if (Math.Abs(totalWeight) < 0.0001f)
             {
@@ -865,7 +868,7 @@ CV text:
                 return (false, "Total weight cannot be zero.", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, "Invalid weights");
             }
 
-         
+
             float descriptionMaxScore = descriptionWeight * 100f;
             float skillsMaxScore = skillsWeight * 100f;
             float experienceMaxScore = experienceWeight * 100f;
@@ -897,16 +900,16 @@ CV text:
                         return (false, "Invalid vector array length", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, "Invalid vector array length");
                     }
 
-                   
+
                     float similarityDescription = CalculateCosineSimilarity(jobVectors[0], cvVectors[0]) * descriptionMaxScore;
                     float similaritySkills = CalculateCosineSimilarity(jobVectors[1], cvVectors[1]) * skillsMaxScore;
                     float similarityExperience = CalculateCosineSimilarity(jobVectors[2], cvVectors[2]) * experienceMaxScore;
                     float similarityEducation = CalculateCosineSimilarity(jobVectors[3], cvVectors[3]) * educationMaxScore;
 
-                  
+
                     float finalSimilarity = similarityDescription + similaritySkills + similarityExperience + similarityEducation;
 
-               
+
                     similarityDescription = Math.Clamp(similarityDescription, 0f, descriptionMaxScore);
                     similaritySkills = Math.Clamp(similaritySkills, 0f, skillsMaxScore);
                     similarityExperience = Math.Clamp(similarityExperience, 0f, experienceMaxScore);
@@ -1041,3 +1044,4 @@ CV text:
         }
     }
 }
+

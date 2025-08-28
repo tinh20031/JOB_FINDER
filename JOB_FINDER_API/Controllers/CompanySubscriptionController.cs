@@ -234,12 +234,31 @@ namespace JOB_FINDER_API.Controllers
                     // Check if company has an active subscription
                     var existingSubscription = await _context.CompanySubscriptions
                         .Where(s => s.UserId == payment.UserId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                        .Include(s => s.SubscriptionType)
                         .FirstOrDefaultAsync();
 
                     if (existingSubscription != null)
                     {
                         // Update existing subscription
-                        existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId; // Update to new subscription type
+                        //existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId; // Update to new subscription type
+                        // Get current subscription type
+                        var currentSubscriptionType = existingSubscription.SubscriptionType;
+
+                        // Only upgrade subscription type if the new one is higher tier, otherwise keep current tier
+                        bool shouldUpgradeSubscriptionType = subscriptionType.PackageType > currentSubscriptionType.PackageType;
+
+                        if (shouldUpgradeSubscriptionType)
+                        {
+                            // Upgrade to higher tier subscription
+                            existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId;
+                            _logger.LogInformation($"Upgraded company subscription type from {currentSubscriptionType.PackageType} to {subscriptionType.PackageType} for user {payment.UserId}");
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Keeping current company subscription type {currentSubscriptionType.PackageType} (higher or equal to purchased {subscriptionType.PackageType}) for user {payment.UserId}");
+                        }
+
+                        // Always extend duration and add benefits regardless of tier
                         existingSubscription.EndDate = existingSubscription.EndDate.AddDays(subscriptionType.DurationInDays);
                         existingSubscription.RemainingJobPosts += subscriptionType.JobPostLimit;
                         existingSubscription.RemainingTrendingJobPosts += subscriptionType.TrendingJobLimit;
@@ -313,12 +332,31 @@ namespace JOB_FINDER_API.Controllers
                 // Check if company has an active subscription
                 var existingSubscription = await _context.CompanySubscriptions
                     .Where(s => s.UserId == payment.UserId && s.IsActive && s.EndDate > DateTime.UtcNow)
+                    .Include(s => s.SubscriptionType)
                     .FirstOrDefaultAsync();
 
                 if (existingSubscription != null)
                 {
                     // Update existing subscription
-                    existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId; // Update to new subscription type
+                    //existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId; // Update to new subscription type
+                    // Get current subscription type
+                    var currentSubscriptionType = existingSubscription.SubscriptionType;
+
+                    // Only upgrade subscription type if the new one is higher tier, otherwise keep current tier
+                    bool shouldUpgradeSubscriptionType = subscriptionType.PackageType > currentSubscriptionType.PackageType;
+
+                    if (shouldUpgradeSubscriptionType)
+                    {
+                        // Upgrade to higher tier subscription
+                        existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId;
+                        _logger.LogInformation($"Upgraded company subscription type from {currentSubscriptionType.PackageType} to {subscriptionType.PackageType} for user {payment.UserId}");
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"Keeping current company subscription type {currentSubscriptionType.PackageType} (higher or equal to purchased {subscriptionType.PackageType}) for user {payment.UserId}");
+                    }
+
+                    // Always extend duration and add benefits regardless of tier
                     existingSubscription.EndDate = existingSubscription.EndDate.AddDays(subscriptionType.DurationInDays);
                     existingSubscription.RemainingJobPosts += subscriptionType.JobPostLimit;
                     existingSubscription.RemainingTrendingJobPosts += subscriptionType.TrendingJobLimit;

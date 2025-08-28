@@ -2,6 +2,7 @@
 using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -26,22 +27,25 @@ namespace JOB_FINDER_API.Models.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy;
         private readonly GeminiConfig _geminiConfig;
+        private readonly IMemoryCache _cache;
         private HttpClient _authenticatedClient;
         private string _accessToken;
         private DateTime _tokenExpiration;
-        private readonly Dictionary<string, (string CleanedText, string[] WeightedTerms, string ContextAnalysis)> _preprocessCache = new();
-        private readonly Dictionary<string, (string SummaryText, DateTime ExpiresAt)> _translationCache = new();
-
+        private static readonly SemaphoreSlim _tokenLock = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim _rateLimitSemaphore = new SemaphoreSlim(10, 10);
+        private const string TokenCacheKey = "GeminiAccessToken";
         public SemanticMatchingService(
-            ILogger<SemanticMatchingService> logger,
-            IServiceScopeFactory serviceScopeFactory,
-            IConfiguration configuration,
-            IHttpClientFactory httpClientFactory)
+              ILogger<SemanticMatchingService> logger,
+              IServiceScopeFactory serviceScopeFactory,
+              IConfiguration configuration,
+              IHttpClientFactory httpClientFactory,
+              IMemoryCache cache)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _geminiConfig = configuration.GetSection("Gemini").Get<GeminiConfig>() ?? throw new ArgumentNullException(nameof(_geminiConfig));
 
             _retryPolicy = Policy<HttpResponseMessage>
@@ -64,7 +68,7 @@ namespace JOB_FINDER_API.Models.Services
             }
 
             _authenticatedClient = _httpClientFactory.CreateClient();
-            InitializeToken().Wait();
+            InitializeToken().GetAwaiter().GetResult();
         }
 
         private async Task InitializeToken()
@@ -72,44 +76,76 @@ namespace JOB_FINDER_API.Models.Services
             _accessToken = await GetAccessTokenFromServiceAccount();
             if (string.IsNullOrEmpty(_accessToken))
             {
-                throw new ArgumentException("Failed to retrieve AccessToken from Service Account.");
+                _logger.LogError("Failed to retrieve access token from Service Account.");
+                throw new InvalidOperationException("Failed to retrieve AccessToken from Service Account.");
             }
             _authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             _tokenExpiration = DateTime.UtcNow.AddHours(1);
+            _cache.Set(TokenCacheKey, (_accessToken, _tokenExpiration), TimeSpan.FromHours(1));
+            _logger.LogInformation("Access Token initialized: {TokenPrefix}, Expires: {Expiration}", _accessToken.Substring(0, 10) + "...", _tokenExpiration);
         }
 
         private async Task<string> GetAccessTokenFromServiceAccount()
         {
+            await _rateLimitSemaphore.WaitAsync();
             try
             {
-                var credential = GoogleCredential.FromFile(_geminiConfig.ServiceAccountKeyPath)
-                    .CreateScoped(new[] { "https://www.googleapis.com/auth/generative-language", "https://www.googleapis.com/auth/cloud-language" });
-                var token = await credential.UnderlyingCredential.GetAccessTokenForRequestAsync();
-                _logger.LogInformation("Successfully retrieved access token from Service Account.");
-                return token;
+                var retryPolicy = Policy<string>
+                    .Handle<Exception>()
+                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                        (result, timeSpan, retryCount, context) =>
+                        {
+                            _logger.LogWarning("Retry {RetryCount} after {TimeSpan}s due to error: {Error}",
+                                retryCount, timeSpan.TotalSeconds, result.Exception?.Message ?? "Unknown error");
+                        });
+
+                return await retryPolicy.ExecuteAsync(async () =>
+                {
+                    var credential = GoogleCredential.FromFile(_geminiConfig.ServiceAccountKeyPath)
+                        .CreateScoped(new[] { "https://www.googleapis.com/auth/generative-language", "https://www.googleapis.com/auth/cloud-language" });
+                    var token = await credential.UnderlyingCredential.GetAccessTokenForRequestAsync();
+                    _logger.LogInformation("Successfully retrieved access token from Service Account.");
+                    return token;
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to retrieve access token from Service Account.");
                 return null;
             }
-        }
-
-        private async Task EnsureValidToken()
-        {
-            if (DateTime.UtcNow >= _tokenExpiration.AddMinutes(-5))
+            finally
             {
-                lock (_authenticatedClient)
-                {
-                    if (DateTime.UtcNow >= _tokenExpiration.AddMinutes(-5))
-                    {
-                        _logger.LogInformation("Refreshing access token due to impending expiration.");
-                        InitializeToken().Wait();
-                    }
-                }
+            
+                _ = Task.Delay(TimeSpan.FromSeconds(6)).ContinueWith(_ => _rateLimitSemaphore.Release());
             }
         }
+        private async Task EnsureValidToken()
+        {
+            if (_cache.TryGetValue(TokenCacheKey, out (string Token, DateTime Expiration) cachedToken) &&
+                DateTime.UtcNow < cachedToken.Expiration.AddMinutes(-5))
+            {
+                _accessToken = cachedToken.Token;
+                _tokenExpiration = cachedToken.Expiration;
+                _authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+                _logger.LogInformation("Using cached token: {TokenPrefix}, Expires: {Expiration}", _accessToken.Substring(0, 10) + "...", _tokenExpiration);
+                return;
+            }
 
+            await _tokenLock.WaitAsync();
+            try
+            {
+                if (!_cache.TryGetValue(TokenCacheKey, out cachedToken) ||
+                    DateTime.UtcNow >= cachedToken.Expiration.AddMinutes(-5))
+                {
+                    _logger.LogInformation("Refreshing access token due to impending expiration.");
+                    await InitializeToken();
+                }
+            }
+            finally
+            {
+                _tokenLock.Release();
+            }
+        }
         public async Task<string> DetectLanguageAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -121,17 +157,35 @@ namespace JOB_FINDER_API.Models.Services
             try
             {
                 await EnsureValidToken();
+                if (string.IsNullOrEmpty(_accessToken))
+                {
+                    _logger.LogError("Access token is null or empty");
+                    return "en";
+                }
+
                 var prompt = $@"Detect the primary language of the following text. Return only the language code (e.g., 'en' for English, 'vi' for Vietnamese).
 Text:
 {text}";
 
-                var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+                var requestBody = new
+                {
+                    contents = new[] { new { parts = new[] { new { text = prompt } } } },
+                    generationConfig = new
+                    {
+                        temperature = 0.0f,
+                        topP = 1.0f,
+                        topK = 1,
+                        candidateCount = 1
+                    }
+                };
+
                 var requestJsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
                 var response = await _retryPolicy.ExecuteAsync(async () => await _authenticatedClient.PostAsync(_geminiConfig.ChatEndpoint, requestJsonContent));
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Failed to detect language: {Error}", await response.Content.ReadAsStringAsync());
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to detect language: {Error}", errorContent);
                     return "en"; // Default to English
                 }
 
@@ -172,6 +226,12 @@ Text:
             try
             {
                 await EnsureValidToken();
+                if (string.IsNullOrEmpty(_accessToken))
+                {
+                    _logger.LogError("Access token is null or empty");
+                    return (false, normalizedText, string.Empty);
+                }
+
                 var prompt = $@"Preprocess this text for semantic analysis in a job matching context (supporting multiple languages, e.g., English, Vietnamese):
 - Clean the text by removing irrelevant details (e.g., contact info, formatting) based on configurable rules.
 - Analyze context: identify technical skill proficiency levels (e.g., Java (senior), Python (junior)), soft skills (e.g., teamwork, communication), experience type (e.g., project-based, theoretical), education, and relevance to job matching.
@@ -188,7 +248,7 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
                     contents = new[] { new { parts = new[] { new { text = prompt } } } },
                     generationConfig = new
                     {
-                        temperature = 0.0f, // Deterministic output
+                        temperature = 0.0f,
                         topP = 1.0f,
                         topK = 1,
                         candidateCount = 1
@@ -229,7 +289,6 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
         }
 
 
-
         public async Task<(bool Success, string Summary, CVData CVData)> SummarizeAndTranslate(string text, string targetLanguage = "en")
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -238,17 +297,26 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
                 return (false, "Input text is empty", new CVData());
             }
 
-            var requestBody = new
+            try
             {
-                contents = new[]
+                await EnsureValidToken();
+                if (string.IsNullOrEmpty(_accessToken))
                 {
-                    new
+                    _logger.LogError("Access token is null or empty");
+                    return (false, "Invalid access token", new CVData());
+                }
+
+                var requestBody = new
+                {
+                    contents = new[]
                     {
-                        parts = new[]
+                new
+                {
+                    parts = new[]
+                    {
+                        new
                         {
-                            new
-                            {
-                                text = $@"Analyze the following CV text and extract the following fields in a job matching context:
+                            text = $@"Analyze the following CV text and extract the following fields in a job matching context:
 - Description: A brief summary of the candidate's profile or objective (50-100 words).
 - Skills: A list of all relevant skills (technical and soft skills, no limit on number of skills, comma-separated).
 - Experience: A summary of relevant work experience, including years and roles (50-100 words).
@@ -261,21 +329,19 @@ Education: [content]
 
 CV text:
 {text}"
-                            }
                         }
                     }
-                },
-                generationConfig = new
-                {
-                    temperature = 0.0f, // Deterministic output
-                    topP = 1.0f,
-                    topK = 1,
-                    candidateCount = 1
                 }
-            };
+            },
+                    generationConfig = new
+                    {
+                        temperature = 0.0f,
+                        topP = 1.0f,
+                        topK = 1,
+                        candidateCount = 1
+                    }
+                };
 
-            try
-            {
                 var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
                 _logger.LogDebug("Summarize Request Body: {RequestBody}", JsonSerializer.Serialize(requestBody));
                 var response = await _retryPolicy.ExecuteAsync(async () =>
@@ -304,7 +370,7 @@ CV text:
                 return (false, $"Summarization error: {ex.Message}", new CVData());
             }
         }
-    
+
 
         public async Task<(bool Success, string Error, CVData CVData)> ExtractCvDataAsync(CV cv, string extractedText = null)
         {
@@ -382,8 +448,13 @@ CV text:
 
             var normalizedText = NormalizeText(text);
             await EnsureValidToken();
+            if (string.IsNullOrEmpty(_accessToken))
+            {
+                _logger.LogError("Access token is null or empty");
+                return (false, "Invalid access token", new float[0]);
+            }
 
-            var (success, cleanedText, /*weightedTerms,*/ contextAnalysis) = await PreprocessTextWithGeminiAsync(normalizedText);
+            var (success, cleanedText, contextAnalysis) = await PreprocessTextWithGeminiAsync(normalizedText);
             if (!success)
             {
                 _logger.LogWarning("Failed to preprocess text: {Error}", cleanedText);
@@ -394,8 +465,6 @@ CV text:
                 .Where(w => w.Length > 1 && w.Length < 30 && Regex.IsMatch(w, @"^[a-z0-9#+]+$"))
                 .ToArray();
 
-            //var preprocessedText = string.Join(" ", words.Select(word =>
-            //    Array.Exists(weightedTerms, wt => wt.Contains(word, StringComparison.OrdinalIgnoreCase)) ? $"{word} *1.0" : $"{word} *0.5"));
             var preprocessedText = string.Join(" ", words);
 
             if (string.IsNullOrWhiteSpace(preprocessedText))
@@ -412,20 +481,6 @@ CV text:
                 try
                 {
                     Embedding existingEmbedding = null;
-                    //if (jobId.HasValue)
-                    //{
-                    //    var embeddings = await context.Embeddings
-                    //        .Where(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
-                    //        .ToListAsync();
-                    //    existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
-                    //
-                    //    if (existingEmbedding != null)
-                    //    {
-                    //        _logger.LogInformation("Reusing existing embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
-                    //        return (true, string.Empty, existingEmbedding.Vector);
-                    //    }
-                    //}
-                    //else
                     {
                         var embeddings = await context.Embeddings
                             .Where(e => e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
@@ -476,7 +531,6 @@ CV text:
                             Vector = embeddingArray,
                             CreatedAt = DateTime.UtcNow,
                             ExpiresAt = DateTime.UtcNow.AddDays(7),
-                            //JobId = jobId
                         };
 
                         context.Embeddings.Add(embeddingEntity);
@@ -498,7 +552,6 @@ CV text:
                 }
             }
         }
-
 
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string JobContext)> GenerateVectorsForCriteria(Job job, string jobText, bool summarize = false)
         {
@@ -685,6 +738,11 @@ CV text:
             }
 
             await EnsureValidToken();
+            if (string.IsNullOrEmpty(_accessToken))
+            {
+                _logger.LogError("Access token is null or empty");
+                return (false, "Invalid access token", new float[0][]);
+            }
 
             var modelName = "models/text-embedding-004";
             var requestBody = new
@@ -747,7 +805,6 @@ CV text:
                 return (false, "Invalid embedding response format", new float[0][]);
             }
         }
-
         private float CalculateSimilarityWithContext(float[] jobVector, float[] cvVector, float weight)
         {
             if (jobVector == null || cvVector == null || jobVector.Length == 0 || cvVector.Length == 0)

@@ -1,4 +1,4 @@
-﻿using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -223,19 +223,36 @@ namespace JOB_FINDER_API.Controllers
                             // Check if company has an active subscription
                             var existingSubscription = await _context.CompanySubscriptions
                                 .Where(s => s.UserId == payment.UserId && s.IsActive)
+                                .Include(s => s.SubscriptionType)
                                 .OrderByDescending(s => s.CreatedAt)
                                 .FirstOrDefaultAsync();
 
                             if (existingSubscription != null)
                             {
-                                // Update existing subscription
-                                existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId; // Update the subscription type ID
+                                // Get current subscription type
+                                var currentSubscriptionType = existingSubscription.SubscriptionType;
+                                
+                                // Only upgrade subscription type if the new one is higher tier, otherwise keep current tier
+                                bool shouldUpgradeSubscriptionType = subscriptionType.PackageType > currentSubscriptionType.PackageType;
+                                
+                                if (shouldUpgradeSubscriptionType)
+                                {
+                                    // Upgrade to higher tier subscription
+                                    existingSubscription.CompanySubscriptionTypeId = payment.SubscriptionTypeId;
+                                    _logger.LogInformation($"Upgraded company subscription type from {currentSubscriptionType.PackageType} to {subscriptionType.PackageType} for user {payment.UserId}");
+                                }
+                                else
+                                {
+                                    _logger.LogInformation($"Keeping current company subscription type {currentSubscriptionType.PackageType} (higher or equal to purchased {subscriptionType.PackageType}) for user {payment.UserId}");
+                                }
+                                
+                                // Always add benefits and extend duration regardless of tier
                                 existingSubscription.RemainingJobPosts += subscriptionType.JobPostLimit;
                                 existingSubscription.RemainingTrendingJobPosts += subscriptionType.TrendingJobLimit;
                                 existingSubscription.UpdatedAt = DateTime.UtcNow;
-                                existingSubscription.EndDate = DateTime.UtcNow.AddDays(subscriptionType.DurationInDays);
+                                existingSubscription.EndDate = existingSubscription.EndDate.AddDays(subscriptionType.DurationInDays);
 
-                                _logger.LogInformation($"Updated company subscription for user {payment.UserId} to {subscriptionType.Name}, " +
+                                _logger.LogInformation($"Updated company subscription for user {payment.UserId}, " +
             $"added {subscriptionType.JobPostLimit} regular jobs and {subscriptionType.TrendingJobLimit} trending jobs");
                             }
                             else
@@ -274,18 +291,35 @@ namespace JOB_FINDER_API.Controllers
                             // Check if user has an active subscription
                             var existingSubscription = await _context.CandidateSubscriptions
                                 .Where(s => s.UserId == payment.UserId && s.IsActive)
+                                .Include(s => s.SubscriptionType)
                                 .OrderByDescending(s => s.CreatedAt)
                                 .FirstOrDefaultAsync();
 
                             if (existingSubscription != null)
                             {
-                                // Update existing subscription
-                                existingSubscription.SubscriptionTypeId = payment.SubscriptionTypeId; // Thêm dòng này để cập nhật SubscriptionTypeId
+                                // Get current subscription type
+                                var currentSubscriptionType = existingSubscription.SubscriptionType;
+                                
+                                // Only upgrade subscription type if the new one is higher tier, otherwise keep current tier
+                                bool shouldUpgradeSubscriptionType = subscriptionType.PackageType > currentSubscriptionType.PackageType;
+                                
+                                if (shouldUpgradeSubscriptionType)
+                                {
+                                    // Upgrade to higher tier subscription
+                                    existingSubscription.SubscriptionTypeId = payment.SubscriptionTypeId;
+                                    _logger.LogInformation($"Upgraded candidate subscription type from {currentSubscriptionType.PackageType} to {subscriptionType.PackageType} for user {payment.UserId}");
+                                }
+                                else
+                                {
+                                    _logger.LogInformation($"Keeping current candidate subscription type {currentSubscriptionType.PackageType} (higher or equal to purchased {subscriptionType.PackageType}) for user {payment.UserId}");
+                                }
+                                
+                                // Always add benefits and extend duration regardless of tier
                                 existingSubscription.RemainingTryMatches += subscriptionType.TryMatchLimit;
                                 existingSubscription.UpdatedAt = DateTime.UtcNow;
                                 existingSubscription.EndDate = DateTime.UtcNow.AddYears(10);
 
-                                _logger.LogInformation($"Updated candidate subscription for user {payment.UserId}, changed subscription type to {subscriptionType.Name}, added {subscriptionType.TryMatchLimit} try matches, total now: {existingSubscription.RemainingTryMatches}");
+                                _logger.LogInformation($"Updated candidate subscription for user {payment.UserId}, added {subscriptionType.TryMatchLimit} try matches, total now: {existingSubscription.RemainingTryMatches}");
                             }
                             else
                             {

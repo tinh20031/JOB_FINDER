@@ -1,3 +1,4 @@
+using Aspose.Words;
 using Aspose.Words.Drawing;
 using CloudinaryDotNet;
 using JOB_FINDER_API.Data;
@@ -11,11 +12,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using System.IO.Compression;
+using System.Net.NetworkInformation;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using UglyToad.PdfPig;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace JOB_FINDER_API.Controllers
 {
@@ -96,400 +99,15 @@ namespace JOB_FINDER_API.Controllers
                 return NoContent();
             }
         }
-        //[Authorize]
-        //[HttpPost("apply")]
-        //public async Task<IActionResult> Apply(
-        //    [FromForm] ApplyJobRequest request,
-        //    [FromServices] ICvSnapshotService cvSnapshotService,
-        //    [FromServices] CloudinaryService cloudinaryService,
-        //    [FromServices] IBackgroundTaskQueue taskQueue)
-        //{
-        //    var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //    if (!int.TryParse(userIdStr, out var userId))
-        //        return Unauthorized("Invalid user ID.");
 
-        //    var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
-        //    if (role != "candidate")
-        //        return Forbid("Only candidates can apply for jobs.");
-
-        //    using (var scope = _serviceScopeFactory.CreateScope())
-        //    {
-        //        var context = scope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-        //        string tempCvPath = null;
-        //        try
-        //        {
-
-        //            var user = await context.Users
-        //                .Include(u => u.CandidateProfile)
-        //                .FirstOrDefaultAsync(u => u.UserId == userId);
-
-        //            if (user == null)
-        //                return Unauthorized("User not found.");
-
-        //            var profile = user.CandidateProfile;
-        //            if (string.IsNullOrWhiteSpace(user.FullName) ||
-        //                string.IsNullOrWhiteSpace(profile?.JobTitle) ||
-        //                string.IsNullOrWhiteSpace(user.Phone) ||
-        //                profile?.Dob == null ||
-        //                string.IsNullOrWhiteSpace(profile?.Province) ||
-        //                string.IsNullOrWhiteSpace(profile?.City))
-        //            {
-        //                return BadRequest(new { Success = false, Message = "Please update your personal information before applying." });
-        //            }
-
-
-        //            var job = await context.Jobs.FindAsync(request.JobId);
-        //            if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin || job.IsExpired())
-        //                return BadRequest(new { Success = false, Message = "The job posting has expired" });
-
-        //            // Đếm số lượng đơn Pending của user với các job thuộc company này
-        //            var pendingCount = await context.Applications
-        //                .Where(a => a.UserId == userId
-        //                    && a.Status == ApplicationStatus.Pending
-        //                    && context.Jobs.Any(j => j.JobId == a.JobId && j.CompanyId == job.CompanyId))
-        //                .CountAsync();
-
-        //            if (pendingCount >= 3)
-        //            {
-        //                return BadRequest(new
-        //                {
-        //                    Success = false,
-        //                    Message = "You are only allowed to apply for a maximum of 3 pending positions at the same company. Please wait for the results before applying for more positions."
-        //                });
-        //            }
-
-        //            //  BẮT ĐẦU: Kiểm tra và cập nhật đơn apply cũ nếu có 
-        //            var existingApplication = await context.Applications
-        //                .FirstOrDefaultAsync(a => a.JobId == request.JobId && a.UserId == userId && a.Status == ApplicationStatus.Pending);
-
-        //            bool isUpdate = false;
-        //            Application application;
-        //            if (existingApplication != null)
-        //            {
-        //                // Nếu đã apply, cập nhật đơn cũ
-        //                application = existingApplication;
-        //                application.CoverLetter = request.CoverLetter;
-        //                application.Status = ApplicationStatus.Pending;
-        //                application.UpdatedAt = DateTime.UtcNow;
-        //                application.SubmittedAt = DateTime.UtcNow;
-        //                isUpdate = true;
-        //            }
-        //            else
-        //            {
-        //                // Nếu chưa apply, tạo mới
-        //                application = new Application
-        //                {
-        //                    UserId = userId,
-        //                    JobId = request.JobId,
-        //                    CoverLetter = request.CoverLetter,
-        //                    Status = ApplicationStatus.Pending,
-        //                    SubmittedAt = DateTime.UtcNow,
-        //                    CreatedAt = DateTime.UtcNow,
-        //                    UpdatedAt = DateTime.UtcNow
-        //                };
-        //                context.Applications.Add(application);
-        //            }
-        //            //  KẾT THÚC: Kiểm tra và cập nhật đơn apply cũ nếu có 
-
-        //            await context.SaveChangesAsync();
-
-        //            // Gửi email thông báo cho candidate
-        //            if (!string.IsNullOrEmpty(user.Email))
-        //            {
-        //                string subject = isUpdate
-        //                    ? "Your application has been updated": "You have successfully applied";
-        //                string body = isUpdate
-        //                ? $"Your application for the job \"{job.Title}\" has been successfully updated/replaced at {DateTime.Now:HH:mm dd/MM/yyyy}."
-        //                : $"You have successfully applied for the job \"{job.Title}\" at {DateTime.Now:HH:mm dd/MM/yyyy}.";
-        //                await _emailService.SendEmailAsync(user.Email, subject, body);
-        //            }
-
-
-        //            if (request.CvFile != null && request.CvFile.Length > 0)
-        //            {
-        //                tempCvPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".pdf");
-        //                try
-        //                {
-        //                    using (var stream = new FileStream(tempCvPath, FileMode.Create))
-        //                    {
-        //                        await request.CvFile.CopyToAsync(stream);
-        //                    }
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    _logger.LogError(ex, "Failed to save temporary CV file for User {UserId}, Job {JobId} at {Time}.", userId, request.JobId, DateTime.Now);
-        //                    return BadRequest(new { Success = false, Message = "Failed to save CV file." });
-        //                }
-        //            }
-
-
-        //            //var application = new Application
-        //            //{
-        //            //    UserId = userId,
-        //            //    JobId = request.JobId,
-        //            //    CoverLetter = request.CoverLetter,
-        //            //    Status = ApplicationStatus.Pending,
-        //            //    SubmittedAt = DateTime.UtcNow,
-        //            //    CreatedAt = DateTime.UtcNow,
-        //            //    UpdatedAt = DateTime.UtcNow
-        //            //};
-        //            //context.Applications.Add(application);
-        //            //await context.SaveChangesAsync();
-        //            //_logger.LogInformation("Application {ApplicationId} created for UserId {UserId}, JobId {JobId}", application.ApplicationId, userId, request.JobId);
-
-
-        //            taskQueue.QueueBackgroundWorkItem(async token =>
-        //            {
-        //                using var innerScope = _serviceScopeFactory.CreateScope();
-        //                var innerContext = innerScope.ServiceProvider.GetRequiredService<JobFinderDbContext>();
-        //                var innerSemanticService = innerScope.ServiceProvider.GetRequiredService<SemanticMatchingService>();
-        //                var innerCloudinaryService = innerScope.ServiceProvider.GetRequiredService<CloudinaryService>();
-
-        //                using var transaction = await innerContext.Database.BeginTransactionAsync();
-        //                try
-        //                {
-        //                    var innerApplication = await innerContext.Applications.FindAsync(application.ApplicationId);
-        //                    if (innerApplication == null)
-        //                    {
-        //                        _logger.LogWarning("Application {ApplicationId} not found during background processing", application.ApplicationId);
-        //                        return;
-        //                    }
-
-        //                    CV cv = null;
-        //                    string uploadedCvUrl = null;
-        //                    CVData cvData = new CVData();
-        //                    var jsonOptions = new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-
-        //                    if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
-        //                    {
-
-        //                        using var stream = new FileStream(tempCvPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        //                        var formFile = new FormFile(stream, 0, stream.Length, null, Path.GetFileName(tempCvPath));
-
-
-        //                        uploadedCvUrl = await innerCloudinaryService.UploadCvAsync(formFile);
-        //                        if (string.IsNullOrEmpty(uploadedCvUrl))
-        //                        {
-        //                            _logger.LogWarning("Failed to upload CV for Application {ApplicationId} at {Time}.", innerApplication.ApplicationId, DateTime.Now);
-        //                            return;
-        //                        }
-
-
-        //                        string extractedText = string.Empty;
-        //                        try
-        //                        {
-        //                            using (var pdfStream = formFile.OpenReadStream())
-        //                            using (var pdfDocument = PdfDocument.Open(pdfStream))
-        //                            {
-        //                                foreach (var page in pdfDocument.GetPages())
-        //                                {
-        //                                    extractedText += page.Text + "\n";
-        //                                }
-        //                            }
-        //                            extractedText = CleanExtractedText(extractedText);
-
-        //                            if (string.IsNullOrWhiteSpace(extractedText))
-        //                            {
-        //                                _logger.LogWarning("CV content is empty or unreadable for Application {ApplicationId} at {Time}.", innerApplication.ApplicationId, DateTime.Now);
-        //                                return;
-        //                            }
-
-        //                            var (success, extractError, extractedCvData) = await innerSemanticService.ExtractCvDataAsync(null, extractedText);
-        //                            if (!success)
-        //                            {
-        //                                _logger.LogWarning("CV extraction failed for Application {ApplicationId} at {Time}: {Error}.", innerApplication.ApplicationId, DateTime.Now, extractError);
-        //                                return;
-        //                            }
-
-        //                            cvData = extractedCvData;
-
-
-        //                            cv = new CV
-        //                            {
-        //                                UserId = userId,
-        //                                FileUrl = uploadedCvUrl,
-        //                                FullCvJson = JsonSerializer.Serialize(new
-        //                                {
-        //                                    Text = extractedText,
-        //                                    TranslatedText = string.Empty,
-        //                                    CVData = cvData
-        //                                }, jsonOptions),
-        //                                CreatedAt = DateTime.UtcNow,
-        //                                UpdatedAt = DateTime.UtcNow,
-        //                                Type = CvType.Apply
-        //                            };
-        //                            innerContext.CVs.Add(cv);
-        //                            await innerContext.SaveChangesAsync();
-
-
-        //                            innerApplication.CvId = cv.CVId;
-        //                            innerApplication.ResumeUrl = uploadedCvUrl;
-        //                        }
-        //                        catch (Exception ex)
-        //                        {
-        //                            _logger.LogError(ex, "PDF extraction failed for Application {ApplicationId} at {Time}.", innerApplication.ApplicationId, DateTime.Now);
-        //                            return;
-        //                        }
-        //                    }
-        //                    else if (request.CvId.HasValue)
-        //                    {
-        //                        cv = await innerContext.CVs.FindAsync(request.CvId.Value);
-        //                        if (cv == null || cv.UserId != userId)
-        //                        {
-        //                            _logger.LogWarning("CV {CvId} not found or does not belong to User {UserId} at {Time}.", request.CvId, userId, DateTime.Now);
-        //                            return;
-        //                        }
-        //                        uploadedCvUrl = cv.FileUrl;
-
-        //                        var (success, extractError, extractedCvData) = await innerSemanticService.ExtractCvDataAsync(cv);
-        //                        if (!success)
-        //                        {
-        //                            _logger.LogWarning("CV extraction failed for Application {ApplicationId} at {Time}: {Error}.", innerApplication.ApplicationId, DateTime.Now, extractError);
-        //                            return;
-        //                        }
-        //                        cvData = extractedCvData;
-
-
-        //                        innerApplication.CvId = cv.CVId;
-        //                        innerApplication.ResumeUrl = uploadedCvUrl;
-        //                    }
-        //                    else
-        //                    {
-        //                        cv = await innerContext.CVs.FirstOrDefaultAsync(c => c.UserId == userId);
-        //                        if (cv == null)
-        //                        {
-        //                            _logger.LogWarning("No CV found for Application {ApplicationId} at {Time}.", innerApplication.ApplicationId, DateTime.Now);
-        //                            return;
-        //                        }
-        //                        uploadedCvUrl = cv.FileUrl;
-
-        //                        var (success, extractError, extractedCvData) = await innerSemanticService.ExtractCvDataAsync(cv);
-        //                        if (!success)
-        //                        {
-        //                            _logger.LogWarning("CV extraction failed for Application {ApplicationId} at {Time}: {Error}.", innerApplication.ApplicationId, DateTime.Now, extractError);
-        //                            return;
-        //                        }
-        //                        cvData = extractedCvData;
-
-
-        //                        innerApplication.CvId = cv.CVId;
-        //                        innerApplication.ResumeUrl = uploadedCvUrl;
-        //                    }
-
-        //                    var innerJob = await innerContext.Jobs.FindAsync(request.JobId);
-        //                    if (innerJob == null || innerJob.Status != Job.JobStatus.active || innerJob.DeactivatedByAdmin)
-        //                    {
-        //                        _logger.LogWarning("Job {JobId} not found or inactive during background processing", request.JobId);
-        //                        return;
-        //                    }
-
-        //                    var (jobVectorsSuccess, jobVectorsError, jobVectors, jobContext) = await innerSemanticService.GenerateVectorsForCriteria(innerJob, $"{innerJob.Description}\n{innerJob.YourSkill}\n{innerJob.YourExperience}\n{innerJob.Education}");
-        //                    if (!jobVectorsSuccess)
-        //                    {
-        //                        _logger.LogError("Failed to generate job vectors for JobId {JobId}: {Error}", innerJob.JobId, jobVectorsError);
-        //                        return;
-        //                    }
-
-        //                    var (cvVectorsSuccess, cvVectorsError, cvVectors, cvContext) = await innerSemanticService.GenerateVectorsForCVCriteria(cv, cv.FullCvJson);
-        //                    if (!cvVectorsSuccess)
-        //                    {
-        //                        _logger.LogError("Failed to generate CV vectors for CVId {CVId}: {Error}", cv.CVId, cvVectorsError);
-        //                        return;
-        //                    }
-
-        //                    var matchingResult = await innerSemanticService.CalculateTotalSimilarity(innerJob, cv);
-        //                    if (matchingResult.Success)
-        //                    {
-        //                        innerApplication.SimilarityScore = matchingResult.FinalSimilarity;
-        //                        innerApplication.SimilarityDescription = matchingResult.SimilarityDescription;
-        //                        innerApplication.SimilaritySkills = matchingResult.SimilaritySkills;
-        //                        innerApplication.SimilarityExperience = matchingResult.SimilarityExperience;
-        //                        innerApplication.SimilarityEducation = matchingResult.SimilarityEducation;
-        //                        innerApplication.UpdatedAt = DateTime.UtcNow;
-        //                        try
-        //                        {
-        //                            await innerContext.SaveChangesAsync();
-        //                            _logger.LogInformation("Application {ApplicationId} updated with similarity scores: Total={Total:F2}, Description={Description:F2}, Skills={Skills:F2}, Experience={Experience:F2}, Education={Education:F2}",
-        //                                innerApplication.ApplicationId, matchingResult.FinalSimilarity, matchingResult.SimilarityDescription,
-        //                                matchingResult.SimilaritySkills, matchingResult.SimilarityExperience, matchingResult.SimilarityEducation);
-        //                        }
-        //                        catch (Exception ex)
-        //                        {
-        //                            _logger.LogError(ex, "Failed to save application similarity scores for ApplicationId {ApplicationId}: {Error}",
-        //                                innerApplication.ApplicationId, ex.Message);
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        _logger.LogError("Failed to calculate similarity for ApplicationId {ApplicationId}: {Error}",
-        //                            innerApplication.ApplicationId, matchingResult.ErrorMessage);
-        //                    }
-
-        //                    await transaction.CommitAsync();
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    await transaction.RollbackAsync();
-        //                    _logger.LogError(ex, "Error processing application in background for Application {ApplicationId} at {Time}.", application.ApplicationId, DateTime.Now);
-        //                }
-        //                finally
-        //                {
-
-        //                    if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
-        //                    {
-        //                        try
-        //                        {
-        //                            System.IO.File.Delete(tempCvPath);
-        //                        }
-        //                        catch (Exception ex)
-        //                        {
-        //                            _logger.LogWarning(ex, "Failed to delete temporary CV file {TempCvPath} for Application {ApplicationId} at {Time}.", tempCvPath, application.ApplicationId, DateTime.Now);
-        //                        }
-        //                    }
-        //                }
-        //            });
-
-        //            return Ok(new
-        //            {
-        //                Success = true,
-        //                Message = "Application submitted successfully. Processing in background.",
-        //                ApplicationId = application.ApplicationId,
-        //                SimilarityScore = (float?)null,
-        //                SimilarityDescription = (float?)null,
-        //                SimilaritySkills = (float?)null,
-        //                SimilarityExperience = (float?)null,
-        //                SimilarityEducation = (float?)null,
-        //                GeminiReasoning = (string)null
-        //            });
-        //        }
-
-        //        catch (Exception ex)
-        //        {
-
-        //            if (tempCvPath != null && System.IO.File.Exists(tempCvPath))
-        //            {
-        //                try
-        //                {
-        //                    System.IO.File.Delete(tempCvPath);
-        //                }
-        //                catch (Exception fileEx)
-        //                {
-        //                    _logger.LogWarning(fileEx, "Failed to delete temporary CV file {TempCvPath} for User {UserId}, Job {JobId} at {Time}.", tempCvPath, userId, request.JobId, DateTime.Now);
-        //                }
-        //            }
-        //            _logger.LogError(ex, "Error processing application for user {UserId}", userId);
-        //            return StatusCode(500, new { Success = false, Message = "An error occurred while processing your application." });
-        //        }
-        //    }
-        //}
 
         [Authorize]
         [HttpPost("apply")]
         public async Task<IActionResult> Apply(
-                  [FromForm] ApplyJobRequest request,
-                  [FromServices] ICvSnapshotService cvSnapshotService,
-                  [FromServices] CloudinaryService cloudinaryService,
-                  [FromServices] IBackgroundTaskQueue taskQueue)
+           [FromForm] ApplyJobRequest request,
+           [FromServices] ICvSnapshotService cvSnapshotService,
+           [FromServices] CloudinaryService cloudinaryService,
+           [FromServices] IBackgroundTaskQueue taskQueue)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
@@ -525,7 +143,7 @@ namespace JOB_FINDER_API.Controllers
                     }
 
 
-                    var job = await context.Jobs.FindAsync(request.JobId);
+                    /*var job = await context.Jobs.FindAsync(request.JobId);
                     if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin || job.IsExpired())
                         return BadRequest(new { Success = false, Message = "The job posting has expired" });
 
@@ -575,22 +193,100 @@ namespace JOB_FINDER_API.Controllers
                             UpdatedAt = DateTime.UtcNow
                         };
                         context.Applications.Add(application);
+                    }*/
+                    // Lấy job để biết companyId
+                    var job = await context.Jobs.FindAsync(request.JobId);
+                    if (job == null || job.Status != Job.JobStatus.active || job.DeactivatedByAdmin || job.IsExpired())
+                        return BadRequest(new { Success = false, Message = "The job posting has expired" });
+
+                    // Kiểm tra xem đã từng apply job này và còn Pending chưa
+                    var existingApplication = await context.Applications
+                        .FirstOrDefaultAsync(a => a.JobId == request.JobId && a.UserId == userId && a.Status == ApplicationStatus.Pending);
+
+                    bool isUpdate = false;
+                    Application application;
+
+                    // Nếu chưa từng apply job này (Pending) => kiểm tra số lượng Pending
+                    if (existingApplication == null)
+                    {
+                        // Đếm số lượng đơn Pending của user với các job thuộc company này
+                        var pendingCount = await context.Applications
+                            .Where(a => a.UserId == userId
+                                && a.Status == ApplicationStatus.Pending
+                                && context.Jobs.Any(j => j.JobId == a.JobId && j.CompanyId == job.CompanyId))
+                            .CountAsync();
+
+                        if (pendingCount >= 3)
+                        {
+                            return BadRequest(new
+                            {
+                                Success = false,
+                                Message = "You are only allowed to apply for a maximum of 3 pending positions at the same company. Please wait for the results before applying for more positions."
+                            });
+                        }
+
+                        // Tạo mới đơn apply
+                        application = new Application
+                        {
+                            UserId = userId,
+                            JobId = request.JobId,
+                            CoverLetter = request.CoverLetter,
+                            Status = ApplicationStatus.Pending,
+                            SubmittedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        context.Applications.Add(application);
+                    }
+                    else
+                    {
+                        // Nếu đã apply job này và còn Pending => cho phép update lại đơn apply
+                        application = existingApplication;
+                        application.CoverLetter = request.CoverLetter;
+                        application.Status = ApplicationStatus.Pending;
+                        application.UpdatedAt = DateTime.UtcNow;
+                        application.SubmittedAt = DateTime.UtcNow;
+                        isUpdate = true;
                     }
                     //  KẾT THÚC: Kiểm tra và cập nhật đơn apply cũ nếu có 
 
                     await context.SaveChangesAsync();
 
-                    // Gửi email thông báo cho candidate
+
+
                     if (!string.IsNullOrEmpty(user.Email))
                     {
+                        string baseUrl = _configuration["AppSettings:BaseUrl"];
                         string subject = isUpdate
-                            ? "Your application has been updated" : "You have successfully applied";
-                        string body = isUpdate
-                        ? $"Your application for the job \"{job.Title}\" has been successfully updated/replaced at {DateTime.Now:HH:mm dd/MM/yyyy}."
-                        : $"You have successfully applied for the job \"{job.Title}\" at {DateTime.Now:HH:mm dd/MM/yyyy}.";
-                        await _emailService.SendEmailAsync(user.Email, subject, body);
-                    }
+                            ? "Your application has been updated"
+                            : "You have successfully applied";
 
+                        string actionText = isUpdate ? "updated/replaced" : "submitted";
+                        string buttonText = isUpdate ? "View your application" : "View job details";
+                        string buttonUrl = $"{baseUrl}/jobs/{job.JobId}";
+
+                        string body = $@"
+                            <html>
+                              <body style='font-family: Arial, sans-serif; background: #f6f6f6; padding: 30px;'>
+                                <div style='max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px;'>
+                                  <h2 style='color: #2d8cf0; text-align: center;'>Congratulations, {user.FullName}!</h2>
+                                  <p style='font-size: 16px; color: #333;'>
+                                    Your application for the job <b>""{job.Title}""</b> has been <b>{(isUpdate ? "replaced" : "submitted")}</b> at {DateTime.Now:HH:mm dd/MM/yyyy}.
+                                  </p>
+                                  <div style='margin: 24px 0; text-align: center;'>
+                                    <a href='{baseUrl}/candidates-dashboard/applied-jobs/{job.JobId}' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>
+                                      {(isUpdate ? "View your application" : "View job details")}
+                                    </a>
+                                  </div>
+                                  <p style='font-size: 14px; color: #888; text-align: center;'>
+                                    If you have any questions, please contact our support team.<br>
+                                    Thank you for being part of Job Finder!
+                                  </p>
+                                </div>
+                              </body>
+                            </html>";
+                        await _emailService.SendEmailAsync(user.Email, subject, body, true);
+                    }
 
                     if (request.CvFile != null && request.CvFile.Length > 0)
                     {
@@ -869,6 +565,8 @@ namespace JOB_FINDER_API.Controllers
                 }
             }
         }
+
+
 
         private async Task<(CV Cv, string UploadedCvUrl, CVData CVData, string Error)> ProcessCvForApplyAsync(
     ApplyJobRequest request, int userId, CloudinaryService cloudinaryService, JobFinderDbContext context)

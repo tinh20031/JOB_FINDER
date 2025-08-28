@@ -147,28 +147,26 @@ Text:
             }
         }
 
-        public async Task<(bool Success, string CleanedText, string[] WeightedTerms, string ContextAnalysis)> PreprocessTextWithGeminiAsync(string text, string originalText = null)
+        public async Task<(bool Success, string CleanedText, string ContextAnalysis)> PreprocessTextWithGeminiAsync(string text, string originalText = null)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
                 _logger.LogWarning("Empty text provided to PreprocessTextWithGeminiAsync");
-                return (false, string.Empty, Array.Empty<string>(), string.Empty);
+                return (false, string.Empty, string.Empty);
             }
 
             var normalizedText = NormalizeText(text);
             _logger.LogInformation("Preprocessing text with Gemini API: Length={Length}", normalizedText.Length);
 
             string cleanedText = normalizedText;
-            string[] weightedTerms = Array.Empty<string>();
             string contextAnalysis = string.Empty;
 
             int minTextLength = _configuration.GetValue<int>("Gemini:MinTextLengthForAnalysis", 100);
             if (normalizedText.Length < minTextLength)
             {
-                _logger.LogInformation("Short text detected (Length={Length}), assigning default weights", normalizedText.Length);
-                weightedTerms = normalizedText.Split(' ').Select(s => $"{s} *0.5").ToArray();
+                _logger.LogInformation("Short text detected (Length={Length}), skipping detailed analysis", normalizedText.Length);
                 contextAnalysis = "Short text, no deep context analysis";
-                return (true, cleanedText, weightedTerms, contextAnalysis);
+                return (true, cleanedText, contextAnalysis);
             }
 
             try
@@ -176,22 +174,31 @@ Text:
                 await EnsureValidToken();
                 var prompt = $@"Preprocess this text for semantic analysis in a job matching context (supporting multiple languages, e.g., English, Vietnamese):
 - Clean the text by removing irrelevant details (e.g., contact info, formatting) based on configurable rules.
-- Identify key weighted terms with their importance (e.g., term *weight, weight from 0.5 to 1.0). Dynamically infer skills and suggest related terms or synonyms based on context (e.g., infer C# from .NET usage, JavaScript from React.js, SQL from database mentions). Prioritize skills matching common job requirements (e.g., C#, JavaScript, SQL, RESTful API, DevOps).
 - Analyze context: identify technical skill proficiency levels (e.g., Java (senior), Python (junior)), soft skills (e.g., teamwork, communication), experience type (e.g., project-based, theoretical), education, and relevance to job matching.
-- For short texts (<100 characters), infer related skills based on context (e.g., .NET implies C#, React.js implies JavaScript) and assign weights >= 0.8 for inferred skills.
 Text:
 {normalizedText}
 
 Response format:
 Cleaned Text: [cleaned text]
-Weighted Terms: [term1 *weight, term2 *weight, ...]
 Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft Skills: teamwork (high), communication (medium); Experience: 2 years project-based; Education: Bachelor in IT; Relevance: highly relevant to software development roles']
 ";
 
-                var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+                var requestBody = new
+                {
+                    contents = new[] { new { parts = new[] { new { text = prompt } } } },
+                    generationConfig = new
+                    {
+                        temperature = 0.0f, // Deterministic output
+                        topP = 1.0f,
+                        topK = 1,
+                        candidateCount = 1
+                    }
+                };
+
                 var requestJsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
                 var response = await _retryPolicy.ExecuteAsync(async () => await _authenticatedClient.PostAsync(_geminiConfig.ChatEndpoint, requestJsonContent));
                 response.EnsureSuccessStatusCode();
+
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var responseJson = JsonSerializer.Deserialize<JsonNode>(responseContent);
                 var responseText = responseJson["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString();
@@ -199,7 +206,7 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
                 if (string.IsNullOrWhiteSpace(responseText))
                 {
                     _logger.LogWarning("Empty response from Gemini for text preprocessing");
-                    return (false, normalizedText, Array.Empty<string>(), string.Empty);
+                    return (false, normalizedText, string.Empty);
                 }
 
                 var responseLines = responseText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -208,33 +215,20 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
                     string trimmedLine = line.Trim();
                     if (trimmedLine.StartsWith("Cleaned Text:", StringComparison.OrdinalIgnoreCase))
                         cleanedText = trimmedLine.Substring("Cleaned Text:".Length).Trim();
-                    else if (trimmedLine.StartsWith("Weighted Terms:", StringComparison.OrdinalIgnoreCase))
-                        weightedTerms = trimmedLine.Substring("Weighted Terms:".Length).Trim().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToArray();
                     else if (trimmedLine.StartsWith("Context Analysis:", StringComparison.OrdinalIgnoreCase))
                         contextAnalysis = trimmedLine.Substring("Context Analysis:".Length).Trim();
                 }
 
-                if (!string.IsNullOrEmpty(contextAnalysis) && weightedTerms.Any())
-                {
-                    var skillsInContext = Regex.Matches(contextAnalysis, @"Technical Skills:\s*(.*?)(?:;|\z)", RegexOptions.IgnoreCase)
-                        .Cast<Match>()
-                        .SelectMany(m => m.Groups[1].Value.Split(',').Select(s => s.Trim().Split(' ')[0]))
-                        .ToArray();
-                    weightedTerms = weightedTerms.Select(term =>
-                    {
-                        var skill = term.Split('*')[0].Trim();
-                        return skillsInContext.Contains(skill) ? $"{skill} *1.0" : term;
-                    }).ToArray();
-                }
-
-                return (true, cleanedText, weightedTerms, contextAnalysis);
+                return (true, cleanedText, contextAnalysis);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error preprocessing text with Gemini");
-                return (false, normalizedText, Array.Empty<string>(), string.Empty);
+                return (false, normalizedText, string.Empty);
             }
         }
+
+
 
         public async Task<(bool Success, string Summary, CVData CVData)> SummarizeAndTranslate(string text, string targetLanguage = "en")
         {
@@ -248,11 +242,13 @@ Context Analysis: [e.g., 'Technical Skills: Java (senior), Python (junior); Soft
             {
                 contents = new[]
                 {
-            new
-            {
-                parts = new[]
-                {
-                    new { text = $@"Analyze the following CV text and extract the following fields in a job matching context:
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new
+                            {
+                                text = $@"Analyze the following CV text and extract the following fields in a job matching context:
 - Description: A brief summary of the candidate's profile or objective (50-100 words).
 - Skills: A list of all relevant skills (technical and soft skills, no limit on number of skills, comma-separated).
 - Experience: A summary of relevant work experience, including years and roles (50-100 words).
@@ -264,10 +260,18 @@ Experience: [content]
 Education: [content]
 
 CV text:
-{text}" }
+{text}"
+                            }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.0f, // Deterministic output
+                    topP = 1.0f,
+                    topK = 1,
+                    candidateCount = 1
                 }
-            }
-        }
             };
 
             try
@@ -300,6 +304,7 @@ CV text:
                 return (false, $"Summarization error: {ex.Message}", new CVData());
             }
         }
+    
 
         public async Task<(bool Success, string Error, CVData CVData)> ExtractCvDataAsync(CV cv, string extractedText = null)
         {
@@ -378,7 +383,7 @@ CV text:
             var normalizedText = NormalizeText(text);
             await EnsureValidToken();
 
-            var (success, cleanedText, weightedTerms, _) = await PreprocessTextWithGeminiAsync(normalizedText);
+            var (success, cleanedText, /*weightedTerms,*/ contextAnalysis) = await PreprocessTextWithGeminiAsync(normalizedText);
             if (!success)
             {
                 _logger.LogWarning("Failed to preprocess text: {Error}", cleanedText);
@@ -389,12 +394,13 @@ CV text:
                 .Where(w => w.Length > 1 && w.Length < 30 && Regex.IsMatch(w, @"^[a-z0-9#+]+$"))
                 .ToArray();
 
-            var preprocessedText = string.Join(" ", words.Select(word =>
-                Array.Exists(weightedTerms, wt => wt.Contains(word, StringComparison.OrdinalIgnoreCase)) ? $"{word} *1.0" : $"{word} *0.5"));
+            //var preprocessedText = string.Join(" ", words.Select(word =>
+            //    Array.Exists(weightedTerms, wt => wt.Contains(word, StringComparison.OrdinalIgnoreCase)) ? $"{word} *1.0" : $"{word} *0.5"));
+            var preprocessedText = string.Join(" ", words);
 
             if (string.IsNullOrWhiteSpace(preprocessedText))
             {
-                _logger.LogWarning("No processable content found in text after weighting");
+                _logger.LogWarning("No processable content found in text after preprocessing");
                 return (false, "No processable content", new float[0]);
             }
 
@@ -406,23 +412,21 @@ CV text:
                 try
                 {
                     Embedding existingEmbedding = null;
-                    if (jobId.HasValue)
+                    //if (jobId.HasValue)
+                    //{
+                    //    var embeddings = await context.Embeddings
+                    //        .Where(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                    //        .ToListAsync();
+                    //    existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
+                    //
+                    //    if (existingEmbedding != null)
+                    //    {
+                    //        _logger.LogInformation("Reusing existing embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
+                    //        return (true, string.Empty, existingEmbedding.Vector);
+                    //    }
+                    //}
+                    //else
                     {
-                        // Lấy dữ liệu từ DB trước, sau đó kiểm tra vector trong bộ nhớ
-                        var embeddings = await context.Embeddings
-                            .Where(e => e.JobId == jobId && e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
-                            .ToListAsync();
-                        existingEmbedding = embeddings.FirstOrDefault(e => e.Vector != null && e.Vector.All(v => !float.IsNaN(v) && !float.IsInfinity(v)));
-
-                        if (existingEmbedding != null)
-                        {
-                            _logger.LogInformation("Reusing existing embedding for JobId: {JobId}, Text: {Text}", jobId, preprocessedText);
-                            return (true, string.Empty, existingEmbedding.Vector);
-                        }
-                    }
-                    else
-                    {
-                        // Trường hợp không có jobId
                         var embeddings = await context.Embeddings
                             .Where(e => e.Text == preprocessedText && e.Model == modelName && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
                             .ToListAsync();
@@ -459,7 +463,6 @@ CV text:
                         var embeddingArray = geminiResult.GetProperty("embedding").GetProperty("values").EnumerateArray()
                             .Select(e => e.GetSingle()).ToArray();
 
-                        // Kiểm tra trước khi lưu vào DB
                         if (embeddingArray.Any(v => float.IsNaN(v) || float.IsInfinity(v)))
                         {
                             _logger.LogWarning("Invalid embedding values detected for text: {Text}", preprocessedText);
@@ -473,12 +476,12 @@ CV text:
                             Vector = embeddingArray,
                             CreatedAt = DateTime.UtcNow,
                             ExpiresAt = DateTime.UtcNow.AddDays(7),
-                            JobId = jobId // Lưu JobId nếu có
+                            //JobId = jobId
                         };
 
                         context.Embeddings.Add(embeddingEntity);
                         await context.SaveChangesAsync();
-                        _logger.LogInformation("New embedding saved for text: {Text}, JobId: {JobId}", preprocessedText, jobId);
+                        _logger.LogInformation("New embedding saved for text: {Text}", preprocessedText);
 
                         return (true, string.Empty, embeddingArray);
                     }
@@ -490,11 +493,12 @@ CV text:
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing embedding for text: {Text}, JobId: {JobId}", preprocessedText, jobId);
+                    _logger.LogError(ex, "Error processing embedding for text: {Text}", preprocessedText);
                     return (false, $"Processing error: {ex.Message}", new float[0]);
                 }
             }
         }
+
 
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string JobContext)> GenerateVectorsForCriteria(Job job, string jobText, bool summarize = false)
         {
@@ -521,7 +525,7 @@ CV text:
                 _logger.LogInformation("Summarized job text: Length={Length}", processedJobText.Length);
             }
 
-            var (preprocessSuccess, cleanedJobText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(processedJobText);
+            var (preprocessSuccess, cleanedJobText, /*weightedTerms,*/ contextAnalysis) = await PreprocessTextWithGeminiAsync(processedJobText);
             if (preprocessSuccess)
             {
                 jobContext = contextAnalysis;
@@ -542,25 +546,25 @@ CV text:
                         if (!string.IsNullOrWhiteSpace(text))
                         {
                             var existingVector = await context.Embeddings
-                                .Where(e => e.JobId == job.JobId && e.Text == text && e.Model == "models/text-embedding-004" && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
+                                .Where(e => e.Text == text && e.Model == "models/text-embedding-004" && e.CreatedAt > DateTime.UtcNow.AddDays(-7))
                                 .Select(e => e.Vector)
                                 .FirstOrDefaultAsync();
 
                             if (existingVector != null && existingVector.Length > 0)
                             {
-                                _logger.LogInformation("Reusing existing vector for JobId: {JobId}, Criteria Index: {Index}", job.JobId, i);
+                                _logger.LogInformation("Reusing existing vector for Criteria Index: {Index}", i);
                                 return (Index: i, Success: true, Vector: existingVector, Error: string.Empty);
                             }
 
                             var inputText = string.IsNullOrEmpty(cleanedJobText) ? text : cleanedJobText;
-                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText, job.JobId);
+                            var (vectorSuccess, vectorError, vector) = await PreprocessAndGenerateEmbeddingAsync(inputText);
                             return (Index: i, Success: vectorSuccess, Vector: vector, Error: vectorError);
                         }
                         return (Index: i, Success: false, Vector: new float[0], Error: "Empty text");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error generating vector for job criteria {Index} for JobId {JobId}", i, job.JobId);
+                        _logger.LogError(ex, "Error generating vector for job criteria {Index}", i);
                         return (Index: i, Success: false, Vector: new float[0], Error: ex.Message);
                     }
                 }
@@ -578,6 +582,7 @@ CV text:
 
             return (vectors.Any(v => v.Length > 0), vectors.All(v => v.Length == 0) ? "Your CV is not relative with job" : string.Empty, vectors, jobContext);
         }
+
 
         public async Task<(bool Success, string ErrorMessage, float[][] Vectors, string CvContext)> GenerateVectorsForCVCriteria(CV cv, string fullCvJson)
         {
@@ -616,17 +621,17 @@ CV text:
 
             var texts = new[]
             {
-        cvData.Description ?? "No description",
-        cvData.Skills.Any() ? string.Join(" ", cvData.Skills) : "No skills",
-        cvData.Experience ?? "No experience",
-        cvData.Education ?? "No education"
-    };
+                cvData.Description ?? "No description",
+                cvData.Skills.Any() ? string.Join(" ", cvData.Skills) : "No skills",
+                cvData.Experience ?? "No experience",
+                cvData.Education ?? "No education"
+            };
             _logger.LogInformation("Extracted CV criteria - Description: {Description}, Skills: {Skills}, Experience: {Experience}, Education: {Education}",
                 texts[0], texts[1], texts[2], texts[3]);
 
             var vectors = new float[4][] { new float[0], new float[0], new float[0], new float[0] };
 
-            var (preprocessSuccess, cleanedCvText, weightedTerms, contextAnalysis) = await PreprocessTextWithGeminiAsync(cvText);
+            var (preprocessSuccess, cleanedCvText, /*weightedTerms,*/ contextAnalysis) = await PreprocessTextWithGeminiAsync(cvText);
             if (!preprocessSuccess)
             {
                 _logger.LogWarning("Preprocess failed for CV text, using original text for CVId {CVId}", cv.CVId);
@@ -792,14 +797,14 @@ CV text:
         {
             var suggestions = new List<string>();
 
-         
-            const float descriptionThreshold = 0.4f; 
-            const float skillsThreshold = 0.5f; 
-            const float experienceThreshold = 0.4f; 
-            const float educationThreshold = 0.6f; 
-            const float totalThreshold = 0.5f; 
 
-            
+            const float descriptionThreshold = 0.4f;
+            const float skillsThreshold = 0.5f;
+            const float experienceThreshold = 0.4f;
+            const float educationThreshold = 0.6f;
+            const float totalThreshold = 0.5f;
+
+
             float normalizedDescription = descriptionMaxScore > 0 ? similarityDescription / descriptionMaxScore : 0f;
             float normalizedSkills = skillsMaxScore > 0 ? similaritySkills / skillsMaxScore : 0f;
             float normalizedExperience = experienceMaxScore > 0 ? similarityExperience / experienceMaxScore : 0f;
@@ -809,37 +814,37 @@ CV text:
                   (descriptionMaxScore + skillsMaxScore + experienceMaxScore + educationMaxScore)
                 : 0f;
 
-         
+
             if (normalizedDescription < descriptionThreshold)
             {
                 suggestions.Add("Revise your **description** to better align with the job's requirements.");
             }
 
-         
+
             if (normalizedSkills < skillsThreshold)
             {
                 suggestions.Add("Enhance your **skills** section to better match the job's technical demands.");
             }
 
-          
+
             if (normalizedExperience < experienceThreshold)
             {
                 suggestions.Add("Strengthen your **experience** section to highlight relevant roles or projects.");
             }
 
-          
+
             if (normalizedEducation < educationThreshold)
             {
                 suggestions.Add("Update your **education** details to better reflect the job's qualifications.");
             }
 
-            
+
             if (totalSimilarity < totalThreshold)
             {
                 suggestions.Add("Tailor your **CV** to improve overall alignment with the job's requirements.");
             }
 
-            
+
             return suggestions.Any() ? suggestions : new List<string> { "Your **CV** is **well-aligned** with the job requirements. No major changes needed!" };
         }
         public async Task<(bool Success, string ErrorMessage, float FinalSimilarity, float SimilarityDescription, float SimilaritySkills, float SimilarityExperience, float SimilarityEducation, float DescriptionMaxScore, float SkillsMaxScore, float ExperienceMaxScore, float EducationMaxScore, string GeminiReasoning)> CalculateTotalSimilarity(Job job, CV cv)
@@ -854,13 +859,13 @@ CV text:
                 job.Description, job.YourSkill, job.YourExperience, job.Education);
             _logger.LogInformation("Extracting CV content from FullCvJson: {FullCvJson}", cv.FullCvJson);
 
-          
+
             float descriptionWeight = job.DescriptionWeight;
             float skillsWeight = job.SkillsWeight;
             float experienceWeight = job.ExperienceWeight;
             float educationWeight = job.EducationWeight;
 
-         
+
             float totalWeight = descriptionWeight + skillsWeight + experienceWeight + educationWeight;
             if (Math.Abs(totalWeight) < 0.0001f)
             {
@@ -868,7 +873,7 @@ CV text:
                 return (false, "Total weight cannot be zero.", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, "Invalid weights");
             }
 
-         
+
             float descriptionMaxScore = descriptionWeight * 100f;
             float skillsMaxScore = skillsWeight * 100f;
             float experienceMaxScore = experienceWeight * 100f;
@@ -900,16 +905,16 @@ CV text:
                         return (false, "Invalid vector array length", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, "Invalid vector array length");
                     }
 
-                   
+
                     float similarityDescription = CalculateCosineSimilarity(jobVectors[0], cvVectors[0]) * descriptionMaxScore;
                     float similaritySkills = CalculateCosineSimilarity(jobVectors[1], cvVectors[1]) * skillsMaxScore;
                     float similarityExperience = CalculateCosineSimilarity(jobVectors[2], cvVectors[2]) * experienceMaxScore;
                     float similarityEducation = CalculateCosineSimilarity(jobVectors[3], cvVectors[3]) * educationMaxScore;
 
-                  
+
                     float finalSimilarity = similarityDescription + similaritySkills + similarityExperience + similarityEducation;
 
-               
+
                     similarityDescription = Math.Clamp(similarityDescription, 0f, descriptionMaxScore);
                     similaritySkills = Math.Clamp(similaritySkills, 0f, skillsMaxScore);
                     similarityExperience = Math.Clamp(similarityExperience, 0f, experienceMaxScore);
@@ -1044,3 +1049,4 @@ CV text:
         }
     }
 }
+

@@ -182,7 +182,8 @@ builder.Services.AddCors(options =>
                 "http://localhost:5194",
                 "https://job-finder-fe-ug96.vercel.app",
                 "https://jobfinder.io.vn",
-                "https://jobfindersever.io.vn")
+                "https://jobfindersever.io.vn",
+                "https://jobfinderrender-44.vercel.app")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()

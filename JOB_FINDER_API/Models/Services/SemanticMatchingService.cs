@@ -115,7 +115,6 @@ namespace JOB_FINDER_API.Models.Services
             }
             finally
             {
-            
                 _ = Task.Delay(TimeSpan.FromSeconds(6)).ContinueWith(_ => _rateLimitSemaphore.Release());
             }
         }
@@ -1106,4 +1105,5 @@ CV text:
         }
     }
 }
+
 

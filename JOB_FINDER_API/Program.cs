@@ -184,6 +184,7 @@ builder.Services.AddCors(options =>
                 "https://jobfindersever.io.vn",
                 "http://localhost:5194")
            .AllowAnyMethod()
+
             .AllowAnyHeader()
             .AllowCredentials()
             .SetIsOriginAllowedToAllowWildcardSubdomains();

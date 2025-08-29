@@ -1349,6 +1349,7 @@ namespace JOB_FINDER_API.Controllers
                     {
                         job.Status = Job.JobStatus.inactive;
                         job.DeactivatedByAdmin = false;
+
                         job.UpdatedAt = GetVietnamTime();
                         await _context.SaveChangesAsync();
                         _logger.LogInformation($"Job #{id} deactivated by company");

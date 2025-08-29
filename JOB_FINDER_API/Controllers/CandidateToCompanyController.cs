@@ -32,6 +32,12 @@ namespace JOB_FINDER_API.Controllers
                 return BadRequest("User not found.");
             }
 
+            var industry = await _context.Industries.FindAsync(request.IndustryId);
+            if (industry == null)
+            {
+                return BadRequest("Invalid Industry ID.");
+            }
+
             var existingRequest = await _context.CandidateToCompanyRequests
                 .FirstOrDefaultAsync(r => r.UserId == request.UserId);
 
@@ -81,7 +87,7 @@ namespace JOB_FINDER_API.Controllers
       <p><b>Team Size:</b> {request.TeamSize}</p>
       <p><b>Website:</b> {request.Website}</p>
       <p><b>Contact:</b> {request.Contact}</p>
-      <p><b>Industry ID:</b> {request.IndustryId}</p>
+      <p><b>Industry:</b> {industry.IndustryName}</p>
       <div style='margin: 24px 0;'>
         <a href='{baseUrl}/admin-dashboard/upgrade-requests' style='background: #2d8cf0; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold;'>Verify Now</a>
       </div>

@@ -417,13 +417,14 @@ namespace JOB_FINDER_API.Controllers
                         }
                     }
 
-                    return BadRequest(new
-                    {
-                        message = "Email has not been verified. Please check your inbox to verify your account before logging in.",
-                        requiresVerification = true,
-                        userId = user.UserId,
-                        email = user.Email
-                    });
+                    //return BadRequest(new
+                    //{
+                    //    message = "Email has not been verified. Please check your inbox to verify your account before logging in.",
+                    //    requiresVerification = true,
+                    //    userId = user.UserId,
+                    //    email = user.Email
+                    //});
+                    return BadRequest("Email has not been verified. Please check your inbox to verify your account before logging in.");
                 }
 
                 if (user.Role == null)

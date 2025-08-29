@@ -125,6 +125,21 @@ namespace JOB_FINDER_API.Controllers
             if (company == null)
                 return NotFound("Company not found.");
 
+            // Check if company has jobs with pending applications
+            var hasPendingApplications = await _context.Jobs
+                .Where(j => j.CompanyId == userId)
+                .SelectMany(j => j.Applications)
+                .AnyAsync(a => a.Status == ApplicationStatus.Pending);
+
+            if (hasPendingApplications)
+            {
+                return BadRequest(new { 
+                    Success = false, 
+                    ErrorMessage = "Không thể vô hiệu hóa công ty vì còn đơn ứng tuyển đang chờ xử lý. Vui lòng xử lý tất cả đơn ứng tuyển trước khi vô hiệu hóa công ty.",
+                    ErrorCode = "PENDING_APPLICATIONS_EXIST"
+                });
+            }
+
             company.IsActive = false;
             await _context.SaveChangesAsync();
             return Ok("Company has been locked.");
@@ -140,6 +155,37 @@ namespace JOB_FINDER_API.Controllers
             company.IsActive = true;
             await _context.SaveChangesAsync();
             return Ok("Company has been unlocked.");
+        }
+
+        [HttpGet("{userId}/pending-applications")]
+        public async Task<IActionResult> GetPendingApplications(int userId)
+        {
+            var company = await _context.CompanyProfile.FindAsync(userId);
+            if (company == null)
+                return NotFound("Company not found.");
+
+            var pendingApplications = await _context.Jobs
+                .Where(j => j.CompanyId == userId)
+                .SelectMany(j => j.Applications)
+                .Where(a => a.Status == ApplicationStatus.Pending)
+                .Select(a => new {
+                    ApplicationId = a.ApplicationId,
+                    JobId = a.JobId,
+                    JobTitle = a.Job.Title,
+                    ApplicantName = a.User.FullName,
+                    ApplicantEmail = a.User.Email,
+                    SubmittedAt = a.SubmittedAt,
+                    SimilarityScore = a.SimilarityScore
+                })
+                .OrderByDescending(a => a.SubmittedAt)
+                .ToListAsync();
+
+            return Ok(new {
+                CompanyId = userId,
+                CompanyName = company.CompanyName,
+                PendingApplicationsCount = pendingApplications.Count,
+                PendingApplications = pendingApplications
+            });
         }
 
         [HttpPost]

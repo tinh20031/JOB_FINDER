@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JOB_FINDER_API.Data;
@@ -165,6 +165,24 @@ namespace JOB_FINDER_API.Controllers
 
             if (user.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase))
                 return BadRequest("Cannot lock an admin account.");
+
+            // Check if user is a company and has pending applications
+            if (user.Role.RoleName.Equals("Company", StringComparison.OrdinalIgnoreCase))
+            {
+                var hasPendingApplications = await _dbContext.Jobs
+                    .Where(j => j.CompanyId == id)
+                    .SelectMany(j => j.Applications)
+                    .AnyAsync(a => a.Status == Models.ApplicationStatus.Pending);
+
+                if (hasPendingApplications)
+                {
+                    return BadRequest(new { 
+                        Success = false, 
+                        ErrorMessage = "Không thể vô hiệu hóa tài khoản công ty vì còn đơn ứng tuyển đang chờ xử lý. Vui lòng xử lý tất cả đơn ứng tuyển trước khi vô hiệu hóa tài khoản.",
+                        ErrorCode = "PENDING_APPLICATIONS_EXIST"
+                    });
+                }
+            }
 
             user.IsActive = false;
             user.UpdatedAt = DateTime.UtcNow;

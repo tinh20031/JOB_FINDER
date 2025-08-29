@@ -1,4 +1,4 @@
-﻿using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Hubs;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.DTO;
@@ -1347,6 +1347,19 @@ namespace JOB_FINDER_API.Controllers
 
                     if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
                     {
+                        // Check if job has pending applications
+                        var hasPendingApplications = await _context.Applications
+                            .AnyAsync(a => a.JobId == id && a.Status == ApplicationStatus.Pending);
+
+                        if (hasPendingApplications)
+                        {
+                            return BadRequest(new { 
+                                Success = false, 
+                                ErrorMessage = "Không thể vô hiệu hóa công việc vì còn đơn ứng tuyển đang chờ xử lý. Vui lòng xử lý tất cả đơn ứng tuyển trước khi vô hiệu hóa công việc.",
+                                ErrorCode = "PENDING_APPLICATIONS_EXIST"
+                            });
+                        }
+
                         job.Status = Job.JobStatus.inactive;
                         job.DeactivatedByAdmin = false;
 
@@ -1392,6 +1405,21 @@ namespace JOB_FINDER_API.Controllers
             if (job == null)
                 return NotFound("Job not found.");
 
+            string warningMessage = null;
+
+            // Check for pending applications when locking
+            if (isLock && job.Status == Job.JobStatus.active)
+            {
+                var pendingApplicationsCount = await _context.Applications
+                    .CountAsync(a => a.JobId == id && a.Status == ApplicationStatus.Pending);
+
+                if (pendingApplicationsCount > 0)
+                {
+                    warningMessage = $"Warning: This job has {pendingApplicationsCount} pending application(s) that may need attention.";
+                    _logger.LogWarning($"Admin locking job #{id} which has {pendingApplicationsCount} pending applications");
+                }
+            }
+
             job.DeactivatedByAdmin = isLock;
 
             if (isLock && job.Status == Job.JobStatus.active)
@@ -1401,7 +1429,14 @@ namespace JOB_FINDER_API.Controllers
             await _context.SaveChangesAsync();
             _logger.LogInformation($"Job #{id} {(isLock ? "locked" : "unlocked")} by admin");
 
-            return Ok(isLock ? "Job has been locked by admin." : "Job has been unlocked by admin.");
+            var response = new
+            {
+                Success = true,
+                Message = isLock ? "Job has been locked by admin." : "Job has been unlocked by admin.",
+                Warning = warningMessage
+            };
+
+            return Ok(response);
         }
 
 
@@ -1962,8 +1997,53 @@ namespace JOB_FINDER_API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("{jobId}/pending-applications")]
+        public async Task<IActionResult> GetJobPendingApplications(int jobId)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized("Invalid user ID.");
 
+            var job = await _context.Jobs.FindAsync(jobId);
+            if (job == null)
+                return NotFound("Job not found.");
 
+            var role = User.FindFirst(ClaimTypes.Role)?.Value?.ToLower();
+
+            // Only company owner or admin can view pending applications
+            if (role == "company" && job.CompanyId != userId)
+                return Forbid("You can only view pending applications for your own jobs.");
+            else if (role != "company" && role != "admin")
+                return Forbid("You do not have permission to view job applications.");
+
+            var pendingApplications = await _context.Applications
+                .Where(a => a.JobId == jobId && a.Status == ApplicationStatus.Pending)
+                .Include(a => a.User)
+                .Select(a => new {
+                    ApplicationId = a.ApplicationId,
+                    JobId = a.JobId,
+                    ApplicantId = a.UserId,
+                    ApplicantName = a.User.FullName,
+                    ApplicantEmail = a.User.Email,
+                    ResumeUrl = a.ResumeUrl,
+                    CoverLetter = a.CoverLetter,
+                    SubmittedAt = a.SubmittedAt,
+                    SimilarityScore = a.SimilarityScore,
+                    SimilarityDescription = a.SimilarityDescription,
+                    SimilaritySkills = a.SimilaritySkills,
+                    SimilarityExperience = a.SimilarityExperience,
+                    SimilarityEducation = a.SimilarityEducation
+                })
+                .OrderByDescending(a => a.SubmittedAt)
+                .ToListAsync();
+
+            return Ok(new {
+                JobId = jobId,
+                JobTitle = job.Title,
+                PendingApplicationsCount = pendingApplications.Count,
+                PendingApplications = pendingApplications
+            });
+        }
 
     }
 }

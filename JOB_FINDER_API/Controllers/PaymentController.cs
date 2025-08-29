@@ -1,4 +1,4 @@
-﻿using JOB_FINDER_API.Data;
+using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using JOB_FINDER_API.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
@@ -168,6 +168,22 @@ namespace JOB_FINDER_API.Controllers
         [HttpPost("create-payment")]
         public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
         {
+            // Validate PayOS configuration first
+            var clientId = _configuration["PayOS:ClientId"];
+            var apiKey = _configuration["PayOS:ApiKey"];
+            var checksumKey = _configuration["PayOS:ChecksumKey"];
+            
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(checksumKey))
+            {
+                _logger.LogError("PayOS configuration is missing or incomplete");
+                return StatusCode(500, new 
+                { 
+                    Success = false,
+                    Message = "Payment service is not properly configured. Please contact administrator.",
+                    Error = "CONFIG_ERROR"
+                });
+            }
+
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out var userId))
                 return Unauthorized("Invalid user ID");
@@ -225,7 +241,13 @@ namespace JOB_FINDER_API.Controllers
                 );
 
                 // Ghi log để debug
-                _logger.LogInformation($"Creating payment with success URL: {baseUrl}/others/payment-success?orderCode={orderCodeStr}");
+                _logger.LogInformation($"Creating payment with data:");
+                _logger.LogInformation($"- Order Code: {numericOrderCode}");
+                _logger.LogInformation($"- Amount: {package.Price}");
+                _logger.LogInformation($"- Description: {shortDesc}");
+                _logger.LogInformation($"- Cancel URL: {baseUrl}/api/payment/cancel/{orderCodeStr}");
+                _logger.LogInformation($"- Success URL: {baseUrl}/others/payment-success?orderCode={orderCodeStr}");
+                _logger.LogInformation($"PayOS Config Check: ClientId={!string.IsNullOrEmpty(clientId)}, ApiKey={!string.IsNullOrEmpty(apiKey)}, ChecksumKey={!string.IsNullOrEmpty(checksumKey)}");
 
                 // Call PayOS API to create payment link
                 CreatePaymentResult paymentResult = await _payOS.createPaymentLink(paymentData);
@@ -259,6 +281,16 @@ namespace JOB_FINDER_API.Controllers
                     Description = shortDesc
                 });
             }
+            catch (Net.payOS.Errors.PayOSError payOSEx)
+            {
+                _logger.LogError(payOSEx, $"PayOS Error creating payment: {payOSEx.Message}");
+                return BadRequest(new 
+                { 
+                    Success = false,
+                    Message = "Payment service error: " + payOSEx.Message,
+                    Error = "PAYOS_ERROR"
+                });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error creating payment: {ex.Message}");
@@ -266,7 +298,29 @@ namespace JOB_FINDER_API.Controllers
                 {
                     _logger.LogError($"Inner exception: {ex.InnerException.Message}");
                 }
-                return StatusCode(500, "Error processing payment request");
+                
+                // Check if PayOS configuration is missing
+                var clientId = _configuration["PayOS:ClientId"];
+                var apiKey = _configuration["PayOS:ApiKey"];
+                var checksumKey = _configuration["PayOS:ChecksumKey"];
+                
+                if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(checksumKey))
+                {
+                    _logger.LogError("PayOS configuration is missing or incomplete");
+                    return StatusCode(500, new 
+                    { 
+                        Success = false,
+                        Message = "Payment service is not properly configured",
+                        Error = "CONFIG_ERROR"
+                    });
+                }
+                
+                return StatusCode(500, new 
+                { 
+                    Success = false,
+                    Message = "Error processing payment request",
+                    Error = "INTERNAL_ERROR"
+                });
             }
         }
 

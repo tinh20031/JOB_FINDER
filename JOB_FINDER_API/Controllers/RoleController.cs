@@ -1,4 +1,4 @@
-using JOB_FINDER_API.Data;
+﻿using JOB_FINDER_API.Data;
 using JOB_FINDER_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +48,35 @@ namespace JOB_FINDER_API.Controllers
             _context.Roles.Remove(role);
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsersWithRoles()
+        {
+            var users = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.CompanyProfile)
+                .ToListAsync();
+
+            var result = users.Select(u => {
+                var isCompany = u.Role?.RoleName == "Company";
+
+                return new
+                {
+                    id = u.UserId,
+                    fullName = u.FullName,
+                    email = u.Email,
+                    phone = u.Phone,
+                    image = u.Image,
+                    urlComanyLogo = isCompany ? u.CompanyProfile?.UrlCompanyLogo : null,
+                    role = u.Role?.RoleName,
+                    isActive = u.IsActive,
+                    createdAt = u.CreatedAt,
+                    updatedAt = u.UpdatedAt
+                };
+            });
+
+            return Ok(result);
         }
     }
 }

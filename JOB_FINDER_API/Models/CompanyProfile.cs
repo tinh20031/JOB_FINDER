@@ -1,0 +1,34 @@
+
+﻿using System.Text.Json.Serialization;
+
+namespace JOB_FINDER_API.Models
+{
+    public class CompanyProfile
+    {
+        public int CompanyProfileId { get; set; }
+        public int UserId { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
+        public string? CompanyProfileDescription { get; set; }
+        public string? Location { get; set; }
+        public string? UrlCompanyLogo { get; set; }
+        public string? ImageLogoLgr { get; set; }
+        
+        public string? TeamSize { get; set; }
+        public bool IsVerified { get; set; } = false;
+        public string? Website { get; set; }
+        public string? Contact { get; set; }
+        public int IndustryId { get; set; }
+
+        [JsonIgnore]
+        public Industry? Industry { get; set; }
+
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        [JsonIgnore]
+        public User? User { get; set; }
+        [JsonIgnore]
+        public ICollection<UserFavoriteCompany> UserFavoriteCompanies { get; set; } = new List<UserFavoriteCompany>();
+    }
+}

@@ -5,30 +5,35 @@ namespace JOB_FINDER_API.Models
     public enum ApplicationStatus
     {
         Pending,
-        Interview,
         Rejected,
-        Accepted
+        Accepted    
     }
 
     public class Application
     {
-        public int Id { get; set; }
+        public int ApplicationId { get; set; }
         public int UserId { get; set; }
         public int JobId { get; set; }
         public string? ResumeUrl { get; set; }
         public string? CoverLetter { get; set; }
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
-        public int CvId { get; set; }
-        public string? SnapshotCv { get; set; }
+        public int? CvId { get; set; }
+        public float? SimilarityScore { get; set; }
+        public float? SimilarityDescription { get; set; }
+        public float? SimilaritySkills { get; set; } 
+        public float? SimilarityExperience { get; set; } 
+        public float? SimilarityEducation { get; set; }
+        
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
         [JsonIgnore]
-        public Job Job { get; set; } = null!;
+        public Job? Job { get; set; }
         [JsonIgnore]
-        public CV CV { get; set; } = null!;
+        public CV? CV { get; set; }
     }
 }

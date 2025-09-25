@@ -4,13 +4,18 @@ namespace JOB_FINDER_API.Models
 {
     public class User
     {
-        public int Id { get; set; }
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
+        public int? UserId { get; set; }
+        public string? FullName { get; set; } = string.Empty;
+        public string? Email { get; set; } = string.Empty;
+        public string? Image { get; set; }
+        public string? Phone { get; set; } = string.Empty;
+        public string? Password { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
-        public int RoleId { get; set; }
+        public int? RoleId { get; set; }
+        public bool IsEmailVerified { get; set; } = false;
+        public string EmailVerificationCode { get; set; }
+        public DateTime? EmailVerificationCodeExpiry { get; set; }
+        public string? FirebaseUid { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
@@ -28,15 +33,22 @@ namespace JOB_FINDER_API.Models
         public ICollection<UserFavoriteJob> FavoriteJobs { get; set; } = new List<UserFavoriteJob>();
         [JsonIgnore]
         public ICollection<Experience> Experiences { get; set; } = new List<Experience>();
-        [JsonIgnore]
-        public ICollection<Education> Educations { get; set; } = new List<Education>();
+        
         [JsonIgnore]
         public ICollection<CV> CVs { get; set; } = new List<CV>();
-        [JsonIgnore]
-        public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
+        //[JsonIgnore]
+        //public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
         [JsonIgnore]
         public ICollection<Message> SentMessages { get; set; } = new List<Message>();
         [JsonIgnore]
         public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
+        [JsonIgnore]
+        public ICollection<UserFavoriteCompany> FavoriteCompanies { get; set; } = new List<UserFavoriteCompany>();
+
+        [JsonIgnore]
+        public CandidateToCompanyRequest? CandidateToCompanyRequest { get; set; }
+        [JsonIgnore]
+        public ICollection<TryMatchRecord> TryMatchRecords { get; set; } = new List<TryMatchRecord>();
+
     }
 }

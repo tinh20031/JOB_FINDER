@@ -1,27 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
+    "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {}
   },
   "projects": {
-    "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
+    "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "projectUniqueName": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
         "projectName": "JOB_FINDER_API",
-        "projectPath": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
-        "packagesPath": "C:\\Users\\quocd\\.nuget\\packages\\",
-        "outputPath": "E:\\Đồ Án\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
+        "projectPath": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\JOB_FINDER_API.csproj",
+        "packagesPath": "C:\\Users\\tinht\\.nuget\\packages\\",
+        "outputPath": "D:\\SUMMER2025\\CAPSTONE\\proiect\\JOB_FINDER\\JOB_FINDER_API\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\quocd\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\tinht\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -34,19 +37,89 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AWSSDK.Core": {
+              "target": "Package",
+              "version": "[4.0.0.16, )"
+            },
+            "Aspose.Words": {
+              "target": "Package",
+              "version": "[25.6.0, )"
+            },
             "BCrypt.Net-Next": {
               "target": "Package",
               "version": "[4.0.3, )"
             },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.5, )"
+            },
+            "Cronos": {
+              "target": "Package",
+              "version": "[0.11.0, )"
+            },
+            "EPPlus": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "FireSharp": {
+              "target": "Package",
+              "version": "[2.0.4, )"
+            },
+            "FirebaseAdmin": {
+              "target": "Package",
+              "version": "[2.4.0, )"
+            },
+            "Google.Apis.Auth": {
+              "target": "Package",
+              "version": "[1.70.0, )"
+            },
+            "Google.Cloud.Translation.V2": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "Hangfire.AspNetCore": {
+              "target": "Package",
+              "version": "[1.8.20, )"
+            },
+            "Hangfire.Core": {
+              "target": "Package",
+              "version": "[1.8.20, )"
+            },
+            "Hangfire.SqlServer": {
+              "target": "Package",
+              "version": "[1.8.20, )"
+            },
+            "Magick.NET-Q8-AnyCPU": {
+              "target": "Package",
+              "version": "[14.6.0, )"
+            },
+            "Microsoft.AspNetCore.Authentication.Google": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.0, )"
+            },
+            "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.AspNetCore.SignalR": {
+              "target": "Package",
+              "version": "[1.2.0, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
@@ -58,13 +131,53 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
+            "Microsoft.Extensions.Http.Polly": {
+              "target": "Package",
+              "version": "[9.0.6, )"
+            },
+            "NEST": {
+              "target": "Package",
+              "version": "[7.17.5, )"
+            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.3, )"
             },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.6.1, )"
+            },
+            "Supabase": {
+              "target": "Package",
+              "version": "[1.1.1, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[6.4.0, )"
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.Filters": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Tesseract": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "UglyToad.PdfPig": {
+              "target": "Package",
+              "version": "[1.7.0-custom-5, )"
+            },
+            "iTextSharp.LGPLv2.Core": {
+              "target": "Package",
+              "version": "[3.7.4, )"
+            },
+            "payOS": {
+              "target": "Package",
+              "version": "[1.0.9, )"
+            },
+            "pythonnet": {
+              "target": "Package",
+              "version": "[3.0.5, )"
             }
           },
           "imports": [
@@ -86,7 +199,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

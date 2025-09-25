@@ -177,7 +177,7 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins(
  "https://jobfinder.io.vn",
-                "http://localhost:3000",
+                 "http://localhost:3000",
                 "http://job-finder-kjt2.onrender.com",
                 "https://jobfinderrender-44.vercel.app",
                 "https://job-finder-fe-ug96.vercel.app",

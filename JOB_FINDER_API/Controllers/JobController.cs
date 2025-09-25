@@ -1237,7 +1237,7 @@ namespace JOB_FINDER_API.Controllers
 
         [Authorize]
         [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateJobStatus(int id, [FromQuery] Job.JobStatus newStatus)
+        public async Task<IActionResult> UpdateJobStatus(int id, [FromQuery] Job.JobStatus newStatus, [FromQuery] bool confirmInactive = false)
         {
             try
             {
@@ -1347,13 +1347,47 @@ namespace JOB_FINDER_API.Controllers
 
                     if (job.Status == Job.JobStatus.active && newStatus == Job.JobStatus.inactive)
                     {
+                        // Kiểm tra pending applications trước khi inactive
+                        var pendingApplicationsCount = await _context.Applications
+                            .CountAsync(a => a.JobId == id && a.Status == ApplicationStatus.Pending);
+
+                        if (pendingApplicationsCount > 0 && !confirmInactive)
+                        {
+                            return BadRequest(new
+                            {
+                                Success = false,
+                                Message = $"This job has {pendingApplicationsCount} pending application(s) that need to be processed first. If you still want to deactivate this job, please confirm by adding '&confirmInactive=true' to your request.",
+                                PendingApplicationsCount = pendingApplicationsCount,
+                                RequireConfirmation = true
+                            });
+                        }
+
                         job.Status = Job.JobStatus.inactive;
                         job.DeactivatedByAdmin = false;
 
                         job.UpdatedAt = GetVietnamTime();
                         await _context.SaveChangesAsync();
-                        _logger.LogInformation($"Job #{id} deactivated by company");
-                        return Ok("Company deactivated the job successfully.");
+                        //_logger.LogInformation($"Job #{id} deactivated by company");
+                        //return Ok("Company deactivated the job successfully.");
+                        if (pendingApplicationsCount > 0)
+                        {
+                            _logger.LogInformation($"Job #{id} deactivated by company with {pendingApplicationsCount} pending applications (confirmed)");
+                            return Ok(new
+                            {
+                                Success = true,
+                                Message = $"Job deactivated successfully. Note: There are {pendingApplicationsCount} pending applications that will remain in pending status.",
+                                PendingApplicationsCount = pendingApplicationsCount
+                            });
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Job #{id} deactivated by company");
+                            return Ok(new
+                            {
+                                Success = true,
+                                Message = "Job deactivated successfully."
+                            });
+                        }
                     }
 
                     if (job.Status == Job.JobStatus.inactive && newStatus == Job.JobStatus.active)
